@@ -2,12 +2,19 @@
   "name": "react-static-example-typescript",
   "private": true,
   "scripts": {
+    "lint": "prettier --check --ignore-path .gitignore .",
+    "lint:fix": "prettier --write --ignore-path .gitignore .",
     "start": "react-static start",
     "stage": "react-static build --staging",
     "build": "react-static build",
     "bundle": "react-static bundle",
     "export": "react-static export",
     "serve": "serve dist -p 3000 -s"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "pretty-quick --staged"
+    }
   },
   "dependencies": {
     "@reach/router": "^1.2.1",
@@ -26,6 +33,9 @@
     "@types/react": "^16.9.1",
     "@types/react-dom": "^16.8.5",
     "@types/webpack-env": "^1.14.0",
+    "husky": "^4.2.5",
+    "prettier": "^2.0.5",
+    "pretty-quick": "^2.0.1",
     "react-hot-loader": "^4.12.11",
     "serve": "^11.1.0",
     "typescript": "^3.5.3"

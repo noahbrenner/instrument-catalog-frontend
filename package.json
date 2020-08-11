@@ -1,5 +1,5 @@
 {
-  "name": "react-static-example-typescript",
+  "name": "instrument-catalog-frontend",
   "private": true,
   "scripts": {
     "lint": "prettier --check --ignore-path .gitignore .",

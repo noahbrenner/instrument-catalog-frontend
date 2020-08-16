@@ -1,4 +1,5 @@
 import axios from "axios";
+import "dotenv/config"; // Load environment variables from .env
 // import { Post } from "./types";
 
 // Typescript support in static.config.js is not yet supported, but is coming in a future update!
@@ -31,4 +32,11 @@ export default {
     "react-static-plugin-reach-router",
     "react-static-plugin-sitemap",
   ],
+
+  // Dynamic configuration
+  devServer: {
+    port: Number(process.env.FRONTEND_DEVSERVER_PORT) || 8080,
+  },
+  siteRoot: process.env.FRONTEND_PROD_SITE_ROOT,
+  basePath: process.env.FRONTEND_PROD_BASE_PATH,
 };

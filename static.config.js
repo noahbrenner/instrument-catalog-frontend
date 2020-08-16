@@ -1,11 +1,10 @@
 import axios from "axios";
-import path from "path";
-// import { Post } from './types'
+// import { Post } from "./types";
 
 // Typescript support in static.config.js is not yet supported, but is coming in a future update!
 
 export default {
-  entry: path.join(__dirname, "src", "index.tsx"),
+  entry: "index.tsx", // Relative to paths.src
   getRoutes: async () => {
     const { data: posts } /* :{ data: Post[] } */ = await axios.get(
       "https://jsonplaceholder.typicode.com/posts"
@@ -28,13 +27,8 @@ export default {
   },
   plugins: [
     "react-static-plugin-typescript",
-    [
-      require.resolve("react-static-plugin-source-filesystem"),
-      {
-        location: path.resolve("./src/pages"),
-      },
-    ],
-    require.resolve("react-static-plugin-reach-router"),
-    require.resolve("react-static-plugin-sitemap"),
+    ["react-static-plugin-source-filesystem", { location: "./src/pages" }],
+    "react-static-plugin-reach-router",
+    "react-static-plugin-sitemap",
   ],
 };

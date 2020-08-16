@@ -27,6 +27,10 @@
 - **`$ npm run stage`** - Build the site, placing all files in the `dist/` directory. This is almost the same as the `build` script, but is functional when served on `localhost`.
 - **`$ npm run build`** - Build the site, including links with absolute paths referencing the configured production host name. Serving this from `localhost` will _not_ work.
 - **`$ npm run serve`** - Serve whatever is in the `dist/` directory over `localhost`.
+  - By default, the site is served on port 5000 (`localhost:5000`)
+  - You can optionally listen on a different port
+    - ...with a comand line flag: `$ npm run serve -- -l 3000` _(that's dash "ell" for "listen")_
+    - ...or an environment variable: `$ PORT=3000 npm run serve`
 
 ## Deployment
 

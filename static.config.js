@@ -35,7 +35,7 @@ export default {
 
   // Dynamic configuration
   devServer: {
-    port: Number(process.env.FRONTEND_DEVSERVER_PORT) || 8080,
+    port: Number(process.env.FRONTEND_DEVSERVER_PORT) || 5000,
   },
   siteRoot: process.env.FRONTEND_PROD_SITE_ROOT,
   basePath: process.env.FRONTEND_PROD_BASE_PATH,

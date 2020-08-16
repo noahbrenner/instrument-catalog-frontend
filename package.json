@@ -7,7 +7,7 @@
     "start": "react-static start",
     "stage": "react-static build --staging",
     "build": "react-static build",
-    "serve": "serve dist -p 3000 -s"
+    "serve": "serve dist --single"
   },
   "husky": {
     "hooks": {

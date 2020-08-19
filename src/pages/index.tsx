@@ -1,4 +1,5 @@
 import React from "react";
+import ApiDiv from "components/ApiDiv";
 
 export default () => (
   <div style={{ textAlign: "center" }}>
@@ -14,5 +15,6 @@ export default () => (
     <p>
       <a href="https://twitter.com/swyx">Report issues with this template</a>
     </p>
+    <ApiDiv />
   </div>
 );

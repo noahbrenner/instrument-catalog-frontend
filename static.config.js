@@ -27,7 +27,7 @@ export default {
     ];
   },
   plugins: [
-    "react-static-plugin-typescript",
+    ["react-static-plugin-typescript", { typeCheck: false }], // Lint separately
     ["react-static-plugin-source-filesystem", { location: "./src/pages" }],
     "react-static-plugin-reach-router",
     "react-static-plugin-sitemap",

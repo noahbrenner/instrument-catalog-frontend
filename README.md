@@ -25,20 +25,25 @@
 
 ## Scripts for local development
 
-- **`$ npm run lint`** - Report linting issues.
-- **`$ npm run lint:fix`** - Automatically fix some linting issue. Right now, this is just running [prettier](https://prettier.io/). Prettier is also run via a git hook when committing changes.
-- **`$ npm start`** - Start the dev server (with hot reloading).
-- **`$ npm run stage`** - Build the site, placing all files in the `dist/` directory. This is almost the same as the `build` script, but the site is functional when served on `localhost`.
-- **`$ npm run build`** - Build the site for production. Links will have absolute paths referencing the configured production host name and base path. Serving this from `localhost` will _not_ work.
-- **`$ npm run serve`** - Serve whatever is in the `dist/` directory over `localhost`.
-  - By default, the site is served on port 5000 (`localhost:5000`)
-  - You can optionally listen on a different port
-    - ...either with a command line flag: `$ npm run serve -- -l 3000` _(that's dash "ell" for "listen")_
-    - ...or with an environment variable: `$ PORT=3000 npm run serve`
-  - This script doesn't build the site, it only serves existing files. To (re)build and serve the site, just run both tasks:
-    ```bash
-    $ npm run stage && npm run serve
-    ```
+- Linting
+  - **`$ npm run lint:eslint`** - Lint codebase using [eslint](https://eslint.org/).
+  - **`$ npm run lint:tsc`** - Run static type checking for [TypeScript](https://www.typescriptlang.org/) files.
+  - **`$ npm run lint:prettier`** - Verify that formatting is consistent using [prettier](https://prettier.io/).
+  - **`$ npm run lint`** - Run all of the above linters.
+  - **`$ npm run lint:fix`** - Automatically fix some linting issues. Right now, this is just formatting with `prettier`. Prettier is also run via a git hook when committing changes.
+- Building
+  - **`$ npm start`** - Start the dev server (with hot reloading).
+  - **`$ npm run stage`** - Build the site, placing all files in the `dist/` directory. This is almost the same as the `build` script, but the site is functional when served on `localhost`.
+  - **`$ npm run build`** - Build the site for production. Links will have absolute paths referencing the configured production host name and base path. Serving this from `localhost` will _not_ work.
+  - **`$ npm run serve`** - Serve whatever is in the `dist/` directory over `localhost`.
+    - By default, the site is served on port 5000 (`localhost:5000`)
+    - You can optionally listen on a different port
+      - ...either with a command line flag: `$ npm run serve -- -l 3000` _(that's dash "ell" for "listen")_
+      - ...or with an environment variable: `$ PORT=3000 npm run serve`
+    - This script doesn't build the site, it only serves existing files. To (re)build and serve the site, just run both tasks:
+      ```bash
+      $ npm run stage && npm run serve
+      ```
 
 ## Deployment
 

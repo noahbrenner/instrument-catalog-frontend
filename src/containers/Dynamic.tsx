@@ -1,10 +1,10 @@
 import React from "react";
 
-type DF = React.FC<{ path?: string }>;
-const Dynamic: DF = () => (
-  <div>
-    This is a dynamic page! It will not be statically exported, but is available
-    at runtime
-  </div>
-);
-export default Dynamic;
+export default function Dynamic({ path }: { path: string }): JSX.Element {
+  return (
+    <div>
+      This is a dynamic page at {path}! It will not be statically exported, but
+      is available at runtime.
+    </div>
+  );
+}

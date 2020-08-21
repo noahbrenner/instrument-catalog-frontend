@@ -3,7 +3,7 @@ import { useRouteData } from "react-static";
 import { Link } from "@reach/router";
 import { Post } from "types";
 
-export default (): JSX.Element => {
+export default function Blog(): JSX.Element {
   const { posts }: { posts: Post[] } = useRouteData();
 
   return (
@@ -20,4 +20,4 @@ export default (): JSX.Element => {
       </ul>
     </div>
   );
-};
+}

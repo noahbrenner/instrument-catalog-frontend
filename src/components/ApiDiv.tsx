@@ -3,7 +3,7 @@ import axios from "axios";
 
 const { API_ROOT } = process.env;
 
-export default (): JSX.Element => {
+export function ApiDiv(): JSX.Element {
   const [content, setContent] = useState("...Loading");
 
   useEffect(() => {
@@ -18,4 +18,4 @@ export default (): JSX.Element => {
   }, []);
 
   return <div>{content}</div>;
-};
+}

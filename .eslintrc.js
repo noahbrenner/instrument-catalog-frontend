@@ -44,6 +44,10 @@ module.exports = {
       { devDependencies: ["static.config.js"] },
     ],
 
+    // Use named exports: explicit, consistent, and easier for tooling
+    "import/no-default-export": "error",
+    "import/prefer-default-export": "off",
+
     // Allow JSX syntax in .tsx files
     "react/jsx-filename-extension": ["error", { extensions: [".tsx", ".js"] }],
   },
@@ -53,6 +57,19 @@ module.exports = {
       // We can't define types with TS syntax in JS files to satisfy this rule
       files: ["*.js"],
       rules: { "@typescript-eslint/explicit-module-boundary-types": "off" },
+    },
+    {
+      // react-static requires certain files to have default exports
+      files: [
+        "./static.config.js",
+        "./src/index.tsx",
+        "./src/containers/**/*.tsx",
+        "./src/pages/**/*.tsx",
+      ],
+      rules: {
+        "import/no-default-export": "off",
+        "import/prefer-default-export": "error",
+      },
     },
   ],
 };

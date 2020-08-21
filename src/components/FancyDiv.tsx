@@ -1,6 +1,6 @@
 import React from "react";
 
-const FancyDiv: React.FC = ({ children }) => {
+const FancyDiv = ({ children }: { children: JSX.Element }): JSX.Element => {
   return <div style={{ border: "1px solid red" }}>{children}</div>;
 };
 export default FancyDiv;

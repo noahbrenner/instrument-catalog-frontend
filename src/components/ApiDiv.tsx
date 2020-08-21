@@ -3,12 +3,12 @@ import axios from "axios";
 
 const { API_ROOT } = process.env;
 
-export default () => {
+export default (): JSX.Element => {
   const [content, setContent] = useState("...Loading");
 
   useEffect(() => {
     axios
-      .get<object>(`${API_ROOT}/users/all`)
+      .get<Record<string, unknown>>(`${API_ROOT}/users/all`)
       .then(({ data }) => {
         setContent(JSON.stringify(data));
       })

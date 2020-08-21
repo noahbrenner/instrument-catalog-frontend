@@ -1,7 +1,7 @@
 import React from "react";
 import ApiDiv from "components/ApiDiv";
 
-export default () => (
+export default (): JSX.Element => (
   <div style={{ textAlign: "center" }}>
     <h1>
       Welcome to React-Static <br /> + TypeScript

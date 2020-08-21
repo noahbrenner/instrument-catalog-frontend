@@ -3,7 +3,7 @@ import { useRouteData } from "react-static";
 import { Link } from "@reach/router";
 import { Post } from "../../types";
 
-export default () => {
+export default (): JSX.Element => {
   const { post }: { post: Post } = useRouteData();
   return (
     <div>

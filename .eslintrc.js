@@ -1,4 +1,4 @@
-// Some configuration insipration from:
+// Some configuration inspiration from:
 // https://github.com/iamturns/create-exposed-app/blob/master/.eslintrc.js
 module.exports = {
   parser: "@typescript-eslint/parser",
@@ -30,7 +30,7 @@ module.exports = {
   },
 
   rules: {
-    // Don't use extensions when importing modules
+    // Don't use file extensions when importing modules
     // https://github.com/benmosher/eslint-plugin-import/issues/1615
     "import/extensions": [
       "error",

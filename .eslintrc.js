@@ -11,6 +11,8 @@ module.exports = {
 
   extends: [
     "airbnb",
+    "plugin:testing-library/react",
+    "plugin:jest-dom/recommended",
     "plugin:@typescript-eslint/recommended",
     "plugin:import/typescript",
     "prettier",
@@ -18,7 +20,7 @@ module.exports = {
     "prettier/react",
   ],
 
-  plugins: ["@typescript-eslint"],
+  plugins: ["@typescript-eslint", "jest-dom", "testing-library"],
 
   settings: {
     "import/resolver": {
@@ -41,7 +43,14 @@ module.exports = {
     // Allow importing devDependencies in buid and test files
     "import/no-extraneous-dependencies": [
       "error",
-      { devDependencies: ["static.config.js"] },
+      {
+        devDependencies: [
+          "static.config.js",
+          "jest.config.js",
+          "**/*.test.ts?(x)",
+          "tests/**",
+        ],
+      },
     ],
 
     // Use named exports: explicit, consistent, and easier for tooling
@@ -54,9 +63,13 @@ module.exports = {
 
   overrides: [
     {
-      // We can't define types with TS syntax in JS files to satisfy this rule
       files: ["*.js"],
-      rules: { "@typescript-eslint/explicit-module-boundary-types": "off" },
+      rules: {
+        // We can't define types with TS syntax in JS files to satisfy this rule
+        "@typescript-eslint/explicit-module-boundary-types": "off",
+        // We're not transpiling JS, so we're using native require()
+        "@typescript-eslint/no-var-requires": "off",
+      },
     },
     {
       // react-static requires certain files to have default exports

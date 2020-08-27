@@ -25,7 +25,9 @@
 
 ## Scripts for local development
 
-- Linting
+- Linting/Testing
+  - **`$ npm test`** - Run all tests using [Jest](https://jestjs.io/) and [Testing Library](https://testing-library.com/).
+    - Run tests in watch mode with: **`$ npm test -- --watch`**
   - **`$ npm run lint:lint`** - Lint codebase using [ESlint](https://eslint.org/).
     - Some linting issues can be fixed automatically with: **`$ npm run lint:lint -- --fix`**
   - **`$ npm run lint:types`** - Run static type checking for [TypeScript](https://www.typescriptlang.org/) files.

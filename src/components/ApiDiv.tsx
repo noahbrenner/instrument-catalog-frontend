@@ -10,7 +10,7 @@ export function ApiDiv(): JSX.Element {
     axios
       .get<Record<string, unknown>>(`${API_ROOT}/users/all`)
       .then(({ data }) => {
-        setContent(JSON.stringify(data));
+        setContent(`Users: ${JSON.stringify(data)}`);
       })
       .catch(() => {
         setContent("Failed to load data from the API");

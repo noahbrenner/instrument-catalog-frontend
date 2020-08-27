@@ -8,6 +8,9 @@ module.exports = {
   moduleNameMapper: {
     // Use import paths as defined in tsconfig.json
     ...pathsToModuleNameMapper(compilerOptions.paths, { prefix: "<rootDir>/" }),
+
+    // Mock imports for non-script files
+    "\\.css$": "<rootDir>/mocks/style-mock.ts",
   },
 
   // Only look for test files in these directories

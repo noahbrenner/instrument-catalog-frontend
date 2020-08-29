@@ -1,10 +1,10 @@
 import React from "react";
 import { useRouteData } from "react-static";
 import { Link } from "@reach/router";
-import { Post } from "types";
+import { IPost } from "#types/blog";
 
 export default function Blog(): JSX.Element {
-  const { posts }: { posts: Post[] } = useRouteData();
+  const { posts }: { posts: IPost[] } = useRouteData();
 
   return (
     <div>

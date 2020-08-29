@@ -1,5 +1,6 @@
 import React from "react";
-import { ApiDiv } from "components/ApiDiv";
+
+import { ApiDiv } from "#components/ApiDiv";
 
 export default function Home(): JSX.Element {
   return (

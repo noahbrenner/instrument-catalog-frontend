@@ -1,13 +1,13 @@
 import React from "react";
 import { Root, Routes, addPrefetchExcludes } from "react-static";
 import { Link, Router } from "@reach/router";
-import { FancyDiv } from "components/FancyDiv";
-import Dynamic from "containers/Dynamic";
-import "./app.css";
+// eslint-disable-next-line import/no-extraneous-dependencies
+import { setupWorker } from "msw"; // Dev usage only
 
-// eslint-disable-next-line import/no-extraneous-dependencies -- Dev usage only
-import { setupWorker } from "msw";
-import { handlers } from "#server_routes.mock";
+import { handlers } from "#server_routes.mock"; // Dev usage only
+import { FancyDiv } from "#components/FancyDiv";
+import Dynamic from "#containers/Dynamic";
+import "./app.css";
 
 // Mock the API server using a ServiceWorker
 if (

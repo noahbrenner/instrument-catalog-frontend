@@ -20,9 +20,10 @@
     "paths": {
       "components/*": ["src/components/*"],
       "containers/*": ["src/containers/*"],
-      "types/*": ["types/*"]
+      "types/*": ["types/*"],
+      "#server_routes.mock": ["src/server_routes.mock.ts"]
     },
     "lib": ["dom", "es2015", "es2016"]
   },
-  "exclude": ["artifacts/**/*", "dist/**/*", "public/**/*", "node_modules"]
+  "include": ["src/**/*", "types/**/*", "tests/**/*"]
 }

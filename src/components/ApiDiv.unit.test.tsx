@@ -4,18 +4,9 @@ import { rest } from "msw";
 import { setupServer } from "msw/node";
 
 import { ApiDiv } from "./ApiDiv";
+import { handlers, ENDPOINTS, MOCK_DATA } from "#server_routes.mock";
 
-const { API_ROOT } = process.env;
-
-const server = setupServer(
-  rest.get(`${API_ROOT}/users/all`, (_req, res, ctx) => {
-    return res(
-      ctx.set("Access-Control-Allow-Origin", "*"),
-      ctx.json({ users: [{ name: "Fooname", id: "1337" }] })
-    );
-  })
-);
-
+const server = setupServer(...handlers);
 beforeAll(() => server.listen());
 afterEach(() => server.resetHandlers());
 afterAll(() => server.close());
@@ -29,7 +20,9 @@ describe("ApiDiv", () => {
       expect(screen.getByText(/loading/i)).toBeInTheDocument();
 
       // After API response
-      expect(await screen.findByText(/users/i)).toBeInTheDocument();
+      expect(
+        await screen.findByText(MOCK_DATA.users[0].name, { exact: false })
+      ).toBeInTheDocument();
       expect(screen.queryByText(/loading/i)).not.toBeInTheDocument();
     });
   });
@@ -37,9 +30,7 @@ describe("ApiDiv", () => {
   describe("given failed API call", () => {
     it("displays failure message", async () => {
       server.use(
-        rest.get(`${API_ROOT}/users/all`, (_req, res) => {
-          return res.networkError("Fail");
-        })
+        rest.get(ENDPOINTS.users, (_req, res) => res.networkError("Net fail"))
       );
       render(<ApiDiv />);
       await screen.findByText(/failed/i);

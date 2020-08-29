@@ -2,6 +2,9 @@ require("dotenv/config"); // Load environment variables from .env
 const { pathsToModuleNameMapper } = require("ts-jest/utils");
 const { compilerOptions } = require("./tsconfig.json");
 
+// Disable the browser-run mock, we'll add test env mocks when needed
+process.env.FRONTEND_MOCK_API_SERVER = "false";
+
 module.exports = {
   preset: "ts-jest",
 
@@ -10,7 +13,7 @@ module.exports = {
     ...pathsToModuleNameMapper(compilerOptions.paths, { prefix: "<rootDir>/" }),
 
     // Mock imports for non-script files
-    "\\.css$": "<rootDir>/mocks/style-mock.ts",
+    "\\.css$": "<rootDir>/tests/mocks/style.mock.ts",
   },
 
   // Only look for test files in these directories

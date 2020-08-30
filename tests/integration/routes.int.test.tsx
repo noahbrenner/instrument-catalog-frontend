@@ -6,9 +6,9 @@ import { renderWithRouter } from "../helpers/renderWithRouter";
 
 describe("App", () => {
   describe("given the route '/dynamic'", () => {
-    it("displays content from Dynamic page", async () => {
+    it("displays content from Dynamic page", () => {
       renderWithRouter(<App />, "/dynamic");
-      expect(await screen.findByText(/a dynamic page/i)).toBeInTheDocument();
+      expect(screen.getByText(/a dynamic page/i)).toBeInTheDocument();
     });
   });
 });

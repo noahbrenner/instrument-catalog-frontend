@@ -27,17 +27,14 @@ export function App(): JSX.Element {
       <nav>
         <Link to="/">Home</Link>
         <Link to="/about">About</Link>
-        <Link to="/blog">Blog</Link>
         <Link to="/dynamic">Dynamic</Link>
       </nav>
       <div className="content">
         <FancyDiv>
-          <React.Suspense fallback={<em>Loading...</em>}>
-            <Router>
-              <Dynamic path="dynamic" />
-              <Routes path="*" />
-            </Router>
-          </React.Suspense>
+          <Router>
+            <Dynamic path="dynamic" />
+            <Routes path="*" />
+          </Router>
         </FancyDiv>
       </div>
     </Root>

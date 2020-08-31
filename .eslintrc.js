@@ -32,6 +32,9 @@ module.exports = {
   },
 
   rules: {
+    // Allow unused function parameters if they start with an underscore
+    "@typescript-eslint/no-unused-vars": ["error", { argsIgnorePattern: "^_" }],
+
     // Don't use file extensions when importing modules
     // https://github.com/benmosher/eslint-plugin-import/issues/1615
     "import/extensions": [

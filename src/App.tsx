@@ -1,5 +1,5 @@
 import React from "react";
-import { Root, Routes, addPrefetchExcludes } from "react-static";
+import { Root, addPrefetchExcludes } from "react-static";
 import { Link, Router } from "@reach/router";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { setupWorker } from "msw"; // Dev usage only
@@ -7,6 +7,8 @@ import { setupWorker } from "msw"; // Dev usage only
 import { handlers } from "#server_routes.mock"; // Dev usage only
 import { FancyDiv } from "#components/FancyDiv";
 import Dynamic from "#containers/Dynamic";
+import Home from "./pages";
+import About from "./pages/about";
 import "./app.css";
 
 // Mock the API server using a ServiceWorker
@@ -32,8 +34,9 @@ export function App(): JSX.Element {
       <div className="content">
         <FancyDiv>
           <Router>
+            <Home path="/" />
+            <About path="about" />
             <Dynamic path="dynamic" />
-            <Routes path="*" />
           </Router>
         </FancyDiv>
       </div>

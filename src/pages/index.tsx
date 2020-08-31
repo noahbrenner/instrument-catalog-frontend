@@ -1,8 +1,9 @@
 import React from "react";
+import type { RouteComponentProps } from "@reach/router";
 
 import { ApiDiv } from "#components/ApiDiv";
 
-export default function Home(): JSX.Element {
+export default function Home(_: RouteComponentProps): JSX.Element {
   return (
     <div style={{ textAlign: "center" }}>
       <h1>

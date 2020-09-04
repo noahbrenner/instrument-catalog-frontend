@@ -25,6 +25,14 @@ if (
 }
 
 const GlobalStyle = createGlobalStyle`
+  *, ::before, ::after {
+    box-sizing: border-box;
+  }
+
+  body {
+    width: 100%;
+  }
+
  header {
   display: flex;
   height: ${({ theme }) => theme.headerHeight};

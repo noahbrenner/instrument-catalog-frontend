@@ -4,12 +4,15 @@ import { Head } from "react-static";
 import styled, { createGlobalStyle } from "styled-components";
 
 const GlobalStyle = createGlobalStyle`
-  body.nav-visible {
+  body {
     overflow-x: hidden;
-    overflow-y: hidden;
 
-    @media (min-width: ${({ theme }) => theme.mobileBreakpoint}) {
-      overflow-y: visible;
+    &.nav-visible {
+      overflow-y: hidden;
+
+      @media (min-width: ${({ theme }) => theme.mobileBreakpoint}) {
+        overflow-y: visible;
+      }
     }
   }
 `;

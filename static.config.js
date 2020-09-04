@@ -9,6 +9,7 @@ export default {
     ["react-static-plugin-source-filesystem", { location: "./src/pages" }],
     "react-static-plugin-reach-router",
     "react-static-plugin-sitemap",
+    "react-static-plugin-styled-components",
   ],
 
   // Dynamic configuration

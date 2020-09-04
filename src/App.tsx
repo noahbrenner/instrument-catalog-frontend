@@ -66,7 +66,7 @@ export function App(): JSX.Element {
         <GlobalStyle />
         <header>
           <h1>Instrument Catalog</h1>
-          <BurgerButton onClick={toggleNav} />
+          <BurgerButton onClick={toggleNav} navIsVisible={navIsVisible} />
         </header>
         <Nav
           links={[

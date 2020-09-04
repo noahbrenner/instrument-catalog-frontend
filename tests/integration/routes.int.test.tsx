@@ -15,9 +15,10 @@ describe("App", () => {
   describe("given the route '/'", () => {
     it("displays content from Home page", async () => {
       renderWithRouter(<App />, "/");
-      expect(screen.getByRole("heading")).toHaveTextContent(
-        /welcome to react-static/i
-      );
+      const [heading1, heading2] = screen.getAllByRole("heading");
+      expect(heading1).toHaveTextContent(/instrument catalog/i);
+      expect(heading2).toHaveTextContent(/welcome to react-static/i);
+
       // Wait for the AJAX request to finish before unmounting to avoid an error
       await waitFor(() => {
         expect(screen.queryByText(/loading/i)).not.toBeInTheDocument();

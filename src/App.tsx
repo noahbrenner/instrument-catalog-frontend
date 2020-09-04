@@ -45,7 +45,7 @@ const GlobalStyle = createGlobalStyle`
   }
 
   @media (min-width: ${({ theme }) => theme.mobileBreakpoint}) {
-    & button {
+    & .burger {
       display: none;
     }
   }
@@ -66,7 +66,11 @@ export function App(): JSX.Element {
         <GlobalStyle />
         <header>
           <h1>Instrument Catalog</h1>
-          <BurgerButton onClick={toggleNav} navIsVisible={navIsVisible} />
+          <BurgerButton
+            className="burger"
+            onClick={toggleNav}
+            navIsVisible={navIsVisible}
+          />
         </header>
         <Nav
           links={[

@@ -44,7 +44,7 @@ const StyledNav = styled.nav`
   }
 `;
 
-interface NavProps {
+export interface NavProps {
   links: [linkText: string, url: string][];
   onLinkClick: () => void;
   visible: boolean;

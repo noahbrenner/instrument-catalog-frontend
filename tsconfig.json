@@ -21,6 +21,7 @@
       "#src/*": ["src/*"],
       "#components/*": ["src/components/*"],
       "#containers/*": ["src/containers/*"],
+      "#test_helpers/*": ["tests/helpers/*"],
       "#types/*": ["types/*"],
       "#server_routes.mock": ["src/server_routes.mock.ts"]
     },

@@ -30,40 +30,29 @@ describe("Nav", () => {
     });
   });
 
-  /*
-   * I'd like to test behavior of the `visible` property, but jsdom doesn't
-   * currently support @media queries, which we would need in order to do so:
-   * https://github.com/jsdom/jsdom/blob/9b15aee0074870bf18ef3374d5bded9911066125/lib/jsdom/level2/style.js#L18
-   *
-   * Unless that changes, we'd need to to automated browser testing to cover
-   * this. If jsdom *did* support media queries, we could do something like:
-   *
-   * describe("given visible=true", () => {
-   *   it("is visible on the page", () => {
-   *     renderWithDefaultTheme(<Nav visible onLinkClick={noop} links={[]} />);
-   *
-   *     // This would be the best
-   *     expect(screen.getByRole("navigation")).toBeVisible();
-   *
-   *     // This would be okay, but it's not working either
-   *     expect(document.body.classList).toContain("nav-visible");
-   *   });
-   * });
-   *
-   * describe("given visible=false", () => {
-   *   it("is hidden", () => {
-   *     renderWithDefaultTheme(
-   *       <Nav visible={false} onLinkClick={noop} links={[]} />
-   *     );
-   *     // This would be the best
-   *     window.innerWidth = 300
-   *     expect(screen.getByRole("navigation")).not.toBeVisible();
-   *
-   *     // This would be okay, but it's not working either
-   *     expect(document.body.classList).not.toContain("nav-visible");
-   *   });
-   * });
-   */
+  // I'd rather test the `visible` property by the element's visibility instead
+  // of testing CSS classes, but jsdom doesn't currently support @media queries:
+  // https://github.com/jsdom/jsdom/blob/9b15aee0074870bf18ef3374d5bded9911066125/lib/jsdom/level2/style.js#L18
+  describe("given a particular value for visible=...", () => {
+    it("is visible when visible=true", () => {
+      renderWithDefaultTheme(<Nav visible onLinkClick={noop} links={[]} />);
+      expect(document.body.classList).toContain("nav-visible");
+
+      // This would be better
+      // expect(screen.getByRole("navigation")).toBeVisible();
+    });
+
+    it("is hidden when visible=false", () => {
+      renderWithDefaultTheme(
+        <Nav visible={false} onLinkClick={noop} links={[]} />
+      );
+      expect(document.body.classList).not.toContain("nav-visible");
+
+      // This would be better
+      // window.innerWidth = 300
+      // expect(screen.getByRole("navigation")).not.toBeVisible();
+    });
+  });
 
   describe("given an onLinkClick handler", () => {
     it("calls the click handler for clicks on links", () => {

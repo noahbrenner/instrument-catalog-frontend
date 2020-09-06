@@ -1,6 +1,5 @@
 import { Link } from "@reach/router";
-import React from "react";
-import { Head } from "react-static";
+import React, { useEffect } from "react";
 import styled, { createGlobalStyle } from "styled-components";
 
 const GlobalStyle = createGlobalStyle`
@@ -51,12 +50,20 @@ export interface NavProps {
 }
 
 export function Nav({ links, onLinkClick, visible }: NavProps): JSX.Element {
+  useEffect(() => {
+    const navVisibleClass = "nav-visible";
+    const { classList } = document.body;
+
+    if (visible && !classList.contains(navVisibleClass)) {
+      classList.add(navVisibleClass);
+    } else if (!visible && classList.contains(navVisibleClass)) {
+      classList.remove(navVisibleClass);
+    }
+  });
+
   return (
     <StyledNav>
       <GlobalStyle />
-      <Head>
-        <body className={visible ? "nav-visible" : ""} />
-      </Head>
       <ul>
         {links.map(([linkText, url]) => (
           <li key={linkText}>

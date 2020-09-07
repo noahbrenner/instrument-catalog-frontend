@@ -19,5 +19,8 @@ module.exports = {
   // Only look for test files in these directories
   roots: ["<rootDir>/src/", "<rootDir>/tests/"],
 
-  setupFilesAfterEnv: ["@testing-library/jest-dom"],
+  setupFilesAfterEnv: [
+    "@testing-library/jest-dom",
+    "<rootDir>/tests/jest.setup.ts",
+  ],
 };

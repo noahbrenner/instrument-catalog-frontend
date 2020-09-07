@@ -11,7 +11,7 @@ beforeAll(() => server.listen());
 afterEach(() => server.resetHandlers());
 afterAll(() => server.close());
 
-describe("ApiDiv", () => {
+describe("<ApiDiv />", () => {
   describe("given successfull API call", () => {
     it("displays loading message, then response content", async () => {
       render(<ApiDiv />);

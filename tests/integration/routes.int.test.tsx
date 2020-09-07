@@ -11,7 +11,7 @@ beforeAll(() => server.listen());
 afterEach(() => server.resetHandlers());
 afterAll(() => server.close());
 
-describe("App", () => {
+describe("<App />", () => {
   describe("given the route '/'", () => {
     it("displays content from Home page", async () => {
       renderWithRouter(<App />, "/");

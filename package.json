@@ -1,5 +1,9 @@
 {
   "name": "instrument-catalog-frontend",
+  "description": "Simple wiki-ish React app for sharing musical instrument descriptions",
+  "author": "Noah Brenner",
+  "version": "0.1.0",
+  "license": "MIT",
   "private": true,
   "scripts": {
     "test": "jest --verbose",
@@ -17,6 +21,11 @@
     "hooks": {
       "pre-commit": "pretty-quick --staged"
     }
+  },
+  "homepage": "https://github.com/noahbrenner/instrument-catalog-frontend#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/noahbrenner/instrument-catalog-frontend.git"
   },
   "dependencies": {
     "@material-ui/core": "^4.11.0",

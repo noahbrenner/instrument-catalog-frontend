@@ -6,9 +6,9 @@ import { ApiDiv } from "#components/ApiDiv";
 export default function Home(_: RouteComponentProps): JSX.Element {
   return (
     <div style={{ textAlign: "center" }}>
-      <h1>
+      <h2>
         Welcome to React-Static <br /> + TypeScript
-      </h1>
+      </h2>
       <p>
         Learn{" "}
         <a href="https://github.com/sw-yx/react-typescript-cheatsheet">

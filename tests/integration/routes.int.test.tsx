@@ -15,8 +15,11 @@ describe("<App />", () => {
   describe("given the route '/'", () => {
     it("displays content from Home page", async () => {
       renderWithRouter(<App />, "/");
-      const [heading1, heading2] = screen.getAllByRole("heading");
+
+      const heading1 = screen.getByRole("heading", { level: 1 });
       expect(heading1).toHaveTextContent(/instrument catalog/i);
+
+      const heading2 = screen.getByRole("heading", { level: 2 });
       expect(heading2).toHaveTextContent(/welcome to react-static/i);
 
       // Wait for the AJAX request to finish before unmounting to avoid an error

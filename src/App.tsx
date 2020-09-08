@@ -6,7 +6,6 @@ import { Root, addPrefetchExcludes } from "react-static";
 import { ThemeProvider, createGlobalStyle } from "styled-components";
 
 import { BurgerButton } from "#components/BurgerButton";
-import { FancyDiv } from "#components/FancyDiv";
 import { Nav } from "#components/Nav";
 import Dynamic from "#containers/Dynamic";
 import { handlers } from "#server_routes.mock"; // Dev usage only
@@ -82,13 +81,11 @@ export function App(): JSX.Element {
           visible={navIsVisible}
         />
         <main>
-          <FancyDiv>
-            <Router>
-              <Home path="/" />
-              <About path="about" />
-              <Dynamic path="dynamic" />
-            </Router>
-          </FancyDiv>
+          <Router>
+            <Home path="/" />
+            <About path="about" />
+            <Dynamic path="dynamic" />
+          </Router>
         </main>
       </ThemeProvider>
     </Root>

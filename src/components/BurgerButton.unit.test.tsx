@@ -5,7 +5,7 @@ import { BurgerButton } from "./BurgerButton";
 
 const noop = (): void => undefined;
 
-describe("BurgerButton", () => {
+describe("<BurgerButton />", () => {
   describe("given navIsVisible=true", () => {
     it("Renders 'close menu' interface", () => {
       render(<BurgerButton navIsVisible onClick={noop} />);

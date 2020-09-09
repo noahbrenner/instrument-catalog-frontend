@@ -8,7 +8,7 @@ import type { NavProps } from "./Nav";
 
 const noop = (): void => undefined;
 
-describe("Nav", () => {
+describe("<Nav />", () => {
   describe("given a list of text and URLs", () => {
     it("renders a link for each text/URL pair", () => {
       const inputLinks: NavProps["links"] = [

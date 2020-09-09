@@ -1,17 +1,10 @@
 import { render, screen } from "@testing-library/react";
 import React from "react";
-import { rest } from "msw";
-import { setupServer } from "msw/node";
 
+import { rest, server, ENDPOINTS, MOCK_DATA } from "#test_helpers/server";
 import { ApiDiv } from "./ApiDiv";
-import { handlers, ENDPOINTS, MOCK_DATA } from "#server_routes.mock";
 
-const server = setupServer(...handlers);
-beforeAll(() => server.listen());
-afterEach(() => server.resetHandlers());
-afterAll(() => server.close());
-
-describe("ApiDiv", () => {
+describe("<ApiDiv />", () => {
   describe("given successfull API call", () => {
     it("displays loading message, then response content", async () => {
       render(<ApiDiv />);

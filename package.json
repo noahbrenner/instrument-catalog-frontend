@@ -36,10 +36,6 @@
     "react-dom": "^16.9.0",
     "react-hot-loader": "^4.12.21",
     "react-static": "^7.2.0",
-    "react-static-plugin-reach-router": "^7.2.0",
-    "react-static-plugin-sitemap": "^7.2.0",
-    "react-static-plugin-source-filesystem": "^7.2.0",
-    "react-static-plugin-typescript": "^7.2.0",
     "styled-components": "^5.2.0"
   },
   "devDependencies": {
@@ -71,7 +67,11 @@
     "msw": "^0.20.5",
     "prettier": "^2.1.1",
     "pretty-quick": "^3.0.0",
+    "react-static-plugin-reach-router": "^7.2.0",
+    "react-static-plugin-sitemap": "^7.2.0",
+    "react-static-plugin-source-filesystem": "^7.2.0",
     "react-static-plugin-styled-components": "^7.3.0",
+    "react-static-plugin-typescript": "^7.2.0",
     "serve": "^11.1.0",
     "ts-jest": "^26.3.0",
     "typescript": "^4.0.2"

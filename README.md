@@ -1,5 +1,7 @@
 # Instrument Catalog — frontend
 
+![Tests](https://github.com/noahbrenner/instrument-catalog-frontend/workflows/Tests/badge.svg)
+
 ## Dependencies
 
 - [Node.js](https://nodejs.org/) (and [`npm`](https://www.npmjs.com/get-npm), which is bundled with it)

@@ -1,14 +1,15 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 
-const { API_ROOT } = process.env;
+import { ENDPOINTS } from "#api_endpoints";
+import type { IUsers } from "#src/types";
 
 export function ApiDiv(): JSX.Element {
   const [content, setContent] = useState("...Loading");
 
   useEffect(() => {
     axios
-      .get<Record<string, unknown>>(`${API_ROOT}/users/all`)
+      .get<IUsers>(ENDPOINTS.users)
       .then(({ data }) => {
         setContent(`Users: ${JSON.stringify(data)}`);
       })

@@ -20,7 +20,7 @@ describe("<App />", () => {
       expect(heading1).toHaveTextContent(/instrument catalog/i);
 
       const heading2 = screen.getByRole("heading", { level: 2 });
-      expect(heading2).toHaveTextContent(/welcome to react-static/i);
+      expect(heading2).toHaveTextContent(/browse by category/i);
 
       // Wait for the AJAX request to finish before unmounting to avoid an error
       await waitFor(() => {
@@ -33,6 +33,20 @@ describe("<App />", () => {
     it("displays content from About page", () => {
       renderWithRouter(<App />, "/about");
       expect(screen.getByText(/generator for react/i)).toBeInTheDocument();
+    });
+  });
+
+  describe("given the route '/categories'", () => {
+    it("displays content from Categories page", async () => {
+      renderWithRouter(<App />, "/categories");
+
+      const heading2 = screen.getByRole("heading", { level: 2 });
+      expect(heading2).toHaveTextContent(/categories/i);
+
+      // Wait for the AJAX request to finish before unmounting to avoid an error
+      await waitFor(() => {
+        expect(screen.queryByText(/loading/i)).not.toBeInTheDocument();
+      });
     });
   });
 

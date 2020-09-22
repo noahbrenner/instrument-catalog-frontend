@@ -20,7 +20,7 @@ describe("<App />", () => {
       expect(heading1).toHaveTextContent(/instrument catalog/i);
 
       const heading2 = screen.getByRole("heading", { level: 2 });
-      expect(heading2).toHaveTextContent(/welcome to react-static/i);
+      expect(heading2).toHaveTextContent(/browse by category/i);
 
       // Wait for the AJAX request to finish before unmounting to avoid an error
       await waitFor(() => {

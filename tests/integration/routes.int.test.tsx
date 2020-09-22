@@ -36,6 +36,20 @@ describe("<App />", () => {
     });
   });
 
+  describe("given the route '/categories'", () => {
+    it("displays content from Categories page", async () => {
+      renderWithRouter(<App />, "/categories");
+
+      const heading2 = screen.getByRole("heading", { level: 2 });
+      expect(heading2).toHaveTextContent(/categories/i);
+
+      // Wait for the AJAX request to finish before unmounting to avoid an error
+      await waitFor(() => {
+        expect(screen.queryByText(/loading/i)).not.toBeInTheDocument();
+      });
+    });
+  });
+
   describe("given the route '/dynamic'", () => {
     it("displays content from Dynamic page", () => {
       renderWithRouter(<App />, "/dynamic");

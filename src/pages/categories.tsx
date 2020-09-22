@@ -36,7 +36,7 @@ export default function Categories(_: RouteComponentProps): JSX.Element {
           setLoadStateMessage(`Unknown error: ${err.message}`);
         }
       });
-  });
+  }, []);
 
   return (
     <>

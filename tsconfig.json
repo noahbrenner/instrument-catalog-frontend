@@ -25,7 +25,7 @@
       "#types/*": ["types/*"],
       "#server_routes.mock": ["src/server_routes.mock.ts"]
     },
-    "lib": ["dom", "es2015", "es2016"]
+    "lib": ["dom", "es2015", "es2016", "DOM.Iterable"]
   },
   "include": ["src/**/*", "types/**/*", "tests/**/*"]
 }

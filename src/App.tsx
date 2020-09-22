@@ -11,6 +11,7 @@ import Dynamic from "#containers/Dynamic";
 import { handlers } from "#server_routes.mock"; // Dev usage only
 import Home from "./pages";
 import About from "./pages/about";
+import Categories from "./pages/categories";
 import { defaultTheme } from "./theme";
 import "./app.css";
 
@@ -74,6 +75,7 @@ export function App(): JSX.Element {
         <Nav
           links={[
             ["Home", "/"],
+            ["Categories", "/categories"],
             ["About", "/about"],
             ["Dynamic", "/dynamic"],
           ]}
@@ -84,6 +86,7 @@ export function App(): JSX.Element {
           <Router>
             <Home path="/" />
             <About path="about" />
+            <Categories path="categories" />
             <Dynamic path="dynamic" />
           </Router>
         </main>

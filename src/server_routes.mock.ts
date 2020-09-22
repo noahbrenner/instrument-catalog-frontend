@@ -7,11 +7,31 @@ import { rest } from "msw";
 import type { RequestHandler } from "msw";
 
 import { ENDPOINTS } from "./api_endpoints";
-import type { IUser } from "./types";
+import type { ICategory, IUser } from "./types";
 
 export { ENDPOINTS };
 
 export const MOCK_DATA = {
+  categories: [
+    {
+      name: "Winds",
+      itemCount: 3,
+      summary: "Move air, make noise",
+      description: "This is a longer description of wind instruments.",
+    },
+    {
+      name: "Percussion",
+      itemCount: 300,
+      summary: "Hit stuff",
+      description: "This is a longer description of percussion instruments.",
+    },
+    {
+      name: "Strings",
+      itemCount: 72,
+      summary: "Wobbling cords",
+      description: "This is a longer description of stringed instruments.",
+    },
+  ] as ICategory[],
   users: [
     { name: "Frida Permissions", id: 777 },
     { name: "Nonny Mouse", id: 1337 },

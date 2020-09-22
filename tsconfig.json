@@ -23,6 +23,7 @@
       "#containers/*": ["src/containers/*"],
       "#test_helpers/*": ["tests/helpers/*"],
       "#types/*": ["types/*"],
+      "#api_endpoints": ["src/api_endpoints.ts"],
       "#server_routes.mock": ["src/server_routes.mock.ts"]
     },
     "lib": ["dom", "es2015", "es2016", "DOM.Iterable"]

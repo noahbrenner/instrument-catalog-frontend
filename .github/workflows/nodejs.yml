@@ -8,6 +8,11 @@ on:
     branches:
       - master
 
+env:
+  API_ROOT: "http://localhost:3000"
+  FRONTEND_MOCK_API_SERVER: "true"
+  FRONTEND_PROD_SITE_ROOT: "https://example.com"
+
 jobs:
   lint-and-test:
     runs-on: ubuntu-latest

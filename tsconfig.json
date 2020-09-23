@@ -10,9 +10,6 @@
     "module": "esnext",
     "moduleResolution": "node",
     "noEmit": true,
-    "noImplicitAny": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
     "paths": {
       "#src/*": ["src/*"],
       "#components/*": ["src/components/*"],
@@ -26,6 +23,7 @@
     "removeComments": false,
     "skipLibCheck": true,
     "sourceMap": true,
+    "strict": true,
     "target": "esnext"
   },
   "include": ["src/**/*", "types/**/*", "tests/**/*"]

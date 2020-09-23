@@ -36,7 +36,10 @@ module.exports = {
     "@typescript-eslint/consistent-type-imports": ["error"],
 
     // Allow unused function parameters if they start with an underscore
-    "@typescript-eslint/no-unused-vars": ["error", { argsIgnorePattern: "^_" }],
+    "@typescript-eslint/no-unused-vars": [
+      "error",
+      { args: "all", argsIgnorePattern: "^_" },
+    ],
 
     // Use TypeScript-aware implementation of this built-in rule
     "no-use-before-define": "off",

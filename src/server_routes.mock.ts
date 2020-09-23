@@ -43,10 +43,13 @@ export const HEADERS: Record<string, string | string[]> = {
   "Access-Control-Allow-Origin": "*",
 } as const;
 
-export const handlers: RequestHandler[] = [
+// We need `any` in the type here to allow handlers to respond differently:
+// https://github.com/mswjs/msw/issues/377#issuecomment-690536532
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const handlers: RequestHandler<any, any, any, any>[] = [
   // Create a handler for each top level MOCK_DATA key; The handler for
   // a given key uses the URL defined in ENDPOINTS under the same key
-  ...Object.keys(MOCK_DATA).map((key: keyof typeof MOCK_DATA) => {
+  ...(Object.keys(MOCK_DATA) as Array<keyof typeof MOCK_DATA>).map((key) => {
     return rest.get(ENDPOINTS[key], (_req, res, ctx) => {
       return res(ctx.set(HEADERS), ctx.json({ [key]: MOCK_DATA[key] }));
     });

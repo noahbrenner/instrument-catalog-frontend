@@ -1,22 +1,15 @@
 {
   "compileOnSave": false,
   "compilerOptions": {
-    "target": "esnext",
-    "module": "esnext",
-    "jsx": "react",
     "allowJs": false,
-    "moduleResolution": "node",
     "allowSyntheticDefaultImports": true,
-    "esModuleInterop": true,
-    "noImplicitAny": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "removeComments": false,
-    "preserveConstEnums": true,
-    "sourceMap": true,
-    "skipLibCheck": true,
-    "noEmit": true,
     "baseUrl": ".",
+    "esModuleInterop": true,
+    "jsx": "react",
+    "lib": ["dom", "es2015", "es2016", "DOM.Iterable"],
+    "module": "esnext",
+    "moduleResolution": "node",
+    "noEmit": true,
     "paths": {
       "#src/*": ["src/*"],
       "#components/*": ["src/components/*"],
@@ -26,7 +19,12 @@
       "#api_endpoints": ["src/api_endpoints.ts"],
       "#server_routes.mock": ["src/server_routes.mock.ts"]
     },
-    "lib": ["dom", "es2015", "es2016", "DOM.Iterable"]
+    "preserveConstEnums": true,
+    "removeComments": false,
+    "skipLibCheck": true,
+    "sourceMap": true,
+    "strict": true,
+    "target": "esnext"
   },
   "include": ["src/**/*", "types/**/*", "tests/**/*"]
 }

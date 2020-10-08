@@ -26,7 +26,7 @@ describe("<ApiDiv />", () => {
         rest.get(ENDPOINTS.users, (_req, res) => res.networkError("Net fail"))
       );
       render(<ApiDiv />);
-      await screen.findByText(/failed/i);
+      await screen.findByText(/couldn't reach the server/i);
     });
   });
 });

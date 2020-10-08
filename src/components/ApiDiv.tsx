@@ -1,21 +1,20 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
 
-import { ENDPOINTS } from "#api_endpoints";
-import type { IUsers } from "#src/types";
+import { api } from "#api";
+import type { APIError } from "#api";
 
 export function ApiDiv(): JSX.Element {
   const [content, setContent] = useState("...Loading");
 
   useEffect(() => {
-    axios
-      .get<IUsers>(ENDPOINTS.users)
-      .then(({ data }) => {
+    api.getUsers().then(
+      ({ data }) => {
         setContent(`Users: ${JSON.stringify(data)}`);
-      })
-      .catch(() => {
-        setContent("Failed to load data from the API");
-      });
+      },
+      (err: APIError) => {
+        setContent(err.uiErrorMessage);
+      }
+    );
   }, []);
 
   return <div>{content}</div>;

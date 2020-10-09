@@ -1,6 +1,8 @@
-// This file is only used in development and *should* live with the other mocks,
-// but the build system will silently fail to import it in the development build
-// if it's outside the src/ directory
+/*
+ * This file is only used in development and *should* live in `tests/mocks/`,
+ * but the build system would silently fail to import it in the development
+ * build if it's outside the `src/` directory
+ */
 
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { rest } from "msw";
@@ -43,8 +45,10 @@ export const HEADERS: Record<string, string | string[]> = {
   "Access-Control-Allow-Origin": "*",
 } as const;
 
-// We need `any` in the type here to allow handlers to respond differently:
-// https://github.com/mswjs/msw/issues/377#issuecomment-690536532
+/*
+ * The RequestHandler type needs `any` so handlers can have different responses:
+ * https://github.com/mswjs/msw/issues/377#issuecomment-690536532
+ */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const handlers: RequestHandler<any, any, any, any>[] = [
   // Create a handler for each top level MOCK_DATA key; The handler for

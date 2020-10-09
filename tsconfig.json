@@ -14,6 +14,7 @@
       "#src/*": ["src/*"],
       "#components/*": ["src/components/*"],
       "#containers/*": ["src/containers/*"],
+      "#layouts/*": ["src/layouts/*"],
       "#test_helpers/*": ["tests/helpers/*"],
       "#types/*": ["types/*"],
       "#api": ["src/api.ts"],

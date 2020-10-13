@@ -1,62 +1,30 @@
-import axios from "axios";
-import type { AxiosError } from "axios";
 import type { RouteComponentProps } from "@reach/router";
-import React, { Fragment, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 
-import { ENDPOINTS } from "#api_endpoints";
-import { Category } from "#components/Category";
-import type { ICategory, ICategories } from "#src/types";
+import { api } from "#api";
+import type { APIError } from "#api";
+import { Categories } from "#layouts/Categories";
+import type { ICategory } from "#src/types";
 
-export default function Categories(_: RouteComponentProps): JSX.Element {
+export default function CategoriesPage(_: RouteComponentProps): JSX.Element {
   const [categories, setCategories] = useState<ICategory[]>([]);
-  const [loadStateMessage, setLoadStateMessage] = useState("...Loading");
+  const [loadingMessage, setLoadingMessage] = useState("...Loading");
 
   useEffect(() => {
-    axios
-      .get<ICategories>(ENDPOINTS.categories)
-      .then(({ data }) => {
+    api.getCategories().then(
+      ({ data }) => {
         if (data.categories.length > 0) {
           setCategories(data.categories);
-          setLoadStateMessage("");
+          setLoadingMessage("");
         } else {
-          setLoadStateMessage("No categories have been defined yet.");
+          setLoadingMessage("No categories have been defined yet.");
         }
-      })
-      .catch((err: AxiosError) => {
-        if (err.response) {
-          const { status } = err.response;
-          setLoadStateMessage(
-            `Error from server: ${status}. Please send a bug report!`
-          );
-        } else if (err.request) {
-          setLoadStateMessage(
-            "Couldn't reach the server. Please try reloading in a minute."
-          );
-        } else {
-          setLoadStateMessage(`Unknown error: ${err.message}`);
-        }
-      });
+      },
+      (err: APIError) => {
+        setLoadingMessage(err.uiErrorMessage);
+      }
+    );
   }, []);
 
-  return (
-    <>
-      <h2>Categories</h2>
-      {categories.length === 0 ? (
-        <p>{loadStateMessage}</p>
-      ) : (
-        categories.map(({ name, itemCount, summary, description }, index) => (
-          <Fragment key={name}>
-            {index > 0 ? <hr /> : undefined}
-            <Category
-              name={name}
-              itemCount={itemCount}
-              summary={summary}
-              description={description}
-              url={`/category/${name.toLowerCase()}/`}
-            />
-          </Fragment>
-        ))
-      )}
-    </>
-  );
+  return <Categories categories={categories} loadingMessage={loadingMessage} />;
 }

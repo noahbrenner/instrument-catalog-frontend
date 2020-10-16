@@ -76,9 +76,9 @@ export function App(): JSX.Element {
         <Nav
           links={[
             ["Home", "/"],
-            ["Categories", "/categories"],
-            ["About", "/about"],
-            ["Dynamic", "/dynamic"],
+            ["Categories", "/categories/"],
+            ["About", "/about/"],
+            ["Dynamic", "/dynamic/"],
           ]}
           onLinkClick={hideNav}
           visible={navIsVisible}

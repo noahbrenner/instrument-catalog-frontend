@@ -29,16 +29,16 @@ describe("<App />", () => {
     });
   });
 
-  describe("given the route '/about'", () => {
+  describe("given the route '/about/'", () => {
     it("displays content from About page", () => {
-      renderWithRouter(<App />, "/about");
+      renderWithRouter(<App />, "/about/");
       expect(screen.getByText(/generator for react/i)).toBeInTheDocument();
     });
   });
 
-  describe("given the route '/categories'", () => {
+  describe("given the route '/categories/'", () => {
     it("displays content from Categories page", async () => {
-      renderWithRouter(<App />, "/categories");
+      renderWithRouter(<App />, "/categories/");
 
       const heading2 = screen.getByRole("heading", { level: 2 });
       expect(heading2).toHaveTextContent(/categories/i);
@@ -50,16 +50,16 @@ describe("<App />", () => {
     });
   });
 
-  describe("given the route '/dynamic'", () => {
+  describe("given the route '/dynamic/'", () => {
     it("displays content from Dynamic page", () => {
-      renderWithRouter(<App />, "/dynamic");
+      renderWithRouter(<App />, "/dynamic/");
       expect(screen.getByText(/a dynamic page/i)).toBeInTheDocument();
     });
   });
 
-  describe("given the route '/does-not-exist'", () => {
+  describe("given the route '/does-not-exist/'", () => {
     it("displays the 404 error page", () => {
-      renderWithRouter(<App />, "/does-not-exist");
+      renderWithRouter(<App />, "/does-not-exist/");
       const heading2 = screen.getByRole("heading", { level: 2 });
       expect(heading2).toHaveTextContent(/404/i);
     });

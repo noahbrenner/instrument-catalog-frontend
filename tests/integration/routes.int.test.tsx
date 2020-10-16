@@ -56,4 +56,12 @@ describe("<App />", () => {
       expect(screen.getByText(/a dynamic page/i)).toBeInTheDocument();
     });
   });
+
+  describe("given the route '/does-not-exist'", () => {
+    it("displays the 404 error page", () => {
+      renderWithRouter(<App />, "/does-not-exist");
+      const heading2 = screen.getByRole("heading", { level: 2 });
+      expect(heading2).toHaveTextContent(/404/i);
+    });
+  });
 });

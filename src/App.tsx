@@ -12,6 +12,7 @@ import { handlers } from "#server_routes.mock"; // Dev usage only
 import Home from "./pages";
 import About from "./pages/about";
 import Categories from "./pages/categories";
+import NotFound from "./pages/404";
 import { defaultTheme } from "./theme";
 import "./app.css";
 
@@ -88,6 +89,7 @@ export function App(): JSX.Element {
             <About path="about" />
             <Categories path="categories" />
             <Dynamic path="dynamic" />
+            <NotFound default />
           </Router>
         </main>
       </ThemeProvider>

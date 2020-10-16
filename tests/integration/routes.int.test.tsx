@@ -29,13 +29,6 @@ describe("<App />", () => {
     });
   });
 
-  describe("given the route '/about/'", () => {
-    it("displays content from About page", () => {
-      renderWithRouter(<App />, "/about/");
-      expect(screen.getByText(/generator for react/i)).toBeInTheDocument();
-    });
-  });
-
   describe("given the route '/categories/'", () => {
     it("displays content from Categories page", async () => {
       renderWithRouter(<App />, "/categories/");
@@ -47,13 +40,6 @@ describe("<App />", () => {
       await waitFor(() => {
         expect(screen.queryByText(/loading/i)).not.toBeInTheDocument();
       });
-    });
-  });
-
-  describe("given the route '/dynamic/'", () => {
-    it("displays content from Dynamic page", () => {
-      renderWithRouter(<App />, "/dynamic/");
-      expect(screen.getByText(/a dynamic page/i)).toBeInTheDocument();
     });
   });
 

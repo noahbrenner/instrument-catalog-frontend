@@ -79,7 +79,7 @@ export function App(): JSX.Element {
         <main>
           <Router>
             <Home path="/" />
-            <Categories path="categories" />
+            <Categories path="categories/" />
             <NotFound default />
           </Router>
         </main>

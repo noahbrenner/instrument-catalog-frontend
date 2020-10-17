@@ -86,12 +86,7 @@ module.exports = {
     },
     {
       // react-static requires certain files to have default exports
-      files: [
-        "./static.config.js",
-        "./src/index.tsx",
-        "./src/containers/**/*.tsx",
-        "./src/pages/**/*.tsx",
-      ],
+      files: ["./static.config.js", "./src/index.tsx", "./src/pages/**/*.tsx"],
       rules: {
         "import/no-default-export": "off",
         "import/prefer-default-export": "error",

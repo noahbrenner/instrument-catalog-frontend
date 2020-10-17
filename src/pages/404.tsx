@@ -1,9 +1,6 @@
+import type { RouteComponentProps } from "@reach/router";
 import React from "react";
 
-export default function Error404(): JSX.Element {
-  return (
-    <div>
-      <h1>404 - Oh no’s! We couldn’t find that page :(</h1>
-    </div>
-  );
+export default function NotFound(_: RouteComponentProps): JSX.Element {
+  return <h2>404 - Oh no’s! We couldn’t find that page :(</h2>;
 }

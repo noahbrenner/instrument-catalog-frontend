@@ -2,16 +2,15 @@ import { Router } from "@reach/router";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { setupWorker } from "msw"; // Dev usage only
 import React, { useState } from "react";
-import { Root, addPrefetchExcludes } from "react-static";
+import { Root } from "react-static";
 import { ThemeProvider, createGlobalStyle } from "styled-components";
 
 import { BurgerButton } from "#components/BurgerButton";
 import { Nav } from "#components/Nav";
-import Dynamic from "#containers/Dynamic";
 import { handlers } from "#server_routes.mock"; // Dev usage only
 import Home from "./pages";
-import About from "./pages/about";
 import Categories from "./pages/categories";
+import NotFound from "./pages/404";
 import { defaultTheme } from "./theme";
 import "./app.css";
 
@@ -52,13 +51,10 @@ const GlobalStyle = createGlobalStyle`
  }
 `;
 
-// Any routes that start with 'dynamic' will be treated as non-static routes
-addPrefetchExcludes(["dynamic"]);
-
 export function App(): JSX.Element {
   const [navIsVisible, setNavIsVisible] = useState(false);
   const toggleNav = () => setNavIsVisible((isHidden) => !isHidden);
-  const hideNav = () => setNavIsVisible(true);
+  const hideNav = () => setNavIsVisible(false);
 
   return (
     <Root>
@@ -75,9 +71,7 @@ export function App(): JSX.Element {
         <Nav
           links={[
             ["Home", "/"],
-            ["Categories", "/categories"],
-            ["About", "/about"],
-            ["Dynamic", "/dynamic"],
+            ["Categories", "/categories/"],
           ]}
           onLinkClick={hideNav}
           visible={navIsVisible}
@@ -85,9 +79,8 @@ export function App(): JSX.Element {
         <main>
           <Router>
             <Home path="/" />
-            <About path="about" />
-            <Categories path="categories" />
-            <Dynamic path="dynamic" />
+            <Categories path="categories/" />
+            <NotFound default />
           </Router>
         </main>
       </ThemeProvider>

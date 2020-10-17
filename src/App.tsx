@@ -54,7 +54,7 @@ const GlobalStyle = createGlobalStyle`
 export function App(): JSX.Element {
   const [navIsVisible, setNavIsVisible] = useState(false);
   const toggleNav = () => setNavIsVisible((isHidden) => !isHidden);
-  const hideNav = () => setNavIsVisible(true);
+  const hideNav = () => setNavIsVisible(false);
 
   return (
     <Root>

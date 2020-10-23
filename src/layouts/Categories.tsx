@@ -26,7 +26,7 @@ export function Categories({
               itemCount={itemCount}
               summary={summary}
               description={description}
-              url={`/category/${name.toLowerCase()}/`}
+              url={`/categories/${name.toLowerCase()}/`}
             />
           </Fragment>
         ))

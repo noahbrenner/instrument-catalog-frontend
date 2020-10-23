@@ -1,4 +1,4 @@
-import { Router } from "@reach/router";
+import { Redirect, Router } from "@reach/router";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { setupWorker } from "msw"; // Dev usage only
 import React, { useState } from "react";
@@ -10,6 +10,7 @@ import { Nav } from "#components/Nav";
 import { handlers } from "#server_routes.mock"; // Dev usage only
 import Home from "./pages";
 import Categories from "./pages/categories";
+import Category from "./pages/category";
 import NotFound from "./pages/404";
 import { defaultTheme } from "./theme";
 import "./app.css";
@@ -80,6 +81,8 @@ export function App(): JSX.Element {
           <Router>
             <Home path="/" />
             <Categories path="categories/" />
+            <Category path="categories/:categoryName/" />
+            <Redirect from="category/" to="/categories/" />
             <NotFound default />
           </Router>
         </main>

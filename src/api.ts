@@ -46,12 +46,14 @@ function errorHandler(err: AxiosError): AxiosResponse {
    generic type or the clutter of defining each endpoint's type explicitly
 */
 export const api = {
-  getCategories: () =>
-    axios
+  getCategories() {
+    return axios
       .get<ICategories>(ENDPOINTS.categories)
-      .catch<AxiosResponse<ICategories>>(errorHandler),
-  getUsers: () =>
-    axios
+      .catch<AxiosResponse<ICategories>>(errorHandler);
+  },
+  getUsers() {
+    return axios
       .get<IUsers>(ENDPOINTS.users)
-      .catch<AxiosResponse<IUsers>>(errorHandler),
+      .catch<AxiosResponse<IUsers>>(errorHandler);
+  },
 } as const;

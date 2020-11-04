@@ -17,18 +17,21 @@ export const MOCK_DATA = {
   categories: [
     {
       name: "Winds",
+      slug: "winds",
       itemCount: 3,
       summary: "Move air, make noise",
       description: "This is a longer description of wind instruments.",
     },
     {
       name: "Percussion",
+      slug: "percussion",
       itemCount: 300,
       summary: "Hit stuff",
       description: "This is a longer description of percussion instruments.",
     },
     {
       name: "Strings",
+      slug: "strings",
       itemCount: 72,
       summary: "Wobbling cords",
       description: "This is a longer description of stringed instruments.",
@@ -57,5 +60,15 @@ export const handlers: RequestHandler<any, any, any, any>[] = [
     return rest.get(ENDPOINTS[key], (_req, res, ctx) => {
       return res(ctx.set(HEADERS), ctx.json({ [key]: MOCK_DATA[key] }));
     });
+  }),
+
+  /** Handle: /category?slug=<lowercase-category-name> */
+  rest.get(ENDPOINTS.category, (req, res, ctx) => {
+    const category = MOCK_DATA.categories.find(
+      ({ slug }) => slug === req.url.searchParams.get("slug")
+    );
+    return category
+      ? res(ctx.set(HEADERS), ctx.json(category))
+      : res(ctx.set(HEADERS), ctx.status(404));
   }),
 ];

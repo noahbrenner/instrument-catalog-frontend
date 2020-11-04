@@ -6,7 +6,7 @@ import axiosRetry, {
 } from "axios-retry";
 
 import { ENDPOINTS } from "#api_endpoints";
-import type { ICategories, IUsers } from "#src/types";
+import type { ICategories, ICategory, IUsers } from "#src/types";
 
 export interface APIError extends AxiosError {
   uiErrorMessage: string;
@@ -51,6 +51,12 @@ export const api = {
       .get<ICategories>(ENDPOINTS.categories)
       .catch<AxiosResponse<ICategories>>(errorHandler);
   },
+  getCategoryBySlug(slug: string) {
+    return axios
+      .get<ICategory>(ENDPOINTS.category, { params: { slug } })
+      .catch<AxiosResponse<ICategory>>(errorHandler);
+  },
+
   getUsers() {
     return axios
       .get<IUsers>(ENDPOINTS.users)

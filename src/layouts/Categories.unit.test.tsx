@@ -8,6 +8,7 @@ const MESSAGE = "I'm loading";
 
 const CATEGORY1: ICategory = {
   name: "Foo",
+  slug: "foo",
   itemCount: 5,
   summary: "Foo summary",
   description: "A description of Foo",
@@ -15,6 +16,7 @@ const CATEGORY1: ICategory = {
 
 const CATEGORY2: ICategory = {
   name: "Bar",
+  slug: "bar",
   itemCount: 7,
   summary: "Bar summary",
   description: "A description of Bar",

@@ -19,6 +19,12 @@ type MethodTestSpec = readonly [
 
 const HTTP_GET_ENDPOINTS: readonly MethodTestSpec[] = [
   ["getCategories", "categories", [], { categories }],
+  [
+    "getCategoryBySlug",
+    "category",
+    ["winds"],
+    categories.find(({ slug }) => slug === "winds"),
+  ],
   ["getUsers", "users", [], { users }],
 ];
 

@@ -1,5 +1,6 @@
 export interface ICategory {
   name: string;
+  slug: string;
   itemCount: number;
   summary: string;
   description: string;

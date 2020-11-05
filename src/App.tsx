@@ -2,7 +2,7 @@ import { Redirect, Router } from "@reach/router";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { setupWorker } from "msw"; // Dev usage only
 import React, { useState } from "react";
-import { Root } from "react-static";
+import { Root, addPrefetchExcludes } from "react-static";
 import { ThemeProvider, createGlobalStyle } from "styled-components";
 
 import { BurgerButton } from "#components/BurgerButton";
@@ -14,6 +14,9 @@ import Category from "./pages/category";
 import NotFound from "./pages/404";
 import { defaultTheme } from "./theme";
 import "./app.css";
+
+// Don't try to prefetch dynamic routes
+addPrefetchExcludes([/categories\/.+/]);
 
 // Mock the API server using a ServiceWorker
 if (
@@ -81,7 +84,7 @@ export function App(): JSX.Element {
           <Router>
             <Home path="/" />
             <Categories path="categories/" />
-            <Category path="categories/:categoryName/" />
+            <Category path="categories/:categorySlug/" />
             <Redirect from="category/" to="/categories/" />
             <NotFound default />
           </Router>

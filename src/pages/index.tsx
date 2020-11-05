@@ -11,13 +11,13 @@ export default function Home(_: RouteComponentProps): JSX.Element {
       <h2>Browse by category</h2>
       <Category
         name="Winds"
-        url="/category/winds/"
+        url="/categories/winds/"
         itemCount={1}
         summary="Move air, make noise"
       />
       <Category
         name="Percussion"
-        url="/category/percussion/"
+        url="/categories/percussion/"
         itemCount={300}
         summary="Hit stuff"
       />

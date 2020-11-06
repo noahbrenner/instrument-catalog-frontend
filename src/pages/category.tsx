@@ -3,6 +3,7 @@ import type { RouteComponentProps } from "@reach/router";
 import React, { useEffect, useState } from "react";
 
 import { api } from "#api";
+import type { APIError } from "#api";
 import NotFound from "#src/pages/404";
 
 interface CategoryPageProps {
@@ -11,6 +12,7 @@ interface CategoryPageProps {
 
 export default function CategoryPage(_: RouteComponentProps): JSX.Element {
   const { categorySlug } = useParams() as CategoryPageProps;
+  const [loadingMessage, setLoadingMessage] = useState("...Loading");
   const [name, setName] = useState("");
   const [categoryExists, setCategoryExists] = useState(true);
 
@@ -24,8 +26,12 @@ export default function CategoryPage(_: RouteComponentProps): JSX.Element {
       ({ data }) => {
         setName(data.name);
       },
-      () => {
-        setCategoryExists(false);
+      (err: APIError) => {
+        if (err.response?.status === 404) {
+          setCategoryExists(false);
+        } else {
+          setLoadingMessage(err.uiErrorMessage);
+        }
       }
     );
   }, []);
@@ -34,5 +40,5 @@ export default function CategoryPage(_: RouteComponentProps): JSX.Element {
     return <NotFound />;
   }
 
-  return name ? <h2>Category: {name}</h2> : <p>...Loading</p>;
+  return name ? <h2>Category: {name}</h2> : <p>{loadingMessage}</p>;
 }

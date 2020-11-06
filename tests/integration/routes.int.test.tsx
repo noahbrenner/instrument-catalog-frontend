@@ -2,6 +2,7 @@ import { screen, waitFor } from "@testing-library/react";
 import React from "react";
 
 import { App } from "#src/App";
+import { rest, server, ENDPOINTS, HEADERS } from "#test_helpers/server";
 import { renderWithRouter } from "../helpers/renderWithRouter";
 
 describe("<App />", () => {
@@ -41,6 +42,48 @@ describe("<App />", () => {
       await waitFor(() => {
         expect(screen.queryByText(/loading/i)).not.toBeInTheDocument();
       });
+    });
+  });
+
+  describe("given the route '/categories/strings/'", () => {
+    it("displays content for the Strings Category page", async () => {
+      renderWithRouter(<App />, "/categories/strings/");
+
+      const heading2 = await screen.findByRole("heading", { level: 2 });
+      expect(heading2).toHaveTextContent(/strings/i);
+
+      // Wait for the AJAX request to finish before unmounting to avoid an error
+      await waitFor(() => {
+        expect(screen.queryByText(/loading/i)).not.toBeInTheDocument();
+      });
+    });
+  });
+
+  describe("given the route '/categories/strings/' and a server error", () => {
+    it("displays an error message", async () => {
+      server.use(
+        rest.get(ENDPOINTS.category, (_req, res, ctx) => {
+          return res(ctx.set(HEADERS), ctx.status(500, "Server error"));
+        })
+      );
+
+      renderWithRouter(<App />, "/categories/strings/");
+
+      await waitFor(
+        () => expect(screen.queryByText(/loading/i)).not.toBeInTheDocument(),
+        { timeout: 2000 }
+      );
+
+      expect(screen.getByText(/500 server error/i)).toBeInTheDocument();
+    });
+  });
+
+  describe("given the route '/categories/fake-category/'", () => {
+    it("displays the 404 error page", async () => {
+      renderWithRouter(<App />, "/categories/fake-category/");
+
+      const heading2 = await screen.findByRole("heading", { level: 2 });
+      expect(heading2).toHaveTextContent(/404/i);
     });
   });
 });

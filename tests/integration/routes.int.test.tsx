@@ -1,15 +1,8 @@
 import { screen, waitFor } from "@testing-library/react";
 import React from "react";
-import { setupServer } from "msw/node";
 
 import { App } from "#src/App";
 import { renderWithRouter } from "../helpers/renderWithRouter";
-import { handlers } from "#server_routes.mock";
-
-const server = setupServer(...handlers);
-beforeAll(() => server.listen());
-afterEach(() => server.resetHandlers());
-afterAll(() => server.close());
 
 describe("<App />", () => {
   describe("given the route '/'", () => {
@@ -29,6 +22,14 @@ describe("<App />", () => {
     });
   });
 
+  describe("given the route '/does-not-exist/'", () => {
+    it("displays the 404 error page", () => {
+      renderWithRouter(<App />, "/does-not-exist/");
+      const heading2 = screen.getByRole("heading", { level: 2 });
+      expect(heading2).toHaveTextContent(/404/i);
+    });
+  });
+
   describe("given the route '/categories/'", () => {
     it("displays content from Categories page", async () => {
       renderWithRouter(<App />, "/categories/");
@@ -40,14 +41,6 @@ describe("<App />", () => {
       await waitFor(() => {
         expect(screen.queryByText(/loading/i)).not.toBeInTheDocument();
       });
-    });
-  });
-
-  describe("given the route '/does-not-exist/'", () => {
-    it("displays the 404 error page", () => {
-      renderWithRouter(<App />, "/does-not-exist/");
-      const heading2 = screen.getByRole("heading", { level: 2 });
-      expect(heading2).toHaveTextContent(/404/i);
     });
   });
 });

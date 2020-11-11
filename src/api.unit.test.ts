@@ -12,20 +12,20 @@ const { categories, users } = MOCK_DATA;
 
 type MethodTestSpec = readonly [
   method: keyof typeof api,
-  endpoint: keyof typeof ENDPOINTS,
+  endpoint: string,
   methodArgs: readonly unknown[],
   expected: unknown
 ];
 
 const HTTP_GET_ENDPOINTS: readonly MethodTestSpec[] = [
-  ["getCategories", "categories", [], { categories }],
+  ["getCategories", ENDPOINTS.categories, [], { categories }],
   [
     "getCategoryBySlug",
-    "category",
+    `${ENDPOINTS.categories}/winds`,
     ["winds"],
     categories.find(({ slug }) => slug === "winds"),
   ],
-  ["getUsers", "users", [], { users }],
+  ["getUsers", ENDPOINTS.users, [], { users }],
 ];
 
 describe("api", () => {
@@ -46,7 +46,7 @@ describe("api", () => {
       ".%s() returns a network error message if the error is persistent",
       (method, endpoint, args) => {
         server.use(
-          rest.get(ENDPOINTS[endpoint], (_req, res) => {
+          rest.get(endpoint, (_req, res) => {
             return res.networkError("Failed to connect");
           })
         );
@@ -69,7 +69,7 @@ describe("api", () => {
       ".%s() retries the request",
       async (method, endpoint, args, expected) => {
         server.use(
-          rest.get(ENDPOINTS[endpoint], (_req, res) => {
+          rest.get(endpoint, (_req, res) => {
             // TODO Return a NetworkError one time (the API doesn't exist yet):
             // https://github.com/mswjs/msw/issues/413
             return res.once(/* Do something */);
@@ -94,7 +94,7 @@ describe("api", () => {
       ".%s() returns a status error message if the error is persistent",
       (method, endpoint, args) => {
         server.use(
-          rest.get(ENDPOINTS[endpoint], (_req, res, ctx) => {
+          rest.get(endpoint, (_req, res, ctx) => {
             return res(ctx.set(HEADERS), ctx.status(500, "My Error"));
           })
         );
@@ -115,7 +115,7 @@ describe("api", () => {
       ".%s() retries the request",
       async (method, endpoint, args, expected) => {
         server.use(
-          rest.get(ENDPOINTS[endpoint], (_req, res, ctx) => {
+          rest.get(endpoint, (_req, res, ctx) => {
             return res.once(ctx.set(HEADERS), ctx.status(500, "My Error"));
           })
         );

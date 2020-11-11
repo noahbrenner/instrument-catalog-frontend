@@ -53,7 +53,7 @@ export const api = {
   },
   getCategoryBySlug(slug: string) {
     return axios
-      .get<ICategory>(ENDPOINTS.category, { params: { slug } })
+      .get<ICategory>(`${ENDPOINTS.categories}/${slug}`)
       .catch<AxiosResponse<ICategory>>(errorHandler);
   },
 

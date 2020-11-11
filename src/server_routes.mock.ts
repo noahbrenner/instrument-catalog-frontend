@@ -57,23 +57,23 @@ export const HEADERS: Record<string, string | string[]> = {
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const handlers: RequestHandler<any, any, any, any>[] = [
-  /** Handle: /categories */
-  rest.get(ENDPOINTS.categories, (_req, res, ctx) => {
-    const { categories } = MOCK_DATA;
-    return res(ctx.set(HEADERS), ctx.json({ categories }));
-  }),
-
-  /** Handle: /category?slug=<lowercase-category-name> */
-  rest.get(ENDPOINTS.category, (req, res, ctx) => {
+  // GET Category: /categories/<category-slug>
+  rest.get(`${ENDPOINTS.categories}/:categorySlug`, (req, res, ctx) => {
     const category = MOCK_DATA.categories.find(
-      ({ slug }) => slug === req.url.searchParams.get("slug")
+      ({ slug }) => slug === req.params.categorySlug
     );
     return category
       ? res(ctx.set(HEADERS), ctx.json(category))
       : res(ctx.set(HEADERS), ctx.status(404));
   }),
 
-  /** Handle: /users */
+  // GET Categories: /categories
+  rest.get(ENDPOINTS.categories, (_req, res, ctx) => {
+    const { categories } = MOCK_DATA;
+    return res(ctx.set(HEADERS), ctx.json({ categories }));
+  }),
+
+  // GET Users: /users
   rest.get(ENDPOINTS.users, (_req, res, ctx) => {
     const { users } = MOCK_DATA;
     return res(ctx.set(HEADERS), ctx.json({ users }));

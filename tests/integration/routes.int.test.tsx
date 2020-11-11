@@ -62,7 +62,7 @@ describe("<App />", () => {
   describe("given the route '/categories/strings/' and a server error", () => {
     it("displays an error message", async () => {
       server.use(
-        rest.get(ENDPOINTS.category, (_req, res, ctx) => {
+        rest.get(`${ENDPOINTS.categories}/strings`, (_req, res, ctx) => {
           return res(ctx.set(HEADERS), ctx.status(500, "Server error"));
         })
       );

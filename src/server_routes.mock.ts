@@ -13,7 +13,10 @@ import type { ICategory, IUser } from "./types";
 
 export { ENDPOINTS };
 
-export const MOCK_DATA = {
+export const MOCK_DATA: {
+  categories: readonly ICategory[];
+  users: readonly IUser[];
+} = {
   categories: [
     {
       name: "Winds",
@@ -36,12 +39,12 @@ export const MOCK_DATA = {
       summary: "Wobbling cords",
       description: "This is a longer description of stringed instruments.",
     },
-  ] as ICategory[],
+  ],
   users: [
     { name: "Frida Permissions", id: 777 },
     { name: "Nonny Mouse", id: 1337 },
     { name: "No Body", id: 12345 },
-  ] as IUser[],
+  ],
 } as const;
 
 export const HEADERS: Record<string, string | string[]> = {
@@ -54,12 +57,10 @@ export const HEADERS: Record<string, string | string[]> = {
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const handlers: RequestHandler<any, any, any, any>[] = [
-  // Create a handler for each top level MOCK_DATA key; The handler for
-  // a given key uses the URL defined in ENDPOINTS under the same key
-  ...(Object.keys(MOCK_DATA) as Array<keyof typeof MOCK_DATA>).map((key) => {
-    return rest.get(ENDPOINTS[key], (_req, res, ctx) => {
-      return res(ctx.set(HEADERS), ctx.json({ [key]: MOCK_DATA[key] }));
-    });
+  /** Handle: /categories */
+  rest.get(ENDPOINTS.categories, (_req, res, ctx) => {
+    const { categories } = MOCK_DATA;
+    return res(ctx.set(HEADERS), ctx.json({ categories }));
   }),
 
   /** Handle: /category?slug=<lowercase-category-name> */
@@ -70,5 +71,11 @@ export const handlers: RequestHandler<any, any, any, any>[] = [
     return category
       ? res(ctx.set(HEADERS), ctx.json(category))
       : res(ctx.set(HEADERS), ctx.status(404));
+  }),
+
+  /** Handle: /users */
+  rest.get(ENDPOINTS.users, (_req, res, ctx) => {
+    const { users } = MOCK_DATA;
+    return res(ctx.set(HEADERS), ctx.json({ users }));
   }),
 ];

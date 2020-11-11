@@ -8,7 +8,7 @@ import {
 import { api } from "#api";
 import type { APIError } from "#api";
 
-const { categories, users } = MOCK_DATA;
+const { categories, instruments, users } = MOCK_DATA;
 
 type MethodTestSpec = readonly [
   method: keyof typeof api,
@@ -24,6 +24,13 @@ const HTTP_GET_ENDPOINTS: readonly MethodTestSpec[] = [
     `${ENDPOINTS.categories}/winds`,
     ["winds"],
     categories.find(({ slug }) => slug === "winds"),
+  ],
+  ["getInstruments", ENDPOINTS.instruments, [], { instruments }],
+  [
+    "getInstrumentsByCategoryId",
+    ENDPOINTS.instruments,
+    [1],
+    { instruments: instruments.filter(({ categoryId }) => categoryId === 1) },
   ],
   ["getUsers", ENDPOINTS.users, [], { users }],
 ];
@@ -129,6 +136,33 @@ describe("api", () => {
         } catch (err) {
           expect(err).not.toBeDefined();
         }
+      }
+    );
+  });
+
+  describe("given a 400 status code and a JSON error message", () => {
+    test.each(HTTP_GET_ENDPOINTS)(
+      ".%s() returns a status error message including the JSON error message",
+      (method, endpoint, args) => {
+        server.use(
+          rest.get(endpoint, (_req, res, ctx) => {
+            return res(
+              ctx.set(HEADERS),
+              ctx.status(400, "My Error"),
+              ctx.json({ error: "My Special Error" })
+            );
+          })
+        );
+
+        expect.assertions(1);
+        // @ts-expect-error -- `args` may have different length/types
+        return (api[method](...args) as Promise<unknown>).catch(
+          (err: APIError) => {
+            expect(err.uiErrorMessage).toStrictEqual(
+              'Error from server: "400 My Error". My Special Error'
+            );
+          }
+        );
       }
     );
   });

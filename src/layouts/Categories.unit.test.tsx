@@ -7,6 +7,7 @@ import { Categories } from "./Categories";
 const MESSAGE = "I'm loading";
 
 const CATEGORY1: ICategory = {
+  id: 0,
   name: "Foo",
   slug: "foo",
   itemCount: 5,
@@ -15,6 +16,7 @@ const CATEGORY1: ICategory = {
 } as const;
 
 const CATEGORY2: ICategory = {
+  id: 1,
   name: "Bar",
   slug: "bar",
   itemCount: 7,

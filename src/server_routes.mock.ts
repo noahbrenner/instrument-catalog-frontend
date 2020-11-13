@@ -63,14 +63,14 @@ export const MOCK_DATA: {
       id: 2,
       categoryId: 1,
       name: "Timpani",
-      summary: "Timpani description",
+      summary: "Timpani summary",
       description: "Long description of timpani.",
     },
     {
       id: 3,
       categoryId: 1,
       name: "Marimba",
-      summary: "Marimba description",
+      summary: "Marimba summary",
       description: "Long description of marimbas.",
     },
     {

@@ -4,6 +4,8 @@ import React, { useEffect, useState } from "react";
 
 import { api } from "#api";
 import type { APIError } from "#api";
+import { Category } from "#layouts/Category";
+import type { CategoryProps } from "#layouts/Category";
 import NotFound from "#src/pages/404";
 
 interface CategoryPageProps {
@@ -13,7 +15,7 @@ interface CategoryPageProps {
 export default function CategoryPage(_: RouteComponentProps): JSX.Element {
   const { categorySlug } = useParams() as CategoryPageProps;
   const [loadingMessage, setLoadingMessage] = useState("...Loading");
-  const [name, setName] = useState("");
+  const [category, setCategory] = useState<CategoryProps>();
   const [categoryExists, setCategoryExists] = useState(true);
 
   useEffect(() => {
@@ -24,7 +26,7 @@ export default function CategoryPage(_: RouteComponentProps): JSX.Element {
 
     api.getCategoryBySlug(categorySlug).then(
       ({ data }) => {
-        setName(data.name);
+        setCategory(data);
       },
       (err: APIError) => {
         if (err.response?.status === 404) {
@@ -34,11 +36,20 @@ export default function CategoryPage(_: RouteComponentProps): JSX.Element {
         }
       }
     );
-  }, []);
+  }, [categorySlug]);
 
   if (!categoryExists) {
     return <NotFound />;
   }
 
-  return name ? <h2>Category: {name}</h2> : <p>{loadingMessage}</p>;
+  return category ? (
+    <Category
+      id={category.id}
+      name={category.name}
+      summary={category.summary}
+      description={category.description}
+    />
+  ) : (
+    <p>{loadingMessage}</p>
+  );
 }

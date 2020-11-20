@@ -52,10 +52,8 @@ describe("<App />", () => {
       const heading2 = await screen.findByRole("heading", { level: 2 });
       expect(heading2).toHaveTextContent(/strings/i);
 
-      // Wait for the AJAX request to finish before unmounting to avoid an error
-      await waitFor(() => {
-        expect(screen.queryByText(/loading/i)).not.toBeInTheDocument();
-      });
+      // Wait for AJAX requests to finish before unmounting to avoid an error
+      await screen.findAllByRole("heading", { level: 3 });
     });
   });
 

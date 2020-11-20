@@ -18,15 +18,15 @@ export function Categories({
       {categories.length === 0 ? (
         <p>{loadingMessage}</p>
       ) : (
-        categories.map(({ name, itemCount, summary, description }, index) => (
-          <Fragment key={name}>
+        categories.map((category, index) => (
+          <Fragment key={category.name}>
             {index > 0 ? <hr /> : undefined}
             <Category
-              name={name}
-              itemCount={itemCount}
-              summary={summary}
-              description={description}
-              url={`/categories/${name.toLowerCase()}/`}
+              name={category.name}
+              itemCount={category.itemCount}
+              summary={category.summary}
+              description={category.description}
+              url={`/categories/${category.slug}/`}
             />
           </Fragment>
         ))

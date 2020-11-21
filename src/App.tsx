@@ -1,4 +1,4 @@
-import { Redirect, Router } from "@reach/router";
+import { Router } from "@reach/router";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { setupWorker } from "msw"; // Dev usage only
 import React, { useState } from "react";
@@ -85,7 +85,6 @@ export function App(): JSX.Element {
             <Home path="/" />
             <Categories path="categories/" />
             <Category path="categories/:categorySlug/" />
-            <Redirect from="category/" to="/categories/" />
             <NotFound default />
           </Router>
         </main>

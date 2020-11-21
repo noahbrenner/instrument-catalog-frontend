@@ -2,6 +2,6 @@
 # https://docs.netlify.com/routing/redirects/
 
 # Never serve the raw category page from its root path
-/category/	/categories/	301!
+/category/	/404.html	404!
 # *Do* serve the category page for each specific category
 /categories/:name/	/category/index.html	200

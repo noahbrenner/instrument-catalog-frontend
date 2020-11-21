@@ -1,7 +1,7 @@
 import React, { Fragment } from "react";
 
-import { InstrumentListItem } from "./InstrumentListItem";
-import type { InstrumentListItemProps } from "./InstrumentListItem";
+import { InstrumentListItem } from "#components/InstrumentListItem";
+import type { InstrumentListItemProps } from "#components/InstrumentListItem";
 
 export interface InstrumentListProps {
   instruments: InstrumentListItemProps[];

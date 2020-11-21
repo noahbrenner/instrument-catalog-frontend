@@ -7,14 +7,18 @@ import { Categories } from "./Categories";
 const MESSAGE = "I'm loading";
 
 const CATEGORY1: ICategory = {
+  id: 0,
   name: "Foo",
+  slug: "foo",
   itemCount: 5,
   summary: "Foo summary",
   description: "A description of Foo",
 } as const;
 
 const CATEGORY2: ICategory = {
+  id: 1,
   name: "Bar",
+  slug: "bar",
   itemCount: 7,
   summary: "Bar summary",
   description: "A description of Bar",

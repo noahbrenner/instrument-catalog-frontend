@@ -6,7 +6,7 @@ import axiosRetry, {
 } from "axios-retry";
 
 import { ENDPOINTS } from "#api_endpoints";
-import type { ICategories, IUsers } from "#src/types";
+import type { ICategories, ICategory, IInstruments, IUsers } from "#src/types";
 
 export interface APIError extends AxiosError {
   uiErrorMessage: string;
@@ -24,10 +24,9 @@ function errorHandler(err: AxiosError): AxiosResponse {
   let message: string;
 
   if (err.response) {
-    const { status, statusText } = err.response;
-    message =
-      `Error from server: "${status} ${statusText}".` +
-      " Please send a bug report!";
+    const { data, status, statusText } = err.response;
+    message = `Error from server: "${status} ${statusText}". `;
+    message += data?.error ?? "Please send a bug report!";
   } else if (err.request) {
     message = "Couldn't reach the server. Please try reloading in a minute.";
   } else {
@@ -46,12 +45,31 @@ function errorHandler(err: AxiosError): AxiosResponse {
    generic type or the clutter of defining each endpoint's type explicitly
 */
 export const api = {
-  getCategories: () =>
-    axios
+  getCategories() {
+    return axios
       .get<ICategories>(ENDPOINTS.categories)
-      .catch<AxiosResponse<ICategories>>(errorHandler),
-  getUsers: () =>
-    axios
+      .catch<AxiosResponse<ICategories>>(errorHandler);
+  },
+  getCategoryBySlug(slug: string) {
+    return axios
+      .get<ICategory>(`${ENDPOINTS.categories}/${slug}`)
+      .catch<AxiosResponse<ICategory>>(errorHandler);
+  },
+
+  getInstruments() {
+    return axios
+      .get<IInstruments>(ENDPOINTS.instruments)
+      .catch<AxiosResponse<IInstruments>>(errorHandler);
+  },
+  getInstrumentsByCategoryId(categoryId: number) {
+    return axios
+      .get<IInstruments>(ENDPOINTS.instruments, { params: { cat: categoryId } })
+      .catch<AxiosResponse<IInstruments>>(errorHandler);
+  },
+
+  getUsers() {
+    return axios
       .get<IUsers>(ENDPOINTS.users)
-      .catch<AxiosResponse<IUsers>>(errorHandler),
+      .catch<AxiosResponse<IUsers>>(errorHandler);
+  },
 } as const;

@@ -128,6 +128,16 @@ export const handlers: RequestHandler<any, any, any, any>[] = [
     return res(ctx.set(HEADERS), ctx.json({ categories }));
   }),
 
+  // GET Instrument: /instruments/<instrumentId>
+  rest.get(`${ENDPOINTS.instruments}/:id`, (req, res, ctx) => {
+    const instrument = MOCK_DATA.instruments.find(
+      ({ id }) => id === Number(req.params.id)
+    );
+    return instrument
+      ? res(ctx.set(HEADERS), ctx.json(instrument))
+      : res(ctx.set(HEADERS), ctx.status(404));
+  }),
+
   // GET Instruments: /instruments[?cat=<categoryId>]
   rest.get(ENDPOINTS.instruments, (req, res, ctx) => {
     const reqCategoryId = req.url.searchParams.get("cat");

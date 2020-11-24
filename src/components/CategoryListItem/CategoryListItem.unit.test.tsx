@@ -1,13 +1,13 @@
 import { render, screen } from "@testing-library/react";
 import React from "react";
 
-import { Category } from "./Category";
-import type { CategoryProps } from "./Category";
+import { CategoryListItem } from "./CategoryListItem";
+import type { CategoryListItemProps } from "./CategoryListItem";
 
 describe("<Category />", () => {
   describe("given all accepted props", () => {
     it("renders all provided data", () => {
-      const props: Required<CategoryProps> = {
+      const props: Required<CategoryListItemProps> = {
         name: "Foo",
         url: "/foo",
         itemCount: 3,
@@ -16,7 +16,7 @@ describe("<Category />", () => {
       };
 
       // eslint-disable-next-line react/jsx-props-no-spreading
-      render(<Category {...props} />);
+      render(<CategoryListItem {...props} />);
 
       expect(screen.getByRole("heading")).toHaveTextContent(props.name);
       expect(screen.getByRole("link")).toHaveAttribute("href", props.url);
@@ -31,7 +31,7 @@ describe("<Category />", () => {
   describe("given no `description` prop", () => {
     it("does not render an empty <p /> for the missing description", () => {
       const { container } = render(
-        <Category name="Foo" url="/" itemCount={1} summary="Bar" />
+        <CategoryListItem name="Foo" url="/" itemCount={1} summary="Bar" />
       );
       const paragraphs = container.querySelectorAll("p");
       paragraphs.forEach((p) => expect(p).not.toBeEmptyDOMElement());

@@ -1,6 +1,6 @@
 import React, { Fragment } from "react";
 
-import { Category } from "#components/Category";
+import { CategoryListItem } from "#components/CategoryListItem";
 import type { ICategory } from "#src/types";
 
 export interface CategoriesProps {
@@ -21,7 +21,7 @@ export function Categories({
         categories.map((category, index) => (
           <Fragment key={category.name}>
             {index > 0 ? <hr /> : undefined}
-            <Category
+            <CategoryListItem
               name={category.name}
               itemCount={category.itemCount}
               summary={category.summary}

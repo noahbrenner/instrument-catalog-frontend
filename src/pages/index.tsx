@@ -4,7 +4,7 @@ import React from "react";
 import { ApiDiv } from "#components/ApiDiv";
 import { CategoryListItem } from "#components/CategoryListItem";
 
-export default function Home(_: RouteComponentProps): JSX.Element {
+export default function HomePage(_: RouteComponentProps): JSX.Element {
   return (
     <div>
       <ApiDiv />

@@ -8,10 +8,10 @@ import { ThemeProvider, createGlobalStyle } from "styled-components";
 import { BurgerButton } from "#components/BurgerButton";
 import { Nav } from "#components/Nav";
 import { handlers } from "#server_routes.mock"; // Dev usage only
-import Home from "./pages";
-import Categories from "./pages/categories";
-import Category from "./pages/category";
 import NotFound from "./pages/404";
+import HomePage from "./pages";
+import CategoriesPage from "./pages/categories";
+import CategoryPage from "./pages/category";
 import { defaultTheme } from "./theme";
 import "./app.css";
 
@@ -82,9 +82,9 @@ export function App(): JSX.Element {
         />
         <main>
           <Router>
-            <Home path="/" />
-            <Categories path="categories/" />
-            <Category path="categories/:categorySlug/" />
+            <HomePage path="/" />
+            <CategoriesPage path="categories/" />
+            <CategoryPage path="categories/:categorySlug/" />
             <NotFound default />
           </Router>
         </main>

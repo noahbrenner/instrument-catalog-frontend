@@ -23,7 +23,7 @@ const HeadingContainer = styled.div`
   }
 `;
 
-export interface CategoryProps {
+export interface CategoryListItemProps {
   name: string;
   url: string;
   itemCount: number;
@@ -31,13 +31,13 @@ export interface CategoryProps {
   description?: string;
 }
 
-export function Category({
+export function CategoryListItem({
   name,
   url,
   itemCount,
   summary,
   description,
-}: CategoryProps): JSX.Element {
+}: CategoryListItemProps): JSX.Element {
   return (
     <section>
       <HeadingContainer>

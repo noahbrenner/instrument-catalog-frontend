@@ -2,20 +2,20 @@ import type { RouteComponentProps } from "@reach/router";
 import React from "react";
 
 import { ApiDiv } from "#components/ApiDiv";
-import { Category } from "#components/Category";
+import { CategoryListItem } from "#components/CategoryListItem";
 
-export default function Home(_: RouteComponentProps): JSX.Element {
+export default function HomePage(_: RouteComponentProps): JSX.Element {
   return (
     <div>
       <ApiDiv />
       <h2>Browse by category</h2>
-      <Category
+      <CategoryListItem
         name="Winds"
         url="/categories/winds/"
         itemCount={1}
         summary="Move air, make noise"
       />
-      <Category
+      <CategoryListItem
         name="Percussion"
         url="/categories/percussion/"
         itemCount={300}

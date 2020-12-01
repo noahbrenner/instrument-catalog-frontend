@@ -76,9 +76,9 @@ export const MOCK_DATA: {
     {
       id: 4,
       categoryId: 2,
-      name: "Viola",
-      summary: "Viola summary",
-      description: "Long description of violas.",
+      name: "Double Bass",
+      summary: "Double bass summary",
+      description: "Long description of double basses.",
     },
     {
       id: 5,

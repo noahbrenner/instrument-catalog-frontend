@@ -70,6 +70,7 @@ describe("src/pages/instrument.tsx rendered inside <App />", () => {
   });
 
   describe("given a navigation from one valid path to another", () => {
+    // This would fail if the component's state were not reset when navigating
     it("renders data for the second path", async () => {
       const { history } = renderWithRouter(<App />, "/instruments/0/Flute/");
       await waitForPageLoad();

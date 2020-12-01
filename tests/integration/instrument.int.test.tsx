@@ -68,4 +68,17 @@ describe("src/pages/instrument.tsx rendered inside <App />", () => {
       });
     });
   });
+
+  describe("given a navigation from one valid path to another", () => {
+    it("renders data for the second path", async () => {
+      const { history } = renderWithRouter(<App />, "/instruments/0/Flute/");
+      await waitForPageLoad();
+      await history.navigate("/instruments/4/Double%20Bass/");
+
+      await waitFor(() => {
+        const heading2 = screen.queryByRole("heading", { level: 2 });
+        expect(heading2).toHaveTextContent(/double bass/i);
+      });
+    });
+  });
 });

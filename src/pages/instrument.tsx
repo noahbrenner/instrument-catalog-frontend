@@ -4,8 +4,9 @@ import React, { useEffect, useState } from "react";
 
 import { api } from "#api";
 import type { APIError } from "#api";
-import type { IInstrument } from "#src/types";
+import { Instrument } from "#layouts/Instrument";
 import NotFound from "#src/pages/404";
+import type { IInstrument } from "#src/types";
 
 interface InstrumentPageProps {
   instrumentId: string; // An integer, but the router passes it as a string
@@ -63,5 +64,13 @@ export default function InstrumentPage(_: RouteComponentProps): JSX.Element {
     return <NotFound />;
   }
 
-  return instrument ? <h2>{instrument.name}</h2> : <p>{loadingMessage}</p>;
+  return instrument ? (
+    <Instrument
+      name={instrument.name}
+      summary={instrument.summary}
+      description={instrument.description}
+    />
+  ) : (
+    <p>{loadingMessage}</p>
+  );
 }

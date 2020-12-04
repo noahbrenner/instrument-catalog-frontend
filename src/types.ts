@@ -17,6 +17,7 @@ export interface IInstrument {
   name: string;
   summary: string;
   description: string;
+  imageUrl: string;
 }
 
 export interface IInstruments {

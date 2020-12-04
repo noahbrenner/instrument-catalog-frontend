@@ -69,6 +69,7 @@ export default function InstrumentPage(_: RouteComponentProps): JSX.Element {
       name={instrument.name}
       summary={instrument.summary}
       description={instrument.description}
+      imageUrl={instrument.imageUrl}
     />
   ) : (
     <p>{loadingMessage}</p>

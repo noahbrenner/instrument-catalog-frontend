@@ -51,6 +51,8 @@ export const MOCK_DATA: {
       name: "Flute",
       summary: "Flute summary",
       description: "Long description of flutes.",
+      imageUrl:
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f7/Western_concert_flute_%28Yamaha%29.jpg/442px-Western_concert_flute_%28Yamaha%29.jpg",
     },
     {
       id: 1,
@@ -58,6 +60,8 @@ export const MOCK_DATA: {
       name: "Clarinet",
       summary: "Clarinet summary",
       description: "Long description of clarinets.",
+      imageUrl:
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/2/20/Clarinet-rotate.png/466px-Clarinet-rotate.png",
     },
     {
       id: 2,
@@ -65,6 +69,8 @@ export const MOCK_DATA: {
       name: "Timpani",
       summary: "Timpani summary",
       description: "Long description of timpani.",
+      imageUrl:
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a8/HardtkePauken.jpg/640px-HardtkePauken.jpg",
     },
     {
       id: 3,
@@ -72,6 +78,8 @@ export const MOCK_DATA: {
       name: "Marimba",
       summary: "Marimba summary",
       description: "Long description of marimbas.",
+      imageUrl:
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2d/Classical_Marimba_player.jpg/640px-Classical_Marimba_player.jpg",
     },
     {
       id: 4,
@@ -79,6 +87,8 @@ export const MOCK_DATA: {
       name: "Double Bass",
       summary: "Double bass summary",
       description: "Long description of double basses.",
+      imageUrl:
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b7/Leandre_Gramss_double_double_bass_05.jpg/400px-Leandre_Gramss_double_double_bass_05.jpg",
     },
     {
       id: 5,
@@ -86,6 +96,8 @@ export const MOCK_DATA: {
       name: "Guitar",
       summary: "Guitar summary",
       description: "Long description of guitars.",
+      imageUrl:
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9d/Front_of_a_finished_Doc_Watson_Gallagher_guitar.jpg/400px-Front_of_a_finished_Doc_Watson_Gallagher_guitar.jpg",
     },
     {
       id: 6,
@@ -93,6 +105,8 @@ export const MOCK_DATA: {
       name: "Harp",
       summary: "Harp summary",
       description: "Long description of harps.",
+      imageUrl:
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/3/36/Pedal_Harp_MET_DT698.jpg/412px-Pedal_Harp_MET_DT698.jpg",
     },
   ],
   users: [

@@ -32,13 +32,19 @@ const HTTP_GET_ENDPOINTS: readonly MethodTestSpec[] = [
     [1],
     { instruments: instruments.filter(({ categoryId }) => categoryId === 1) },
   ],
+  [
+    "getInstrumentById",
+    `${ENDPOINTS.instruments}/2`,
+    [2],
+    instruments.find(({ id }) => id === 2),
+  ],
   ["getUsers", ENDPOINTS.users, [], { users }],
 ];
 
 describe("api", () => {
   describe("given a successful API response", () => {
     test.each(HTTP_GET_ENDPOINTS)(
-      '.%s() returns "%s" data',
+      '.%s() returns data from "%s"',
       async (method, _endpoint, args, expected) => {
         // @ts-expect-error -- `args` may have different length/types
         const result = await api[method](...args);

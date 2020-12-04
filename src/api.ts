@@ -6,7 +6,13 @@ import axiosRetry, {
 } from "axios-retry";
 
 import { ENDPOINTS } from "#api_endpoints";
-import type { ICategories, ICategory, IInstruments, IUsers } from "#src/types";
+import type {
+  ICategories,
+  ICategory,
+  IInstrument,
+  IInstruments,
+  IUsers,
+} from "#src/types";
 
 export interface APIError extends AxiosError {
   uiErrorMessage: string;
@@ -65,6 +71,11 @@ export const api = {
     return axios
       .get<IInstruments>(ENDPOINTS.instruments, { params: { cat: categoryId } })
       .catch<AxiosResponse<IInstruments>>(errorHandler);
+  },
+  getInstrumentById(id: number) {
+    return axios
+      .get<IInstrument>(`${ENDPOINTS.instruments}/${id}`)
+      .catch<AxiosResponse<IInstrument>>(errorHandler);
   },
 
   getUsers() {

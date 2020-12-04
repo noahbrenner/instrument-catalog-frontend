@@ -8,15 +8,16 @@ import { ThemeProvider, createGlobalStyle } from "styled-components";
 import { BurgerButton } from "#components/BurgerButton";
 import { Nav } from "#components/Nav";
 import { handlers } from "#server_routes.mock"; // Dev usage only
-import NotFound from "./pages/404";
 import HomePage from "./pages";
+import NotFound from "./pages/404";
 import CategoriesPage from "./pages/categories";
 import CategoryPage from "./pages/category";
+import InstrumentPage from "./pages/instrument";
 import { defaultTheme } from "./theme";
 import "./app.css";
 
 // Don't try to prefetch dynamic routes
-addPrefetchExcludes([/categories\/.+/]);
+addPrefetchExcludes([/categories\/.+/, /instruments\/.+/]);
 
 // Mock the API server using a ServiceWorker
 if (
@@ -85,6 +86,7 @@ export function App(): JSX.Element {
             <HomePage path="/" />
             <CategoriesPage path="categories/" />
             <CategoryPage path="categories/:categorySlug/" />
+            <InstrumentPage path="instruments/:instrumentId/**" />
             <NotFound default />
           </Router>
         </main>

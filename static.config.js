@@ -1,6 +1,39 @@
+/* eslint-disable no-console */
 import "dotenv/config"; // Load environment variables from .env
 
 // Typescript support in static.config.js is not yet supported, but is coming in a future update!
+
+(function checkForRequiredEnvironmentVariables() {
+  const alwaysRequiredEnvVars = ["API_ROOT"];
+
+  const requiredEnvVars =
+    process.env.NODE_ENV === "production"
+      ? [...alwaysRequiredEnvVars, "FRONTEND_PROD_SITE_ROOT"]
+      : [...alwaysRequiredEnvVars];
+
+  const optionalEnvVars =
+    process.env.NODE_ENV === "production"
+      ? ["FRONTEND_PROD_BASE_PATH"]
+      : ["FRONTEND_MOCK_API_SERVER"];
+
+  const isUnsetEnvVar = (key) => [undefined, ""].includes(process.env[key]);
+
+  const missingEnvVars = requiredEnvVars.filter(isUnsetEnvVar);
+  const missingOptionalEnvVars = optionalEnvVars.filter(isUnsetEnvVar);
+
+  if (missingEnvVars.length > 0) {
+    const lines = ["The following environment variables are required:"];
+    lines.push(...missingEnvVars.map((str) => `- ${str}`));
+    console.error(lines.join("\n"));
+    process.exit(1);
+  }
+
+  if (missingOptionalEnvVars.length > 0) {
+    const message = ["Optional environment variables that you can set:"];
+    message.push(...missingOptionalEnvVars.map((str) => `- ${str}`));
+    console.warn(message.join("\n"));
+  }
+})();
 
 export default {
   entry: "index.tsx", // Relative to paths.src

@@ -24,6 +24,14 @@
   $ cp template.env .env
   # Then edit `.env` as needed
   ```
+- **OPTIONAL** _(but recommended)_: If you want to use any login functionality, you'll need to create an [Auth0](https://auth0.com/) account (they have a substantial free tier, so you shouldn't get any charges for testing out the app)
+  - Create a new Tenant (this happens automatically if you're creating a new Auth0 account)
+  - Create a new Application for that Tenant and set its **Application Type** to "Single Page Application"
+  - In your new Application's settings, enter `http://localhost:5000` in all of the following fields _(if you set `FRONTEND_DEVSERVER_PORT` to something other than `5000`, enter your value for the port number instead)_:
+    - `Allowed Callback URLs`
+    - `Allowed Logout URLs`
+    - `Allowed Web Origins`
+  - Back in the repo, open up the `.env` file and enter your Auth0 Application's **Domain** and **Client ID** as the values of `AUTH0_DOMAIN` and `AUTH0_CLIENT_ID`, respectively.
 
 ## Scripts for local development
 

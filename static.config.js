@@ -5,16 +5,17 @@ import "dotenv/config"; // Load environment variables from .env
 
 (function checkForRequiredEnvironmentVariables() {
   const alwaysRequiredEnvVars = ["API_ROOT"];
+  const oauthEnvVars = ["AUTH0_DOMAIN", "AUTH0_CLIENT_ID"];
 
   const requiredEnvVars =
     process.env.NODE_ENV === "production"
-      ? [...alwaysRequiredEnvVars, "FRONTEND_PROD_SITE_ROOT"]
+      ? [...alwaysRequiredEnvVars, ...oauthEnvVars, "FRONTEND_PROD_SITE_ROOT"]
       : [...alwaysRequiredEnvVars];
 
   const optionalEnvVars =
     process.env.NODE_ENV === "production"
       ? ["FRONTEND_PROD_BASE_PATH"]
-      : ["FRONTEND_MOCK_API_SERVER"];
+      : [...oauthEnvVars, "FRONTEND_MOCK_API_SERVER"];
 
   const isUnsetEnvVar = (key) => [undefined, ""].includes(process.env[key]);
 

@@ -6,22 +6,11 @@ export function LoginButton(): JSX.Element {
   const auth = useAuth();
 
   return auth.state === "AUTHENTICATED" ? (
-    <button
-      type="button"
-      onClick={() => auth.logout({ returnTo: window.location.origin })}
-    >
+    <button type="button" onClick={() => auth.logout()}>
       Log out
     </button>
   ) : (
-    <button
-      type="button"
-      onClick={() => {
-        auth.loginWithRedirect({
-          redirectUri: window.location.origin,
-          appState: { returnTo: window.location.pathname },
-        });
-      }}
-    >
+    <button type="button" onClick={() => auth.login()}>
       Log in
     </button>
   );

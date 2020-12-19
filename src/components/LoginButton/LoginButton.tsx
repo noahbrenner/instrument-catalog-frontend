@@ -1,13 +1,14 @@
-import { useAuth0 } from "@auth0/auth0-react";
 import React from "react";
 
-export function LoginButton(): JSX.Element {
-  const { isAuthenticated, isLoading, loginWithRedirect, logout } = useAuth0();
+import { useAuth } from "#hooks/useAuth";
 
-  return isAuthenticated && !isLoading ? (
+export function LoginButton(): JSX.Element {
+  const auth = useAuth();
+
+  return auth.state === "AUTHENTICATED" ? (
     <button
       type="button"
-      onClick={() => logout({ returnTo: window.location.origin })}
+      onClick={() => auth.logout({ returnTo: window.location.origin })}
     >
       Log out
     </button>
@@ -15,7 +16,7 @@ export function LoginButton(): JSX.Element {
     <button
       type="button"
       onClick={() => {
-        loginWithRedirect({
+        auth.loginWithRedirect({
           redirectUri: window.location.origin,
           appState: { returnTo: window.location.pathname },
         });

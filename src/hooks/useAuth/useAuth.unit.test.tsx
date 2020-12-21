@@ -1,21 +1,19 @@
-import type { Auth0ContextInterface } from "@auth0/auth0-react";
+import { useAuth0 } from "@auth0/auth0-react";
 import { render, screen } from "@testing-library/react";
 import React from "react";
+import { mocked } from "ts-jest/utils";
 
 import { useAuth } from "./useAuth";
 
-const mockUseAuth0Defaults: Readonly<Partial<Auth0ContextInterface>> = {
+jest.mock("@auth0/auth0-react");
+
+const useAuth0DefaultReturnValue = {
   error: undefined,
   isAuthenticated: false,
   isLoading: false,
   user: undefined,
-};
-
-let mockUseAuth0Value: Partial<Auth0ContextInterface>;
-
-jest.mock("@auth0/auth0-react", () => ({
-  useAuth0: jest.fn(() => mockUseAuth0Value),
-}));
+  // Casting (instead of declaring a type) lets us omit unused properties
+} as ReturnType<typeof useAuth0>;
 
 function TestComponent() {
   const auth = useAuth();
@@ -33,33 +31,33 @@ function TestComponent() {
 describe("useAuth", () => {
   describe("given isLoading=true", () => {
     it("returns LOADING state when isAuthenticated=false", () => {
-      mockUseAuth0Value = {
-        ...mockUseAuth0Defaults,
+      mocked(useAuth0).mockReturnValueOnce({
+        ...useAuth0DefaultReturnValue,
         isLoading: true,
         isAuthenticated: false,
-      };
+      });
       render(<TestComponent />);
       expect(screen.getByTestId("state")).toHaveTextContent(/^LOADING$/);
       expect(screen.queryByTestId("user")).not.toBeInTheDocument();
     });
 
     it("returns LOADING state when isAuthenticated=true", () => {
-      mockUseAuth0Value = {
-        ...mockUseAuth0Defaults,
+      mocked(useAuth0).mockReturnValueOnce({
+        ...useAuth0DefaultReturnValue,
         isLoading: true,
         isAuthenticated: true,
-      };
+      });
       render(<TestComponent />);
       expect(screen.getByTestId("state")).toHaveTextContent(/^LOADING$/);
       expect(screen.queryByTestId("user")).not.toBeInTheDocument();
     });
 
     it("returns LOADING state when error=Error", () => {
-      mockUseAuth0Value = {
-        ...mockUseAuth0Defaults,
+      mocked(useAuth0).mockReturnValueOnce({
+        ...useAuth0DefaultReturnValue,
         isLoading: true,
         error: new Error(),
-      };
+      });
       render(<TestComponent />);
       expect(screen.getByTestId("state")).toHaveTextContent(/^LOADING$/);
       expect(screen.queryByTestId("user")).not.toBeInTheDocument();
@@ -68,23 +66,23 @@ describe("useAuth", () => {
 
   describe("given isLoading=false, error=Error", () => {
     it("returns ERRORED state", () => {
-      mockUseAuth0Value = {
-        ...mockUseAuth0Defaults,
+      mocked(useAuth0).mockReturnValueOnce({
+        ...useAuth0DefaultReturnValue,
         isLoading: false,
         error: new Error(),
-      };
+      });
       render(<TestComponent />);
       expect(screen.getByTestId("state")).toHaveTextContent(/^ERRORED$/);
       expect(screen.queryByTestId("user")).not.toBeInTheDocument();
     });
 
     it("returns ERRORED state when isAuthenticated=true", () => {
-      mockUseAuth0Value = {
-        ...mockUseAuth0Defaults,
+      mocked(useAuth0).mockReturnValueOnce({
+        ...useAuth0DefaultReturnValue,
         isLoading: false,
         error: new Error(),
         isAuthenticated: true,
-      };
+      });
       render(<TestComponent />);
       expect(screen.getByTestId("state")).toHaveTextContent(/^ERRORED$/);
       expect(screen.queryByTestId("user")).not.toBeInTheDocument();
@@ -93,12 +91,12 @@ describe("useAuth", () => {
 
   describe("given isLoading=false, isAuthenticated=false, and no error", () => {
     it("returns UNAUTHENTICATED state", () => {
-      mockUseAuth0Value = {
-        ...mockUseAuth0Defaults,
+      mocked(useAuth0).mockReturnValueOnce({
+        ...useAuth0DefaultReturnValue,
         isLoading: false,
         isAuthenticated: false,
         error: undefined,
-      };
+      });
       render(<TestComponent />);
       expect(screen.getByTestId("state")).toHaveTextContent(
         /^UNAUTHENTICATED$/
@@ -109,13 +107,13 @@ describe("useAuth", () => {
 
   describe("given isLoading=false, isAuthenticated=true, and no error", () => {
     it("returns AUTHENTICATED state", () => {
-      mockUseAuth0Value = {
-        ...mockUseAuth0Defaults,
+      mocked(useAuth0).mockReturnValueOnce({
+        ...useAuth0DefaultReturnValue,
         isLoading: false,
         isAuthenticated: true,
         error: undefined,
         user: { name: "Foo Name" },
-      };
+      });
       render(<TestComponent />);
       expect(screen.getByTestId("state")).toHaveTextContent(/^AUTHENTICATED$/);
       expect(screen.getByTestId("user")).toHaveTextContent("Foo Name");

@@ -13,7 +13,9 @@
     "paths": {
       "#src/*": ["src/*"],
       "#components/*": ["src/components/*"],
+      "#hooks/*": ["src/hooks/*"],
       "#layouts/*": ["src/layouts/*"],
+      "#mocks/*": ["tests/mocks/*"],
       "#test_helpers/*": ["tests/helpers/*"],
       "#types/*": ["types/*"],
       "#api": ["src/api.ts"],

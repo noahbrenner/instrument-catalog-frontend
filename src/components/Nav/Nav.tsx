@@ -2,6 +2,8 @@ import { Link } from "@reach/router";
 import React, { useEffect } from "react";
 import styled, { createGlobalStyle } from "styled-components";
 
+import { LoginButton } from "#components/LoginButton";
+
 const GlobalStyle = createGlobalStyle`
   body {
     overflow-x: hidden;
@@ -35,9 +37,12 @@ const StyledNav = styled.nav`
 
   @media (min-width: ${({ theme }) => theme.mobileBreakpoint}) {
     position: static;
+    display: flex;
+    justify-content: space-between;
     height: auto;
 
     & ul {
+      order: -1;
       display: flex;
     }
   }
@@ -59,11 +64,12 @@ export function Nav({ links, onLinkClick, visible }: NavProps): JSX.Element {
     } else if (!visible && classList.contains(navVisibleClass)) {
       classList.remove(navVisibleClass);
     }
-  });
+  }, [visible]);
 
   return (
     <StyledNav>
       <GlobalStyle />
+      <LoginButton />
       <ul>
         {links.map(([linkText, url]) => (
           <li key={linkText}>

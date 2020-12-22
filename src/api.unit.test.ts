@@ -14,7 +14,7 @@ type MethodTestSpec = readonly [
   method: keyof typeof api,
   endpoint: string,
   methodArgs: readonly unknown[],
-  expected: unknown
+  expected: any // eslint-disable-line @typescript-eslint/no-explicit-any
 ];
 
 const HTTP_GET_ENDPOINTS: readonly MethodTestSpec[] = [

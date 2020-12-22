@@ -36,7 +36,7 @@ describe("<Nav />", () => {
   describe("given a particular value for visible=...", () => {
     it("is visible when visible=true", () => {
       renderWithDefaultTheme(<Nav visible onLinkClick={noop} links={[]} />);
-      expect(document.body.classList).toContain("nav-visible");
+      expect(document.body).toHaveClass("nav-visible");
 
       // This would be better
       // expect(screen.getByRole("navigation")).toBeVisible();
@@ -46,7 +46,7 @@ describe("<Nav />", () => {
       renderWithDefaultTheme(
         <Nav visible={false} onLinkClick={noop} links={[]} />
       );
-      expect(document.body.classList).not.toContain("nav-visible");
+      expect(document.body).not.toHaveClass("nav-visible");
 
       // This would be better
       // window.innerWidth = 300

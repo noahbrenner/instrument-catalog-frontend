@@ -16,6 +16,9 @@ module.exports = {
     "\\.css$": "<rootDir>/tests/mocks/style.mock.ts",
   },
 
+  // Clear mock calls/counters/instances before each test
+  clearMocks: true,
+
   // Only look for test files in these directories
   roots: ["<rootDir>/src/", "<rootDir>/tests/"],
 

@@ -1,4 +1,6 @@
-import { Router } from "@reach/router";
+import { Auth0Provider } from "@auth0/auth0-react";
+import type { AppState } from "@auth0/auth0-react";
+import { Router, navigate } from "@reach/router";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { setupWorker } from "msw"; // Dev usage only
 import React, { useState } from "react";
@@ -56,41 +58,56 @@ const GlobalStyle = createGlobalStyle`
  }
 `;
 
+const isBrowser = typeof window !== "undefined";
+
+function handleAuthRedirect(appState?: AppState) {
+  if (isBrowser) {
+    navigate(appState?.returnTo ?? window.location.pathname, { replace: true });
+  }
+}
+
 export function App(): JSX.Element {
   const [navIsVisible, setNavIsVisible] = useState(false);
-  const toggleNav = () => setNavIsVisible((isHidden) => !isHidden);
+  const toggleNav = () => setNavIsVisible((isVisible) => !isVisible);
   const hideNav = () => setNavIsVisible(false);
 
   return (
     <Root>
-      <ThemeProvider theme={defaultTheme}>
-        <GlobalStyle />
-        <header>
-          <h1>Instrument Catalog</h1>
-          <BurgerButton
-            className="burger"
-            onClick={toggleNav}
-            navIsVisible={navIsVisible}
+      <Auth0Provider
+        domain={process.env.AUTH0_DOMAIN || ""}
+        clientId={process.env.AUTH0_CLIENT_ID || ""}
+        redirectUri={isBrowser ? window.location.origin : ""}
+        onRedirectCallback={handleAuthRedirect}
+      >
+        <ThemeProvider theme={defaultTheme}>
+          <GlobalStyle />
+          <header>
+            <h1>Instrument Catalog</h1>
+            <BurgerButton
+              className="burger"
+              onClick={toggleNav}
+              navIsVisible={navIsVisible}
+            />
+          </header>
+          <Nav
+            links={[
+              ["Home", "/"],
+              ["Categories", "/categories/"],
+            ]}
+            onLinkClick={hideNav}
+            visible={navIsVisible}
           />
-        </header>
-        <Nav
-          links={[
-            ["Home", "/"],
-            ["Categories", "/categories/"],
-          ]}
-          onLinkClick={hideNav}
-          visible={navIsVisible}
-        />
-        <main>
-          <Router>
-            <HomePage path="/" />
-            <CategoriesPage path="categories/" />
-            <CategoryPage path="categories/:categorySlug/" />
-            <InstrumentPage path="instruments/:instrumentId/**" />
-            <NotFound default />
-          </Router>
-        </main>
-      </ThemeProvider>
+          <main>
+            <Router>
+              <HomePage path="/" />
+              <CategoriesPage path="categories/" />
+              <CategoryPage path="categories/:categorySlug/" />
+              <InstrumentPage path="instruments/:instrumentId/**" />
+              <NotFound default />
+            </Router>
+          </main>
+        </ThemeProvider>
+      </Auth0Provider>
     </Root>
   );
 }

@@ -1,87 +1,102 @@
 import { screen, waitFor } from "@testing-library/react";
-import React from "react";
+import React, { createContext } from "react";
 
+import { useAuth, UNAUTHENTICATED, AUTHENTICATED } from "#mocks/useAuth";
 import { App } from "#src/App";
 import { rest, server, ENDPOINTS, HEADERS } from "#test_helpers/server";
 import { renderWithRouter } from "../helpers/renderWithRouter";
 
+// Mock Auth0Provider as a noop
+jest.mock("@auth0/auth0-react", () => ({
+  Auth0Provider: createContext(undefined).Provider,
+}));
+
 describe("<App />", () => {
-  describe("given the route '/'", () => {
-    it("displays content from Home page", async () => {
-      renderWithRouter(<App />, "/");
+  describe.each([
+    ["logged out", UNAUTHENTICATED],
+    ["logged in", AUTHENTICATED],
+  ])("when %s", (_, AUTH_VALUE) => {
+    beforeEach(() => {
+      useAuth.mockReturnValue(AUTH_VALUE);
+    });
 
-      const heading1 = screen.getByRole("heading", { level: 1 });
-      expect(heading1).toHaveTextContent(/instrument catalog/i);
+    describe("given the route '/'", () => {
+      it("displays content from Home page", async () => {
+        renderWithRouter(<App />, "/");
 
-      const heading2 = screen.getByRole("heading", { level: 2 });
-      expect(heading2).toHaveTextContent(/browse by category/i);
+        const heading1 = screen.getByRole("heading", { level: 1 });
+        expect(heading1).toHaveTextContent(/instrument catalog/i);
 
-      // Wait for the AJAX request to finish before unmounting to avoid an error
-      await waitFor(() => {
-        expect(screen.queryByText(/loading/i)).not.toBeInTheDocument();
+        const heading2 = screen.getByRole("heading", { level: 2 });
+        expect(heading2).toHaveTextContent(/browse by category/i);
+
+        // Wait for the AJAX request to finish before unmounting to avoid an error
+        await waitFor(() => {
+          expect(screen.queryByText(/loading/i)).not.toBeInTheDocument();
+        });
       });
     });
-  });
 
-  describe("given the route '/does-not-exist/'", () => {
-    it("displays the 404 error page", () => {
-      renderWithRouter(<App />, "/does-not-exist/");
-      const heading2 = screen.getByRole("heading", { level: 2 });
-      expect(heading2).toHaveTextContent(/404/i);
-    });
-  });
-
-  describe("given the route '/categories/'", () => {
-    it("displays content from Categories page", async () => {
-      renderWithRouter(<App />, "/categories/");
-
-      const heading2 = screen.getByRole("heading", { level: 2 });
-      expect(heading2).toHaveTextContent(/categories/i);
-
-      // Wait for the AJAX request to finish before unmounting to avoid an error
-      await waitFor(() => {
-        expect(screen.queryByText(/loading/i)).not.toBeInTheDocument();
+    describe("given the route '/does-not-exist/'", () => {
+      it("displays the 404 error page", () => {
+        renderWithRouter(<App />, "/does-not-exist/");
+        const heading2 = screen.getByRole("heading", { level: 2 });
+        expect(heading2).toHaveTextContent(/404/i);
       });
     });
-  });
 
-  describe("given the route '/categories/strings/'", () => {
-    it("displays content for the Strings Category page", async () => {
-      renderWithRouter(<App />, "/categories/strings/");
+    describe("given the route '/categories/'", () => {
+      it("displays content from Categories page", async () => {
+        renderWithRouter(<App />, "/categories/");
 
-      const heading2 = await screen.findByRole("heading", { level: 2 });
-      expect(heading2).toHaveTextContent(/strings/i);
+        const heading2 = screen.getByRole("heading", { level: 2 });
+        expect(heading2).toHaveTextContent(/categories/i);
 
-      // Wait for AJAX requests to finish before unmounting to avoid an error
-      await screen.findAllByRole("heading", { level: 3 });
+        // Wait for the AJAX request to finish before unmounting to avoid an error
+        await waitFor(() => {
+          expect(screen.queryByText(/loading/i)).not.toBeInTheDocument();
+        });
+      });
     });
-  });
 
-  describe("given the route '/categories/strings/' and a server error", () => {
-    it("displays an error message", async () => {
-      server.use(
-        rest.get(`${ENDPOINTS.categories}/strings`, (_req, res, ctx) => {
-          return res(ctx.set(HEADERS), ctx.status(500, "Server error"));
-        })
-      );
+    describe("given the route '/categories/strings/'", () => {
+      it("displays content for the Strings Category page", async () => {
+        renderWithRouter(<App />, "/categories/strings/");
 
-      renderWithRouter(<App />, "/categories/strings/");
+        const heading2 = await screen.findByRole("heading", { level: 2 });
+        expect(heading2).toHaveTextContent(/strings/i);
 
-      await waitFor(
-        () => expect(screen.queryByText(/loading/i)).not.toBeInTheDocument(),
-        { timeout: 2000 }
-      );
-
-      expect(screen.getByText(/500 server error/i)).toBeInTheDocument();
+        // Wait for AJAX requests to finish before unmounting to avoid an error
+        await screen.findAllByRole("heading", { level: 3 });
+      });
     });
-  });
 
-  describe("given the route '/categories/fake-category/'", () => {
-    it("displays the 404 error page", async () => {
-      renderWithRouter(<App />, "/categories/fake-category/");
+    describe("given the route '/categories/strings/' and a server error", () => {
+      it("displays an error message", async () => {
+        server.use(
+          rest.get(`${ENDPOINTS.categories}/strings`, (_req, res, ctx) => {
+            return res(ctx.set(HEADERS), ctx.status(500, "Server error"));
+          })
+        );
 
-      const heading2 = await screen.findByRole("heading", { level: 2 });
-      expect(heading2).toHaveTextContent(/404/i);
+        renderWithRouter(<App />, "/categories/strings/");
+
+        await waitFor(
+          () => expect(screen.queryByText(/loading/i)).not.toBeInTheDocument(),
+          { timeout: 2000 }
+        );
+
+        expect(screen.getByText(/500 server error/i)).toBeInTheDocument();
+      });
+    });
+
+    describe("given the route '/categories/fake-category/'", () => {
+      it("displays the 404 error page", async () => {
+        renderWithRouter(<App />, "/categories/fake-category/");
+
+        const heading2 = await screen.findByRole("heading", { level: 2 });
+        expect(heading2).toHaveTextContent(/404/i);
+      });
     });
   });
 });

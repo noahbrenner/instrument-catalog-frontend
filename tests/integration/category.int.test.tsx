@@ -1,8 +1,18 @@
 import { screen, waitFor } from "@testing-library/react";
-import React from "react";
+import React, { createContext } from "react";
 
+import { useAuth, LOADING } from "#mocks/useAuth";
 import { App } from "#src/App";
 import { renderWithRouter } from "../helpers/renderWithRouter";
+
+// Mock Auth0Provider as a noop
+jest.mock("@auth0/auth0-react", () => ({
+  Auth0Provider: createContext(undefined).Provider,
+}));
+
+// We're only testing the LOADING auth state because that's the initial state
+// and the page content we're testing doesn't depend on being authenticated
+useAuth.mockReturnValue(LOADING);
 
 function waitForPageLoad() {
   return waitFor(() => {

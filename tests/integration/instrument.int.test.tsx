@@ -1,8 +1,18 @@
 import { screen, waitFor } from "@testing-library/react";
-import React from "react";
+import React, { createContext } from "react";
 
+import { useAuth, LOADING } from "#mocks/useAuth";
 import { App } from "#src/App";
 import { renderWithRouter } from "../helpers/renderWithRouter";
+
+// Mock Auth0Provider as a noop
+jest.mock("@auth0/auth0-react", () => ({
+  Auth0Provider: createContext(undefined).Provider,
+}));
+
+// We're only testing the LOADING auth state because any router redirects should
+// kick in before that state changes (and we're not testing content here anyway)
+useAuth.mockReturnValue(LOADING);
 
 function waitForPageLoad() {
   return waitFor(() => {

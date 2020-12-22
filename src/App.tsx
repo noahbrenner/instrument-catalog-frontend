@@ -58,8 +58,12 @@ const GlobalStyle = createGlobalStyle`
  }
 `;
 
+const isBrowser = typeof window !== "undefined";
+
 function handleAuthRedirect(appState?: AppState) {
-  navigate(appState?.returnTo ?? window.location.pathname, { replace: true });
+  if (isBrowser) {
+    navigate(appState?.returnTo ?? window.location.pathname, { replace: true });
+  }
 }
 
 export function App(): JSX.Element {
@@ -72,7 +76,7 @@ export function App(): JSX.Element {
       <Auth0Provider
         domain={process.env.AUTH0_DOMAIN || ""}
         clientId={process.env.AUTH0_CLIENT_ID || ""}
-        redirectUri={window.location.origin}
+        redirectUri={isBrowser ? window.location.origin : ""}
         onRedirectCallback={handleAuthRedirect}
       >
         <ThemeProvider theme={defaultTheme}>

@@ -5,6 +5,7 @@
     "allowSyntheticDefaultImports": true,
     "baseUrl": ".",
     "esModuleInterop": true,
+    "incremental": true,
     "jsx": "react",
     "lib": ["dom", "es2015", "es2016", "DOM.Iterable"],
     "module": "esnext",

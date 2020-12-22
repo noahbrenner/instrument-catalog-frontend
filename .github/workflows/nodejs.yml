@@ -12,6 +12,8 @@ env:
   API_ROOT: "http://localhost:3000"
   FRONTEND_MOCK_API_SERVER: "true"
   FRONTEND_PROD_SITE_ROOT: "https://example.com"
+  AUTH0_DOMAIN: "not.a.real.domain"
+  AUTH0_CLIENT_ID: "not-a-real-client-id"
 
 jobs:
   lint-and-test:

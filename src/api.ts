@@ -1,5 +1,10 @@
 import axios from "axios";
-import type { AxiosError, AxiosResponse } from "axios";
+import type {
+  AxiosError,
+  AxiosRequestConfig,
+  AxiosResponse,
+  Canceler,
+} from "axios";
 import axiosRetry, {
   exponentialDelay,
   isNetworkOrIdempotentRequestError,
@@ -14,73 +19,121 @@ import type {
   IUsers,
 } from "#src/types";
 
-export interface APIError extends AxiosError {
-  uiErrorMessage: string;
-}
-
 axiosRetry(axios, {
   retries: 3,
   retryCondition: isNetworkOrIdempotentRequestError,
   retryDelay: exponentialDelay,
 });
 
-// This function always throws, but we specify a return type so that tsc doesn't
-// include `void` in the the type for the `api.foo().then()` handler's parameter
-function errorHandler(err: AxiosError): AxiosResponse {
+function getUiErrorMessage(err: AxiosError<{ error?: string }>) {
   let message: string;
 
   if (err.response) {
     const { data, status, statusText } = err.response;
     message = `Error from server: "${status} ${statusText}". `;
-    message += data?.error ?? "Please send a bug report!";
+    message += data.error ?? "Please send a bug report!";
   } else if (err.request) {
     message = "Couldn't reach the server. Please try reloading in a minute.";
   } else {
     message = `Unknown error: ${err.message}\n${err.toString()}\n${err.stack}`;
   }
 
-  // eslint-disable-next-line no-param-reassign
-  (err as APIError).uiErrorMessage = message;
-  throw err;
+  return message;
 }
 
-/* eslint-disable @typescript-eslint/explicit-module-boundary-types
-   --
-   The inferred types include the type of the AJAX response object for each
-   endpoint (e.g.  ICategories), which is more valuable than either a more
-   generic type or the clutter of defining each endpoint's type explicitly
-*/
-export const api = {
-  getCategories() {
-    return axios
-      .get<ICategories>(ENDPOINTS.categories)
-      .catch<AxiosResponse<ICategories>>(errorHandler);
-  },
-  getCategoryBySlug(slug: string) {
-    return axios
-      .get<ICategory>(`${ENDPOINTS.categories}/${slug}`)
-      .catch<AxiosResponse<ICategory>>(errorHandler);
-  },
+export type RequestParams = AxiosRequestConfig &
+  Required<Pick<AxiosRequestConfig, "url" | "method">>;
 
-  getInstruments() {
-    return axios
-      .get<IInstruments>(ENDPOINTS.instruments)
-      .catch<AxiosResponse<IInstruments>>(errorHandler);
-  },
-  getInstrumentsByCategoryId(categoryId: number) {
-    return axios
-      .get<IInstruments>(ENDPOINTS.instruments, { params: { cat: categoryId } })
-      .catch<AxiosResponse<IInstruments>>(errorHandler);
-  },
-  getInstrumentById(id: number) {
-    return axios
-      .get<IInstrument>(`${ENDPOINTS.instruments}/${id}`)
-      .catch<AxiosResponse<IInstrument>>(errorHandler);
-  },
+export interface APIHandlers<T> {
+  onSuccess: (data: T) => unknown;
+  onError: (uiErrorMessage: string, error: AxiosError) => unknown;
+}
 
-  getUsers() {
-    return axios
-      .get<IUsers>(ENDPOINTS.users)
-      .catch<AxiosResponse<IUsers>>(errorHandler);
-  },
-} as const;
+export interface APIUtils {
+  /** Cancel the request and prevent handlers from being called */
+  cancel: Canceler;
+  /** Resolves when the request is completed, failed, or cancelled */
+  completed: Promise<void>;
+}
+
+export function baseRequest<T>(
+  { onSuccess, onError }: APIHandlers<T>,
+  axiosParams: RequestParams
+): APIUtils {
+  const { token, cancel } = axios.CancelToken.source();
+
+  const completed = new Promise<void>((resolve) => {
+    axios({ ...axiosParams, cancelToken: token }).then(
+      ({ data }: AxiosResponse<T>) => {
+        resolve();
+        onSuccess(data);
+      },
+      (err) => {
+        resolve();
+        if (!axios.isCancel(err)) {
+          onError(getUiErrorMessage(err), err);
+        }
+      }
+    );
+  });
+
+  return { cancel, completed };
+}
+
+/* CATEGORIES */
+
+export function getCategories(handlers: APIHandlers<ICategories>): APIUtils {
+  return baseRequest(handlers, {
+    method: "GET",
+    url: `${ENDPOINTS.categories}/all`,
+  });
+}
+
+export function getCategoryBySlug(
+  slug: string,
+  handlers: APIHandlers<ICategory>
+): APIUtils {
+  return baseRequest(handlers, {
+    method: "GET",
+    url: `${ENDPOINTS.categories}/${slug}`,
+  });
+}
+
+/* INSTRUMENTS */
+
+export function getInstruments(handlers: APIHandlers<IInstruments>): APIUtils {
+  return baseRequest(handlers, {
+    method: "GET",
+    url: `${ENDPOINTS.instruments}/all`,
+  });
+}
+
+export function getInstrumentsByCategoryId(
+  categoryId: number,
+  handlers: APIHandlers<IInstruments>
+): APIUtils {
+  return baseRequest(handlers, {
+    method: "GET",
+    url: ENDPOINTS.instruments,
+    params: { cat: categoryId },
+  });
+}
+
+export function getInstrumentById(
+  id: number,
+  handlers: APIHandlers<IInstrument>
+): APIUtils {
+  return baseRequest(handlers, {
+    method: "GET",
+    url: `${ENDPOINTS.instruments}/${id}`,
+  });
+}
+
+/* USERS */
+
+export function getUsers(handlers: APIHandlers<IUsers>): APIUtils {
+  return baseRequest(handlers, {
+    method: "GET",
+    url: `${ENDPOINTS.users}/all`,
+  });
+}

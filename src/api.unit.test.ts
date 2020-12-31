@@ -1,4 +1,5 @@
-import { rest, server, HEADERS, MOCK_DATA } from "#test_helpers/server";
+/** @jest-environment node */
+import { rest, server, MOCK_DATA } from "#test_helpers/server";
 import {
   baseRequest,
   getCategories,
@@ -89,7 +90,7 @@ describe("baseRequest()", () => {
       );
     });
 
-    it.skip("retries the request", async () => {
+    it("retries the request", async () => {
       const url = `${API_ROOT}/api-test`;
       // TODO Use a builtin msw method to return a NetworkError once, after msw
       // implements such a method -- https://github.com/mswjs/msw/issues/413

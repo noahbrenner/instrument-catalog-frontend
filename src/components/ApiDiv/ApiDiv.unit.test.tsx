@@ -23,7 +23,9 @@ describe("<ApiDiv />", () => {
   describe("given failed API call", () => {
     it("displays failure message", async () => {
       server.use(
-        rest.get(ENDPOINTS.users, (_req, res) => res.networkError("Net fail"))
+        rest.get(`${ENDPOINTS.users}/all`, (_req, res) => {
+          return res.networkError("Net fail");
+        })
       );
       render(<ApiDiv />);
       await screen.findByText(/couldn't reach the server/i);

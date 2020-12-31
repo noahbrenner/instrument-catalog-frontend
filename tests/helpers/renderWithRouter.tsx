@@ -1,5 +1,6 @@
 import React from "react";
 import { render } from "@testing-library/react";
+import type { RenderResult } from "@testing-library/react";
 import {
   LocationProvider,
   createHistory,
@@ -13,7 +14,7 @@ import type { History } from "@reach/router";
 export function renderWithRouter(
   component: JSX.Element,
   route = "/"
-): { history: History } {
+): RenderResult & { history: History } {
   const history = createHistory(createMemorySource(route));
   return {
     ...render(

@@ -14,42 +14,60 @@ jest.mock("@auth0/auth0-react", () => ({
 // and the page content we're testing doesn't depend on being authenticated
 useAuth.mockReturnValue(LOADING);
 
-function waitForPageLoad() {
-  return waitFor(() => {
-    expect(screen.queryByText(/loading/i)).not.toBeInTheDocument();
+describe("<CategoryPage /> rendered inside <App />", () => {
+  describe("given the path /categories/percussion/", () => {
+    it("renders data for the category and its instruments", async () => {
+      renderWithRouter(<App />, "/categories/percussion/");
+
+      // Category data is rendered
+      const heading2 = await screen.findByRole("heading", { level: 2 });
+      expect(heading2).toHaveTextContent(/Percussion/);
+
+      // Instruments for the category are rendered (with values from mock data)
+      const headings3 = await screen.findAllByRole("heading", { level: 3 });
+      expect(headings3).toHaveLength(2);
+      expect(headings3[0]).toHaveTextContent("Timpani");
+      expect(headings3[1]).toHaveTextContent("Marimba");
+    });
   });
-}
 
-describe("src/pages/category.tsx rendered inside <App />", () => {
   describe("given a navigation from an invalid path to a valid path", () => {
-    // This would fail if the component's state were not reset when navigating
     it("renders data for the valid path", async () => {
-      const { history } = renderWithRouter(<App />, "/categories/badPath/");
-      await waitForPageLoad();
-      await history.navigate("/categories/winds/");
+      const { history, unmount } = renderWithRouter(
+        <App />,
+        "/categories/badPath/"
+      );
 
-      await waitFor(() => {
-        const heading2 = screen.queryByRole("heading", { level: 2 });
-        expect(heading2).toHaveTextContent(/winds/i);
-      });
+      // Invalid path
+      const heading2Invalid = await screen.findByRole("heading", { level: 2 });
+      expect(heading2Invalid).toHaveTextContent(/404/);
 
-      await waitForPageLoad(); // Wait for AJAX request to finish
+      // Valid path
+      await waitFor(() => history.navigate("/categories/winds/"));
+      const heading2Valid = await screen.findByRole("heading", { level: 2 });
+      expect(heading2Valid).toHaveTextContent(/Winds/);
+
+      unmount();
     });
   });
 
   describe("given a navigation from one valid path to another", () => {
-    // This would fail if the component's state were not reset when navigating
     it("renders data for the second path", async () => {
-      const { history } = renderWithRouter(<App />, "/categories/winds/");
-      await waitForPageLoad();
-      await history.navigate("/categories/strings/");
+      const { history, unmount } = renderWithRouter(
+        <App />,
+        "/categories/winds/"
+      );
 
-      await waitFor(() => {
-        const heading2 = screen.queryByRole("heading", { level: 2 });
-        expect(heading2).toHaveTextContent(/strings/i);
-      });
+      // First valid path
+      const heading2Winds = await screen.findByRole("heading", { level: 2 });
+      expect(heading2Winds).toHaveTextContent(/Winds/);
 
-      await waitForPageLoad(); // Wait for AJAX request to finish
+      // Second valid path
+      await waitFor(() => history.navigate("/categories/strings/"));
+      const heading2Strings = await screen.findByRole("heading", { level: 2 });
+      expect(heading2Strings).toHaveTextContent(/Strings/);
+
+      unmount();
     });
   });
 });

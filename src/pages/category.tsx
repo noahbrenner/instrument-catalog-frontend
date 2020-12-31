@@ -2,8 +2,7 @@ import { useParams } from "@reach/router";
 import type { RouteComponentProps } from "@reach/router";
 import React, { useEffect, useState } from "react";
 
-import { api } from "#api";
-import type { APIError } from "#api";
+import { getCategoryBySlug } from "#api";
 import { Category } from "#layouts/Category";
 import NotFound from "#src/pages/404";
 import type { ICategory } from "#src/types";
@@ -19,28 +18,31 @@ export default function CategoryPage(_: RouteComponentProps): JSX.Element {
   const [categoryExists, setCategoryExists] = useState(true);
 
   useEffect(() => {
+    // Reset state
+    setLoadingMessage("...Loading");
+    setCategory(undefined);
+    setCategoryExists(true); // Hide 404 unless we *know* it doesn't exist
+
     if (!categorySlug) {
       setCategoryExists(false);
-    } else if (!category || category.slug !== categorySlug) {
-      // Reset the state before fetching new instrument data
-      setLoadingMessage("...Loading");
-      setCategory(undefined);
-      setCategoryExists(true); // Hide 404 unless we *know* it doesn't exist
-
-      api.getCategoryBySlug(categorySlug).then(
-        ({ data }) => {
-          setCategory(data);
-        },
-        (err: APIError) => {
-          if (err.response?.status === 404) {
-            setCategoryExists(false);
-          } else {
-            setLoadingMessage(err.uiErrorMessage);
-          }
-        }
-      );
+      return;
     }
-  }, [categorySlug, category]);
+
+    const { cancel } = getCategoryBySlug(categorySlug, {
+      onSuccess(categoryData) {
+        setCategory(categoryData);
+      },
+      onError(uiErrorMessage, err) {
+        if (err.response?.status === 404) {
+          setCategoryExists(false);
+        } else {
+          setLoadingMessage(uiErrorMessage);
+        }
+      },
+    });
+
+    return cancel;
+  }, [categorySlug]);
 
   if (!categoryExists) {
     return <NotFound />;

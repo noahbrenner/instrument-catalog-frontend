@@ -3,7 +3,7 @@ import React, { createContext } from "react";
 
 import { useAuth, UNAUTHENTICATED, AUTHENTICATED } from "#mocks/useAuth";
 import { App } from "#src/App";
-import { rest, server, ENDPOINTS, HEADERS } from "#test_helpers/server";
+import { rest, server, ENDPOINTS } from "#test_helpers/server";
 import { renderWithRouter } from "../helpers/renderWithRouter";
 
 // Mock Auth0Provider as a noop
@@ -22,7 +22,7 @@ describe("<App />", () => {
 
     describe("given the route '/'", () => {
       it("displays content from Home page", async () => {
-        renderWithRouter(<App />, "/");
+        const { unmount } = renderWithRouter(<App />, "/");
 
         const heading1 = screen.getByRole("heading", { level: 1 });
         expect(heading1).toHaveTextContent(/instrument catalog/i);
@@ -30,44 +30,38 @@ describe("<App />", () => {
         const heading2 = screen.getByRole("heading", { level: 2 });
         expect(heading2).toHaveTextContent(/browse by category/i);
 
-        // Wait for the AJAX request to finish before unmounting to avoid an error
-        await waitFor(() => {
-          expect(screen.queryByText(/loading/i)).not.toBeInTheDocument();
-        });
+        unmount();
       });
     });
 
     describe("given the route '/does-not-exist/'", () => {
       it("displays the 404 error page", () => {
         renderWithRouter(<App />, "/does-not-exist/");
+
         const heading2 = screen.getByRole("heading", { level: 2 });
-        expect(heading2).toHaveTextContent(/404/i);
+        expect(heading2).toHaveTextContent(/404/);
       });
     });
 
     describe("given the route '/categories/'", () => {
       it("displays content from Categories page", async () => {
-        renderWithRouter(<App />, "/categories/");
+        const { unmount } = renderWithRouter(<App />, "/categories/");
 
         const heading2 = screen.getByRole("heading", { level: 2 });
         expect(heading2).toHaveTextContent(/categories/i);
 
-        // Wait for the AJAX request to finish before unmounting to avoid an error
-        await waitFor(() => {
-          expect(screen.queryByText(/loading/i)).not.toBeInTheDocument();
-        });
+        unmount();
       });
     });
 
     describe("given the route '/categories/strings/'", () => {
       it("displays content for the Strings Category page", async () => {
-        renderWithRouter(<App />, "/categories/strings/");
+        const { unmount } = renderWithRouter(<App />, "/categories/strings/");
 
         const heading2 = await screen.findByRole("heading", { level: 2 });
         expect(heading2).toHaveTextContent(/strings/i);
 
-        // Wait for AJAX requests to finish before unmounting to avoid an error
-        await screen.findAllByRole("heading", { level: 3 });
+        unmount();
       });
     });
 
@@ -75,18 +69,17 @@ describe("<App />", () => {
       it("displays an error message", async () => {
         server.use(
           rest.get(`${ENDPOINTS.categories}/strings`, (_req, res, ctx) => {
-            return res(ctx.set(HEADERS), ctx.status(500, "Server error"));
+            return res(ctx.status(500, "Server error"));
           })
         );
 
         renderWithRouter(<App />, "/categories/strings/");
 
         await waitFor(
-          () => expect(screen.queryByText(/loading/i)).not.toBeInTheDocument(),
+          () =>
+            expect(screen.getByText(/500 Server error/)).toBeInTheDocument(),
           { timeout: 2000 }
         );
-
-        expect(screen.getByText(/500 server error/i)).toBeInTheDocument();
       });
     });
 
@@ -95,7 +88,7 @@ describe("<App />", () => {
         renderWithRouter(<App />, "/categories/fake-category/");
 
         const heading2 = await screen.findByRole("heading", { level: 2 });
-        expect(heading2).toHaveTextContent(/404/i);
+        expect(heading2).toHaveTextContent(/404/);
       });
     });
   });

@@ -1,20 +1,16 @@
 import React, { useEffect, useState } from "react";
 
-import { api } from "#api";
-import type { APIError } from "#api";
+import { getUsers } from "#api";
 
 export function ApiDiv(): JSX.Element {
   const [content, setContent] = useState("...Loading");
 
   useEffect(() => {
-    api.getUsers().then(
-      ({ data }) => {
-        setContent(`Users: ${JSON.stringify(data)}`);
-      },
-      (err: APIError) => {
-        setContent(err.uiErrorMessage);
-      }
-    );
+    const { cancel } = getUsers({
+      onSuccess: ({ users }) => setContent(`Users: ${JSON.stringify(users)}`),
+      onError: (uiErrorMessage) => setContent(uiErrorMessage),
+    });
+    return cancel;
   }, []);
 
   return <div>{content}</div>;

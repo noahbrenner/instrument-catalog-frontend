@@ -5,8 +5,8 @@
  */
 
 // eslint-disable-next-line import/no-extraneous-dependencies
-import { rest } from "msw";
-import type { RequestHandler } from "msw";
+import { context as ctx, response, rest } from "msw";
+import type { MockedResponse, RequestHandler, ResponseTransformer } from "msw";
 
 import { ENDPOINTS } from "./api_endpoints";
 import type { ICategory, IInstrument, IUser } from "./types";
@@ -14,9 +14,9 @@ import type { ICategory, IInstrument, IUser } from "./types";
 export { ENDPOINTS };
 
 export const MOCK_DATA: {
-  categories: readonly ICategory[];
-  instruments: readonly IInstrument[];
-  users: readonly IUser[];
+  categories: ICategory[];
+  instruments: IInstrument[];
+  users: IUser[];
 } = {
   categories: [
     {
@@ -114,11 +114,17 @@ export const MOCK_DATA: {
     { name: "Nonny Mouse", id: 1337 },
     { name: "No Body", id: 12345 },
   ],
-} as const;
+};
 
-export const HEADERS: Record<string, string | string[]> = {
-  "Access-Control-Allow-Origin": "*",
-} as const;
+export function apiResponse(
+  ...transformers: ResponseTransformer[]
+): MockedResponse {
+  // `msw` adds headers using the global `Headers`, which doesn't exist in node,
+  // but this header only affects the browser, so we can just omit it in node
+  return typeof Headers === "undefined"
+    ? response(...transformers)
+    : response(...transformers, ctx.set("Access-Control-Allow-Origin", "*"));
+}
 
 /*
  * The RequestHandler type needs `any` so handlers can have different responses:
@@ -126,57 +132,67 @@ export const HEADERS: Record<string, string | string[]> = {
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const handlers: RequestHandler<any, any, any, any>[] = [
+  // GET all Categories: /categories/all
+  rest.get(`${ENDPOINTS.categories}/all`, () => {
+    const { categories } = MOCK_DATA;
+    return apiResponse(ctx.json({ categories }));
+  }),
+
   // GET Category: /categories/<category-slug>
-  rest.get(`${ENDPOINTS.categories}/:categorySlug`, (req, res, ctx) => {
+  rest.get(`${ENDPOINTS.categories}/:categorySlug`, (req) => {
     const category = MOCK_DATA.categories.find(
       ({ slug }) => slug === req.params.categorySlug
     );
     return category
-      ? res(ctx.set(HEADERS), ctx.json(category))
-      : res(ctx.set(HEADERS), ctx.status(404));
+      ? apiResponse(ctx.json(category))
+      : apiResponse(ctx.status(404));
   }),
 
-  // GET Categories: /categories
-  rest.get(ENDPOINTS.categories, (_req, res, ctx) => {
-    const { categories } = MOCK_DATA;
-    return res(ctx.set(HEADERS), ctx.json({ categories }));
+  // GET all Instruments: /instruments/all
+  rest.get(`${ENDPOINTS.instruments}/all`, () => {
+    const { instruments } = MOCK_DATA;
+    return apiResponse(ctx.json({ instruments }));
   }),
 
   // GET Instrument: /instruments/<instrumentId>
-  rest.get(`${ENDPOINTS.instruments}/:id`, (req, res, ctx) => {
+  rest.get(`${ENDPOINTS.instruments}/:id`, (req) => {
     const instrument = MOCK_DATA.instruments.find(
       ({ id }) => id === Number(req.params.id)
     );
     return instrument
-      ? res(ctx.set(HEADERS), ctx.json(instrument))
-      : res(ctx.set(HEADERS), ctx.status(404));
+      ? apiResponse(ctx.json(instrument))
+      : apiResponse(ctx.status(404));
   }),
 
-  // GET Instruments: /instruments[?cat=<categoryId>]
-  rest.get(ENDPOINTS.instruments, (req, res, ctx) => {
+  // GET Instruments: /instruments?cat=<categoryId>
+  rest.get(ENDPOINTS.instruments, (req) => {
     const reqCategoryId = req.url.searchParams.get("cat");
 
-    // By default, return all instruments
-    let { instruments } = MOCK_DATA;
-
-    // /instruments?cat=<categoryId>
-    if (reqCategoryId !== null) {
-      if (!/^[0-9]+$/.test(reqCategoryId)) {
-        const error = "Category ID must be an integer.";
-        return res(ctx.set(HEADERS), ctx.status(400), ctx.json({ error }));
-      }
-
-      instruments = instruments.filter(
-        ({ categoryId }) => categoryId === Number(reqCategoryId)
-      );
+    if (reqCategoryId == null) {
+      const error = 'An instrument ID, category ID, or "all" is required';
+      return apiResponse(ctx.status(400), ctx.json({ error }));
     }
 
-    return res(ctx.set(HEADERS), ctx.json({ instruments }));
+    if (!/^[0-9]+$/.test(reqCategoryId)) {
+      const error = "Category ID must be an integer.";
+      return apiResponse(ctx.status(400), ctx.json({ error }));
+    }
+
+    // TODO Handle IDs having a valid format but no corresponding category
+    const instruments = MOCK_DATA.instruments.filter(
+      ({ categoryId }) => categoryId === Number(reqCategoryId)
+    );
+    return apiResponse(ctx.json({ instruments }));
   }),
 
-  // GET Users: /users
-  rest.get(ENDPOINTS.users, (_req, res, ctx) => {
+  // GET Users: /users/all
+  rest.get(`${ENDPOINTS.users}/all`, () => {
     const { users } = MOCK_DATA;
-    return res(ctx.set(HEADERS), ctx.json({ users }));
+    return apiResponse(ctx.json({ users }));
+  }),
+
+  // Default: 404
+  rest.get(`${process.env.API_ROOT}/*`, () => {
+    return apiResponse(ctx.status(404, "Not Found"));
   }),
 ];

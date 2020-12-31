@@ -1,8 +1,7 @@
 import type { RouteComponentProps } from "@reach/router";
 import React, { useEffect, useState } from "react";
 
-import { api } from "#api";
-import type { APIError } from "#api";
+import { getCategories } from "#api";
 import { Categories } from "#layouts/Categories";
 import type { ICategory } from "#src/types";
 
@@ -11,8 +10,8 @@ export default function CategoriesPage(_: RouteComponentProps): JSX.Element {
   const [loadingMessage, setLoadingMessage] = useState("...Loading");
 
   useEffect(() => {
-    api.getCategories().then(
-      ({ data }) => {
+    const { cancel } = getCategories({
+      onSuccess(data) {
         if (data.categories.length > 0) {
           setCategories(data.categories);
           setLoadingMessage("");
@@ -20,10 +19,12 @@ export default function CategoriesPage(_: RouteComponentProps): JSX.Element {
           setLoadingMessage("No categories have been defined yet.");
         }
       },
-      (err: APIError) => {
-        setLoadingMessage(err.uiErrorMessage);
-      }
-    );
+      onError(uiErrorMessage) {
+        setLoadingMessage(uiErrorMessage);
+      },
+    });
+
+    return cancel;
   }, []);
 
   return <Categories categories={categories} loadingMessage={loadingMessage} />;

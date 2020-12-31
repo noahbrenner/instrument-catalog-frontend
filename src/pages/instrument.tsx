@@ -2,8 +2,7 @@ import { useNavigate, useParams } from "@reach/router";
 import type { RouteComponentProps } from "@reach/router";
 import React, { useEffect, useState } from "react";
 
-import { api } from "#api";
-import type { APIError } from "#api";
+import { getInstrumentById } from "#api";
 import { Instrument } from "#layouts/Instrument";
 import NotFound from "#src/pages/404";
 import type { IInstrument } from "#src/types";
@@ -32,32 +31,38 @@ export default function InstrumentPage(_: RouteComponentProps): JSX.Element {
   useEffect(() => {
     if (!instrumentId.match(/^[0-9]+$/)) {
       setInstrumentExists(false);
-    } else if (instrument && instrument.id === Number(instrumentId)) {
-      // Make sure the URL reflects the correct instrument name & ends with "/"
+      return;
+    }
+
+    // Make sure the URL reflects the correct instrument name and ends with "/"
+    if (instrument && instrument.id === Number(instrumentId)) {
       const encodedName = encodeURIComponent(instrument.name);
       const canonicalPath = `/instruments/${instrument.id}/${encodedName}/`;
       if (window.location.pathname !== canonicalPath) {
         navigate(canonicalPath, { replace: true });
       }
-    } else {
-      // Reset the state before fetching new instrument data
-      setLoadingMessage("...Loading");
-      setInstrument(undefined);
-      setInstrumentExists(true); // Hide 404 unless we *know* it doesn't exist
-
-      api.getInstrumentById(Number(instrumentId)).then(
-        ({ data }) => {
-          setInstrument(data);
-        },
-        (err: APIError) => {
-          if (err.response?.status === 404) {
-            setInstrumentExists(false);
-          } else {
-            setLoadingMessage(err.uiErrorMessage);
-          }
-        }
-      );
+      return;
     }
+
+    // Reset the state before fetching new instrument data
+    setLoadingMessage("...Loading");
+    setInstrument(undefined);
+    setInstrumentExists(true); // Hide 404 unless we *know* it doesn't exist
+
+    const { cancel } = getInstrumentById(Number(instrumentId), {
+      onSuccess(instrumentData) {
+        setInstrument(instrumentData);
+      },
+      onError(uiErrorMessage, err) {
+        if (err.response?.status === 404) {
+          setInstrumentExists(false);
+        } else {
+          setLoadingMessage(uiErrorMessage);
+        }
+      },
+    });
+
+    return cancel;
   }, [instrumentId, instrument, window.location.pathname]);
 
   if (!instrumentExists) {

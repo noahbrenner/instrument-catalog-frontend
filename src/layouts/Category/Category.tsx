@@ -1,12 +1,11 @@
-/*
- * This component intentionally lacks unit tests
- * It has integration tests instead
+/**
+ * This component intentionally lacks unit tests (all behavior is delegated)
+ * It's covered by integration tests instead
  */
 
 import React, { useEffect, useState } from "react";
 
-import { api } from "#api";
-import type { APIError } from "#api";
+import { getInstrumentsByCategoryId } from "#api";
 import { CategoryDetail } from "#components/CategoryDetail";
 import { InstrumentList } from "#components/InstrumentList";
 import type { InstrumentListProps } from "#components/InstrumentList";
@@ -29,14 +28,16 @@ export function Category({
   >();
 
   useEffect(() => {
-    api.getInstrumentsByCategoryId(id).then(
-      ({ data }) => {
-        setInstruments(data.instruments);
-      },
-      (err: APIError) => {
-        setLoadingMessage(err.uiErrorMessage);
-      }
-    );
+    // Reset state
+    setLoadingMessage("...Loading");
+    setInstruments(undefined);
+
+    const { cancel } = getInstrumentsByCategoryId(id, {
+      onSuccess: (data) => setInstruments(data.instruments),
+      onError: (uiErrorMessage) => setLoadingMessage(uiErrorMessage),
+    });
+
+    return cancel;
   }, [id]);
 
   return (

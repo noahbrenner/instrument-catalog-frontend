@@ -32,6 +32,9 @@ module.exports = {
   },
 
   rules: {
+    // Let TypeScript handle validating return values
+    "consistent-return": "off",
+
     // Be explicit when an import is only used as a type
     "@typescript-eslint/consistent-type-imports": ["error"],
 

@@ -8,6 +8,12 @@ process.env.FRONTEND_MOCK_API_SERVER = "false";
 module.exports = {
   preset: "ts-jest",
 
+  globals: {
+    "ts-jest": {
+      isolatedModules: true,
+    },
+  },
+
   moduleNameMapper: {
     // Use import paths as defined in tsconfig.json
     ...pathsToModuleNameMapper(compilerOptions.paths, { prefix: "<rootDir>/" }),

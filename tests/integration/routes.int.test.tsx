@@ -110,5 +110,19 @@ describe("<App />", () => {
         unmount();
       });
     });
+
+    describe("given the route '/instruments/0/Flute/edit/'", () => {
+      it("displays the Flute Edit Instrument page", async () => {
+        const { unmount } = renderWithRouter(
+          <App />,
+          "/instruments/0/Flute/edit/"
+        );
+
+        const heading2 = await screen.findByRole("heading", { level: 2 });
+        expect(heading2).toHaveTextContent(/edit instrument.*flute/i);
+
+        unmount();
+      });
+    });
   });
 });

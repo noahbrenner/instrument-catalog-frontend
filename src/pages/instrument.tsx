@@ -1,9 +1,10 @@
-import { useLocation, useNavigate, useParams } from "@reach/router";
+import { Router, useLocation, useNavigate, useParams } from "@reach/router";
 import type { RouteComponentProps } from "@reach/router";
 import React, { useEffect, useState } from "react";
 
 import { getInstrumentById } from "#api";
 import { Instrument } from "#layouts/Instrument";
+import { InstrumentForm } from "#layouts/InstrumentForm";
 import NotFound from "#src/pages/404";
 import type { IInstrument } from "#src/types";
 
@@ -38,7 +39,9 @@ export default function InstrumentPage(_: RouteComponentProps): JSX.Element {
     // Make sure the URL reflects the correct instrument name and ends with "/"
     if (instrument && instrument.id === Number(instrumentId)) {
       const encodedName = encodeURIComponent(instrument.name);
-      const canonicalPath = `/instruments/${instrument.id}/${encodedName}/`;
+      const canonicalPath = location.pathname.match(/\/edit\/?$/)
+        ? `/instruments/${instrument.id}/${encodedName}/edit/`
+        : `/instruments/${instrument.id}/${encodedName}/`;
       if (location.pathname !== canonicalPath) {
         navigate(canonicalPath, { replace: true });
       }
@@ -71,12 +74,29 @@ export default function InstrumentPage(_: RouteComponentProps): JSX.Element {
   }
 
   return instrument ? (
-    <Instrument
-      name={instrument.name}
-      summary={instrument.summary}
-      description={instrument.description}
-      imageUrl={instrument.imageUrl}
-    />
+    <Router
+      basepath={`/instruments/${instrument.id}/${encodeURIComponent(
+        instrument.name
+      )}/`}
+    >
+      <Instrument
+        path="/"
+        name={instrument.name}
+        summary={instrument.summary}
+        description={instrument.description}
+        imageUrl={instrument.imageUrl}
+      />
+      <InstrumentForm
+        path="edit"
+        id={instrument.id}
+        categoryId={instrument.categoryId}
+        name={instrument.name}
+        summary={instrument.summary}
+        description={instrument.description}
+        imageUrl={instrument.imageUrl}
+      />
+      <NotFound default />
+    </Router>
   ) : (
     <p>{loadingMessage}</p>
   );

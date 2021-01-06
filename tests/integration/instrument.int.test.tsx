@@ -47,7 +47,8 @@ function pathnameChange(history: RouterHistory, timeout = 1000) {
 }
 
 describe("<InstrumentPage /> rendered inside <App />", () => {
-  describe("given the canonical path for an instrument", () => {
+  describe("given the canonical path for an instrument display page", () => {
+    // One instrument has a space in its name to verify URL encoding behavior
     it.each(["/instruments/0/Flute/", "/instruments/4/Double%20Bass/"])(
       "does not modify the path %s",
       async (path) => {
@@ -60,7 +61,20 @@ describe("<InstrumentPage /> rendered inside <App />", () => {
     );
   });
 
-  describe("given missing or extra characters in a path", () => {
+  describe("given the canonical path for an instrument edit page", () => {
+    it.each([
+      "/instruments/0/Flute/edit/",
+      "/instruments/4/Double%20Bass/edit/",
+    ])("does not modify the path %s", async (path) => {
+      const { history } = renderWithRouter(<App />, path);
+      await waitFor(() => {
+        expect(screen.queryByText(/loading/i)).not.toBeInTheDocument();
+      });
+      expect(history.location.pathname).toBe(path);
+    });
+  });
+
+  describe("given missing or extra characters in a display path", () => {
     const canonicalPath = "/instruments/0/Flute/";
     it.each([
       "/instruments/0",
@@ -76,9 +90,30 @@ describe("<InstrumentPage /> rendered inside <App />", () => {
     });
   });
 
+  describe("given missing or extra characters in an edit path", () => {
+    const canonicalPath = "/instruments/0/Flute/edit/";
+    it.each([
+      "/instruments/0/edit",
+      "/instruments/0/edit/",
+      "/instruments/0/Flute/edit",
+      "/instruments/0/wrong-name/edit",
+      "/instruments/0/wrong-name/edit/",
+      "/instruments/0/Flute/extra-segment/edit",
+      "/instruments/0/Flute/extra-segment/edit/",
+    ])(`redirects %s -> ${canonicalPath}`, async (path) => {
+      const { history, unmount } = renderWithRouter(<App />, path);
+      const nextPathname = await pathnameChange(history);
+      expect(nextPathname).toBe(canonicalPath);
+      unmount();
+    });
+  });
+
   describe("given a non-existent instrument ID", () => {
     it.each([
+      "/instruments",
+      "/instruments/",
       "/instruments/Flute/",
+      "/instruments/edit/",
       "/instruments/-2/",
       "/instruments/7000/", // Valid ID, but it's not in our mock data
     ])("displays the 404 error page for %s", async (path) => {
@@ -88,8 +123,15 @@ describe("<InstrumentPage /> rendered inside <App />", () => {
     });
   });
 
+  // The following tests check page content to verify that:
+  // 1. The correct component is rendered inside <InstrumentPage />'s <Router />
+  // 2. State does not go stale when navigating between <InstrumentPage /> pages
+
   describe("given a navigation from an invalid path to a valid path", () => {
-    it("renders data for the valid path", async () => {
+    it.each([
+      ["/instruments/0/Flute/", /^Flute/],
+      ["/instruments/4/Double%20Bass/edit/", /edit instrument.*double bass/i],
+    ])("renders data for the valid path %s", async (goodPath, headingText) => {
       const { history } = renderWithRouter(<App />, "/instruments/badPath/");
 
       // Invalid path
@@ -97,24 +139,44 @@ describe("<InstrumentPage /> rendered inside <App />", () => {
       expect(heading2Invalid).toHaveTextContent(/404/);
 
       // Valid path
-      await waitFor(() => history.navigate("/instruments/0/Flute/"));
+      await waitFor(() => history.navigate(goodPath));
       const heading2Valid = await screen.findByRole("heading", { level: 2 });
-      expect(heading2Valid).toHaveTextContent(/Flute/);
+      expect(heading2Valid).toHaveTextContent(headingText);
     });
   });
 
-  describe("given a navigation from one valid path to another", () => {
+  describe("given a navigation from one valid display path to another", () => {
     it("renders data for the second path", async () => {
       const { history } = renderWithRouter(<App />, "/instruments/0/Flute/");
 
       // First path
       const heading2First = await screen.findByRole("heading", { level: 2 });
-      expect(heading2First).toHaveTextContent(/Flute/);
+      expect(heading2First).toHaveTextContent(/^Flute/);
 
       // Second path
       await waitFor(() => history.navigate("/instruments/4/Double%20Bass/"));
       const heading2Second = await screen.findByRole("heading", { level: 2 });
-      expect(heading2Second).toHaveTextContent(/Double Bass/);
+      expect(heading2Second).toHaveTextContent(/^Double Bass/);
+    });
+  });
+
+  describe("given a navigation from one valid edit path to another", () => {
+    it("renders data for the second path", async () => {
+      const { history } = renderWithRouter(
+        <App />,
+        "/instruments/0/Flute/edit/"
+      );
+
+      // First path
+      const heading2First = await screen.findByRole("heading", { level: 2 });
+      expect(heading2First).toHaveTextContent(/edit instrument.* flute/i);
+
+      // Second path
+      await waitFor(() =>
+        history.navigate("/instruments/4/Double%20Bass/edit/")
+      );
+      const heading2Second = await screen.findByRole("heading", { level: 2 });
+      expect(heading2Second).toHaveTextContent(/edit instrument.*double bass/i);
     });
   });
 });

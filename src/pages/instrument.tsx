@@ -1,4 +1,4 @@
-import { useNavigate, useParams } from "@reach/router";
+import { useLocation, useNavigate, useParams } from "@reach/router";
 import type { RouteComponentProps } from "@reach/router";
 import React, { useEffect, useState } from "react";
 
@@ -26,6 +26,7 @@ export default function InstrumentPage(_: RouteComponentProps): JSX.Element {
   const [loadingMessage, setLoadingMessage] = useState("...Loading");
   const [instrument, setInstrument] = useState<IInstrument>();
   const [instrumentExists, setInstrumentExists] = useState(true);
+  const location = useLocation();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -38,7 +39,7 @@ export default function InstrumentPage(_: RouteComponentProps): JSX.Element {
     if (instrument && instrument.id === Number(instrumentId)) {
       const encodedName = encodeURIComponent(instrument.name);
       const canonicalPath = `/instruments/${instrument.id}/${encodedName}/`;
-      if (window.location.pathname !== canonicalPath) {
+      if (location.pathname !== canonicalPath) {
         navigate(canonicalPath, { replace: true });
       }
       return;
@@ -63,7 +64,7 @@ export default function InstrumentPage(_: RouteComponentProps): JSX.Element {
     });
 
     return cancel;
-  }, [instrumentId, instrument, window.location.pathname]);
+  }, [instrumentId, instrument, location.pathname]);
 
   if (!instrumentExists) {
     return <NotFound />;

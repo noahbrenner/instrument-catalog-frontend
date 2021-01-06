@@ -1,3 +1,10 @@
+/**
+ * This file mostly tests the handling of redirects in src/pages/instrument.tsx
+ *
+ * Tests that validate page *content* either go in an individual component's
+ * unit test file or in tests/integration/routes.int.test.tsx
+ */
+import type { History as RouterHistory } from "@reach/router";
 import { screen, waitFor } from "@testing-library/react";
 import React, { createContext } from "react";
 
@@ -14,9 +21,28 @@ jest.mock("@auth0/auth0-react", () => ({
 // kick in before that state changes (and we're not testing content here anyway)
 useAuth.mockReturnValue(LOADING);
 
-function waitForPageLoad() {
+/**
+ * Return a promise which resolves the next time `history.location` changes
+ *
+ * The promise resolves with the new location
+ * The promise rejects after a timeout (default 1 second) if no change occurs
+ */
+function pathnameChange(history: RouterHistory, timeout = 1000) {
   return waitFor(() => {
-    expect(screen.queryByText(/loading/i)).not.toBeInTheDocument();
+    return new Promise<string>((resolve, reject) => {
+      let timeoutRef: number;
+
+      const unsubscribe = history.listen(({ location }) => {
+        clearTimeout(timeoutRef);
+        unsubscribe();
+        resolve(location.pathname);
+      });
+
+      timeoutRef = setTimeout(() => {
+        unsubscribe();
+        reject();
+      }, timeout);
+    });
   });
 }
 
@@ -26,7 +52,9 @@ describe("<InstrumentPage /> rendered inside <App />", () => {
       "does not modify the path %s",
       async (path) => {
         const { history } = renderWithRouter(<App />, path);
-        await waitForPageLoad();
+        await waitFor(() => {
+          expect(screen.queryByText(/loading/i)).not.toBeInTheDocument();
+        });
         expect(history.location.pathname).toBe(path);
       }
     );
@@ -38,11 +66,13 @@ describe("<InstrumentPage /> rendered inside <App />", () => {
       "/instruments/0",
       "/instruments/0/",
       "/instruments/0/Flute",
-      "/instruments/0/Flute/foo/",
+      "/instruments/0/wrong-name",
+      "/instruments/0/wrong-name/",
+      "/instruments/0/Flute/extra-segment/",
     ])(`redirects %s -> ${canonicalPath}`, async (path) => {
       const { history } = renderWithRouter(<App />, path);
-      await waitForPageLoad();
-      expect(history.location.pathname).toBe(canonicalPath);
+      const nextPathname = await pathnameChange(history);
+      expect(nextPathname).toBe(canonicalPath);
     });
   });
 
@@ -53,8 +83,7 @@ describe("<InstrumentPage /> rendered inside <App />", () => {
       "/instruments/7000/", // Valid ID, but it's not in our mock data
     ])("displays the 404 error page for %s", async (path) => {
       renderWithRouter(<App />, path);
-      await waitForPageLoad();
-      const heading2 = screen.getByRole("heading", { level: 2 });
+      const heading2 = await screen.findByRole("heading", { level: 2 });
       expect(heading2).toHaveTextContent(/404/);
     });
   });
@@ -67,7 +96,7 @@ describe("<InstrumentPage /> rendered inside <App />", () => {
       const heading2Invalid = await screen.findByRole("heading", { level: 2 });
       expect(heading2Invalid).toHaveTextContent(/404/);
 
-      // await waitForPageLoad();
+      // Valid path
       await waitFor(() => history.navigate("/instruments/0/Flute/"));
       const heading2Valid = await screen.findByRole("heading", { level: 2 });
       expect(heading2Valid).toHaveTextContent(/Flute/);
@@ -78,14 +107,14 @@ describe("<InstrumentPage /> rendered inside <App />", () => {
     it("renders data for the second path", async () => {
       const { history } = renderWithRouter(<App />, "/instruments/0/Flute/");
 
-      // First valid path
-      const heading2Invalid = await screen.findByRole("heading", { level: 2 });
-      expect(heading2Invalid).toHaveTextContent(/Flute/);
+      // First path
+      const heading2First = await screen.findByRole("heading", { level: 2 });
+      expect(heading2First).toHaveTextContent(/Flute/);
 
-      // Second valid path
+      // Second path
       await waitFor(() => history.navigate("/instruments/4/Double%20Bass/"));
-      const heading2Valid = await screen.findByRole("heading", { level: 2 });
-      expect(heading2Valid).toHaveTextContent(/Double Bass/);
+      const heading2Second = await screen.findByRole("heading", { level: 2 });
+      expect(heading2Second).toHaveTextContent(/Double Bass/);
     });
   });
 });

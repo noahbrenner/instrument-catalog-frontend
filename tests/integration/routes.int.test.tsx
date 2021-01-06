@@ -1,4 +1,4 @@
-import { screen, waitFor } from "@testing-library/react";
+import { screen } from "@testing-library/react";
 import React, { createContext } from "react";
 
 import { useAuth, UNAUTHENTICATED, AUTHENTICATED } from "#mocks/useAuth";
@@ -24,10 +24,10 @@ describe("<App />", () => {
       it("displays content from Home page", async () => {
         const { unmount } = renderWithRouter(<App />, "/");
 
-        const heading1 = screen.getByRole("heading", { level: 1 });
+        const heading1 = await screen.findByRole("heading", { level: 1 });
         expect(heading1).toHaveTextContent(/instrument catalog/i);
 
-        const heading2 = screen.getByRole("heading", { level: 2 });
+        const heading2 = await screen.findByRole("heading", { level: 2 });
         expect(heading2).toHaveTextContent(/browse by category/i);
 
         unmount();
@@ -35,10 +35,10 @@ describe("<App />", () => {
     });
 
     describe("given the route '/does-not-exist/'", () => {
-      it("displays the 404 error page", () => {
+      it("displays the 404 error page", async () => {
         renderWithRouter(<App />, "/does-not-exist/");
 
-        const heading2 = screen.getByRole("heading", { level: 2 });
+        const heading2 = await screen.findByRole("heading", { level: 2 });
         expect(heading2).toHaveTextContent(/404/);
       });
     });
@@ -72,14 +72,11 @@ describe("<App />", () => {
             return res(ctx.status(500, "Server error"));
           })
         );
-
         renderWithRouter(<App />, "/categories/strings/");
 
-        await waitFor(
-          () =>
-            expect(screen.getByText(/500 Server error/)).toBeInTheDocument(),
-          { timeout: 2000 }
-        );
+        expect(
+          await screen.findByText(/500 Server error/, {}, { timeout: 2000 })
+        ).toBeInTheDocument();
       });
     });
 
@@ -89,6 +86,28 @@ describe("<App />", () => {
 
         const heading2 = await screen.findByRole("heading", { level: 2 });
         expect(heading2).toHaveTextContent(/404/);
+      });
+    });
+
+    describe("given the route '/instruments/'", () => {
+      it("displays the 404 error page", async () => {
+        const { unmount } = renderWithRouter(<App />, "/instruments/");
+
+        const heading2 = await screen.findByRole("heading", { level: 2 });
+        expect(heading2).toHaveTextContent(/404/);
+
+        unmount();
+      });
+    });
+
+    describe("given the route '/instruments/0/Flute/'", () => {
+      it("displays the Flute Instrument page", async () => {
+        const { unmount } = renderWithRouter(<App />, "/instruments/0/Flute/");
+
+        const heading2 = await screen.findByRole("heading", { level: 2 });
+        expect(heading2).toHaveTextContent(/Flute/);
+
+        unmount();
       });
     });
   });

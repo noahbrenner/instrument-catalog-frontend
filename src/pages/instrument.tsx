@@ -1,12 +1,17 @@
 import { Router, useLocation, useNavigate, useParams } from "@reach/router";
 import type { RouteComponentProps } from "@reach/router";
-import React, { useEffect, useState } from "react";
+import React, { Suspense, useEffect, useState } from "react";
 
 import { getInstrumentById } from "#api";
-import { Instrument } from "#layouts/Instrument";
-import { InstrumentForm } from "#layouts/InstrumentForm";
 import NotFound from "#src/pages/404";
 import type { IInstrument } from "#src/types";
+import { lazy } from "#src/utils";
+
+const Instrument = lazy(() => import("#layouts/Instrument"), "Instrument");
+const InstrumentForm = lazy(
+  () => import("#layouts/InstrumentForm"),
+  "InstrumentForm"
+);
 
 interface InstrumentPageProps {
   instrumentId: string; // An integer, but the router passes it as a string
@@ -74,29 +79,30 @@ export default function InstrumentPage(_: RouteComponentProps): JSX.Element {
   }
 
   return instrument ? (
-    <Router
-      basepath={`/instruments/${instrument.id}/${encodeURIComponent(
-        instrument.name
-      )}/`}
-    >
-      <Instrument
-        path="/"
-        name={instrument.name}
-        summary={instrument.summary}
-        description={instrument.description}
-        imageUrl={instrument.imageUrl}
-      />
-      <InstrumentForm
-        path="edit"
-        id={instrument.id}
-        categoryId={instrument.categoryId}
-        name={instrument.name}
-        summary={instrument.summary}
-        description={instrument.description}
-        imageUrl={instrument.imageUrl}
-      />
-      <NotFound default />
-    </Router>
+    <Suspense fallback={<p>{loadingMessage}</p>}>
+      <Router
+        basepath={`/instruments/${instrument.id}/${encodeURIComponent(
+          instrument.name
+        )}/`}
+      >
+        <Instrument
+          path="/"
+          name={instrument.name}
+          summary={instrument.summary}
+          description={instrument.description}
+          imageUrl={instrument.imageUrl}
+        />
+        <InstrumentForm
+          path="edit"
+          id={instrument.id}
+          categoryId={instrument.categoryId}
+          name={instrument.name}
+          summary={instrument.summary}
+          description={instrument.description}
+          imageUrl={instrument.imageUrl}
+        />
+      </Router>
+    </Suspense>
   ) : (
     <p>{loadingMessage}</p>
   );

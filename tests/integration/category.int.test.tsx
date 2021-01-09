@@ -3,7 +3,8 @@ import React, { createContext } from "react";
 
 import { useAuth, LOADING } from "#mocks/useAuth";
 import { App } from "#src/App";
-import { renderWithRouter } from "../helpers/renderWithRouter";
+import { renderWithRouter } from "#test_helpers/renderWithRouter";
+import { rest, server, ENDPOINTS } from "#test_helpers/server";
 
 // Mock Auth0Provider as a noop
 jest.mock("@auth0/auth0-react", () => ({
@@ -28,6 +29,30 @@ describe("<CategoryPage /> rendered inside <App />", () => {
       expect(headings3).toHaveLength(2);
       expect(headings3[0]).toHaveTextContent("Timpani");
       expect(headings3[1]).toHaveTextContent("Marimba");
+    });
+  });
+
+  describe("given the path /categories/percussion/ and a server error", () => {
+    it("displays the error message from the API server", async () => {
+      server.use(
+        rest.get(`${ENDPOINTS.categories}/strings`, (_req, res, ctx) => {
+          return res(ctx.status(500, "Server error"));
+        })
+      );
+      renderWithRouter(<App />, "/categories/strings/");
+
+      expect(
+        await screen.findByText(/500 Server error/, {}, { timeout: 2000 })
+      ).toBeInTheDocument();
+    });
+  });
+
+  describe("given the path /categories/fake-category/", () => {
+    it("displays the 404 error page", async () => {
+      renderWithRouter(<App />, "/categories/fake-category/");
+
+      const heading2 = await screen.findByRole("heading", { level: 2 });
+      expect(heading2).toHaveTextContent(/404/);
     });
   });
 

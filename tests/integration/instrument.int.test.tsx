@@ -10,7 +10,7 @@ import React, { createContext } from "react";
 
 import { useAuth, LOADING } from "#mocks/useAuth";
 import { App } from "#src/App";
-import { renderWithRouter } from "../helpers/renderWithRouter";
+import { renderWithRouter } from "#test_helpers/renderWithRouter";
 
 // Mock Auth0Provider as a noop
 jest.mock("@auth0/auth0-react", () => ({

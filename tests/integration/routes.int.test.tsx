@@ -3,8 +3,7 @@ import React, { createContext } from "react";
 
 import { useAuth, UNAUTHENTICATED, AUTHENTICATED } from "#mocks/useAuth";
 import { App } from "#src/App";
-import { rest, server, ENDPOINTS } from "#test_helpers/server";
-import { renderWithRouter } from "../helpers/renderWithRouter";
+import { renderWithRouter } from "#test_helpers/renderWithRouter";
 
 // Mock Auth0Provider as a noop
 jest.mock("@auth0/auth0-react", () => ({
@@ -62,30 +61,6 @@ describe("<App />", () => {
         expect(heading2).toHaveTextContent(/strings/i);
 
         unmount();
-      });
-    });
-
-    describe("given the route '/categories/strings/' and a server error", () => {
-      it("displays an error message", async () => {
-        server.use(
-          rest.get(`${ENDPOINTS.categories}/strings`, (_req, res, ctx) => {
-            return res(ctx.status(500, "Server error"));
-          })
-        );
-        renderWithRouter(<App />, "/categories/strings/");
-
-        expect(
-          await screen.findByText(/500 Server error/, {}, { timeout: 2000 })
-        ).toBeInTheDocument();
-      });
-    });
-
-    describe("given the route '/categories/fake-category/'", () => {
-      it("displays the 404 error page", async () => {
-        renderWithRouter(<App />, "/categories/fake-category/");
-
-        const heading2 = await screen.findByRole("heading", { level: 2 });
-        expect(heading2).toHaveTextContent(/404/);
       });
     });
 

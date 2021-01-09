@@ -5,10 +5,10 @@ import React, { Suspense, useEffect, useState } from "react";
 import { getInstrumentById } from "#api";
 import NotFound from "#src/pages/404";
 import type { IInstrument } from "#src/types";
-import { lazy } from "#src/utils";
+import { lazyNamed } from "#src/utils";
 
-const Instrument = lazy(() => import("#layouts/Instrument"), "Instrument");
-const InstrumentForm = lazy(
+const Instrument = lazyNamed(() => import("#layouts/Instrument"), "Instrument");
+const InstrumentForm = lazyNamed(
   () => import("#layouts/InstrumentForm"),
   "InstrumentForm"
 );

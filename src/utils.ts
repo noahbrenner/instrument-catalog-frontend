@@ -13,6 +13,9 @@ export function lazy<T extends ComponentType<any>, K extends string>(
   exportedName: K = "default"
 ): LazyExoticComponent<T> {
   return reactLazy(async () => ({
+    // NOTE This dynamic property access breaks tree shaking for the imported
+    // module! That isn't impacting this site's bundles though, since we only
+    // export one component per module.
     default: (await factory())[exportedName],
   }));
 }

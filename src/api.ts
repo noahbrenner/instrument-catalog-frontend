@@ -16,7 +16,6 @@ import type {
   ICategory,
   IInstrument,
   IInstruments,
-  IUsers,
 } from "#src/types";
 
 axiosRetry(axios, {
@@ -126,14 +125,5 @@ export function getInstrumentById(
   return baseRequest(handlers, {
     method: "GET",
     url: `${ENDPOINTS.instruments}/${id}`,
-  });
-}
-
-/* USERS */
-
-export function getUsers(handlers: APIHandlers<IUsers>): APIUtils {
-  return baseRequest(handlers, {
-    method: "GET",
-    url: `${ENDPOINTS.users}/all`,
   });
 }

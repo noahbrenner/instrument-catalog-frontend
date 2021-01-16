@@ -55,7 +55,3 @@ export interface IUser {
   // picture: string; // URL
   // updated_at: string; // ISO 8601 Date and time in UTC
 }
-
-export interface IUsers {
-  users: IUser[];
-}

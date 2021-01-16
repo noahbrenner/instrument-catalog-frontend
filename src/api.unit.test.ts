@@ -7,7 +7,6 @@ import {
   getInstruments,
   getInstrumentsByCategoryId,
   getInstrumentById,
-  getUsers,
 } from "#api";
 import type { APIHandlers, APIUtils, RequestParams } from "#api";
 
@@ -228,7 +227,6 @@ const apiFunctions: [string, (handlers: APIHandlers<unknown>) => APIUtils][] = [
     (handlers) => getInstrumentsByCategoryId(2, handlers),
   ],
   ["getInstrumentById", (handlers) => getInstrumentById(4, handlers)],
-  ["getUsers", (handlers) => getUsers(handlers)],
 ];
 
 describe("API functions", () => {
@@ -452,19 +450,5 @@ describe("getInstrumentById()", () => {
         expect(uiErrorMessage).toMatch(/Error from server/);
       }
     );
-  });
-});
-
-describe("getUsers()", () => {
-  describe("given a successful API response", () => {
-    it("calls onSuccess() with the expected data", async () => {
-      const handlers = { onSuccess: jest.fn(), onError: jest.fn() };
-      const { completed } = getUsers(handlers);
-      await completed;
-
-      const { users } = MOCK_DATA;
-      expect(handlers.onSuccess).toBeCalledWith({ users });
-      expect(handlers.onError).not.toBeCalled();
-    });
   });
 });

@@ -194,12 +194,6 @@ export const handlers: RequestHandler<any, any, any, any>[] = [
     return apiResponse(ctx.json({ instruments }));
   }),
 
-  // GET Users: /users/all
-  rest.get(`${ENDPOINTS.users}/all`, () => {
-    const { users } = MOCK_DATA;
-    return apiResponse(ctx.json({ users }));
-  }),
-
   // Default: 404
   rest.get(`${process.env.API_ROOT}/*`, () => {
     return apiResponse(ctx.status(404, "Not Found"));

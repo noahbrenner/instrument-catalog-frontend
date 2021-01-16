@@ -13,6 +13,9 @@ import type { ICategory, IInstrument, IUser } from "./types";
 
 export { ENDPOINTS };
 
+const userId0: IUser["sub"] = "google-oauth2|1337";
+const userId1: IUser["sub"] = "google-oauth2|12345";
+
 export const MOCK_DATA: {
   categories: ICategory[];
   instruments: IInstrument[];
@@ -48,6 +51,7 @@ export const MOCK_DATA: {
     {
       id: 0,
       categoryId: 0,
+      userId: userId0,
       name: "Flute",
       summary: "Flute summary",
       description: "Long description of flutes.",
@@ -57,6 +61,7 @@ export const MOCK_DATA: {
     {
       id: 1,
       categoryId: 0,
+      userId: userId1,
       name: "Clarinet",
       summary: "Clarinet summary",
       description: "Long description of clarinets.",
@@ -66,6 +71,7 @@ export const MOCK_DATA: {
     {
       id: 2,
       categoryId: 1,
+      userId: userId0,
       name: "Timpani",
       summary: "Timpani summary",
       description: "Long description of timpani.",
@@ -75,6 +81,7 @@ export const MOCK_DATA: {
     {
       id: 3,
       categoryId: 1,
+      userId: userId1,
       name: "Marimba",
       summary: "Marimba summary",
       description: "Long description of marimbas.",
@@ -84,6 +91,7 @@ export const MOCK_DATA: {
     {
       id: 4,
       categoryId: 2,
+      userId: userId0,
       name: "Double Bass",
       summary: "Double bass summary",
       description: "Long description of double basses.",
@@ -93,6 +101,7 @@ export const MOCK_DATA: {
     {
       id: 5,
       categoryId: 2,
+      userId: userId1,
       name: "Guitar",
       summary: "Guitar summary",
       description: "Long description of guitars.",
@@ -102,6 +111,7 @@ export const MOCK_DATA: {
     {
       id: 6,
       categoryId: 2,
+      userId: userId0,
       name: "Harp",
       summary: "Harp summary",
       description: "Long description of harps.",
@@ -110,9 +120,8 @@ export const MOCK_DATA: {
     },
   ],
   users: [
-    { name: "Frida Permissions", id: 777 },
-    { name: "Nonny Mouse", id: 1337 },
-    { name: "No Body", id: 12345 },
+    { name: "Nonny Mouse", sub: userId0 },
+    { name: "No Body", sub: userId1 },
   ],
 };
 

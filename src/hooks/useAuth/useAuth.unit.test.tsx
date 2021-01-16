@@ -112,7 +112,7 @@ describe("useAuth", () => {
         isLoading: false,
         isAuthenticated: true,
         error: undefined,
-        user: { name: "Foo Name" },
+        user: { name: "Foo Name", sub: "foo-provider|id" },
       });
       render(<TestComponent />);
       expect(screen.getByTestId("state")).toHaveTextContent(/^AUTHENTICATED$/);

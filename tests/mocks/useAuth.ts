@@ -18,6 +18,7 @@ import { mocked } from "ts-jest/utils";
 
 import { useAuth as useAuthOriginal } from "#hooks/useAuth";
 import type { Auth } from "#hooks/useAuth";
+import type { IUser } from "#src/types";
 
 // THIS IS A SIDE EFFECT! Importing this mock module mocks the original
 jest.mock("#hooks/useAuth");
@@ -28,7 +29,7 @@ export const useAuth = mocked(useAuthOriginal);
 export const login = jest.fn();
 export const logout = jest.fn();
 
-export const user = {};
+export const user: IUser = { name: "Foo Bar", sub: "provider-authtype|123" };
 
 export const LOADING: Auth & { state: "LOADING" } = {
   state: "LOADING",

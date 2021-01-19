@@ -5,7 +5,7 @@ import React, { Suspense, useEffect, useState } from "react";
 import { getInstrumentById } from "#api";
 import NotFound from "#src/pages/404";
 import type { IInstrument } from "#src/types";
-import { lazyNamed } from "#src/utils";
+import { lazyNamed } from "#utils/lazy_named";
 
 const Instrument = lazyNamed(() => import("#layouts/Instrument"), "Instrument");
 const InstrumentForm = lazyNamed(

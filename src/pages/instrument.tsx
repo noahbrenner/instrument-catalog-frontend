@@ -8,6 +8,7 @@ import { useAuth } from "#hooks/useAuth";
 import NotFound from "#src/pages/404";
 import type { IInstrument } from "#src/types";
 import { canEditOrDelete } from "#utils/access_control";
+import { getInstrumentPath } from "#utils/paths";
 import { lazyNamed } from "#utils/lazy_named";
 
 const Instrument = lazyNamed(() => import("#layouts/Instrument"), "Instrument");
@@ -15,13 +16,6 @@ const InstrumentForm = lazyNamed(
   () => import("#layouts/InstrumentForm"),
   "InstrumentForm"
 );
-
-function getInstrumentPath(instrument: IInstrument, isEditPage = false) {
-  const encodedName = encodeURIComponent(instrument.name);
-  return isEditPage
-    ? `/instruments/${instrument.id}/${encodedName}/edit/`
-    : `/instruments/${instrument.id}/${encodedName}/`;
-}
 
 interface InstrumentPageProps {
   instrumentId: string; // An integer, but the router passes it as a string

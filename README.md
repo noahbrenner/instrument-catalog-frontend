@@ -57,6 +57,7 @@
           return callback(null, user, context);
         }
         ```
+    - Now that you have an admin account, it's a good idea to create an additional account on the dev site _without_ the admin role so that you can easily view the site as a regular user.
 
 ## Scripts for local development
 

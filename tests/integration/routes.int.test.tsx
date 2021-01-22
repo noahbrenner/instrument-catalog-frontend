@@ -75,26 +75,14 @@ describe("<App />", () => {
       });
     });
 
+    // This quick test is mostly for documenting the route. More thorough tests
+    // for Instrument & Instrument Edit pages are in instrument.int.test.tsx
     describe("given the route '/instruments/0/Flute/'", () => {
       it("displays the Flute Instrument page", async () => {
         const { unmount } = renderWithRouter(<App />, "/instruments/0/Flute/");
 
         const heading2 = await screen.findByRole("heading", { level: 2 });
         expect(heading2).toHaveTextContent(/Flute/);
-
-        unmount();
-      });
-    });
-
-    describe("given the route '/instruments/0/Flute/edit/'", () => {
-      it("displays the Flute Edit Instrument page", async () => {
-        const { unmount } = renderWithRouter(
-          <App />,
-          "/instruments/0/Flute/edit/"
-        );
-
-        const heading2 = await screen.findByRole("heading", { level: 2 });
-        expect(heading2).toHaveTextContent(/edit instrument.*flute/i);
 
         unmount();
       });

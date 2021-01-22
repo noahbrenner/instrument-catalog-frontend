@@ -52,3 +52,9 @@ export const AUTHENTICATED: Auth & { state: "AUTHENTICATED" } = {
   user,
   logout,
 };
+
+export const AUTHENTICATED_ADMIN: Auth & { state: "AUTHENTICATED" } = {
+  state: "AUTHENTICATED",
+  user: { ...user, "http:auth/roles": ["admin"] },
+  logout,
+};

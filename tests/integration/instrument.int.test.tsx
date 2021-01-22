@@ -8,18 +8,22 @@ import type { History as RouterHistory } from "@reach/router";
 import { screen, waitFor } from "@testing-library/react";
 import React, { createContext } from "react";
 
-import { useAuth, LOADING } from "#mocks/useAuth";
+import {
+  useAuth,
+  AUTHENTICATED,
+  AUTHENTICATED_ADMIN,
+  ERRORED,
+  LOADING,
+  UNAUTHENTICATED,
+} from "#mocks/useAuth";
 import { App } from "#src/App";
+import { MOCK_DATA } from "#src/server_routes.mock";
 import { renderWithRouter } from "#test_helpers/renderWithRouter";
 
 // Mock Auth0Provider as a noop
 jest.mock("@auth0/auth0-react", () => ({
   Auth0Provider: createContext(undefined).Provider,
 }));
-
-// We're only testing the LOADING auth state because any router redirects should
-// kick in before that state changes (and we're not testing content here anyway)
-useAuth.mockReturnValue(LOADING);
 
 /**
  * Return a promise which resolves the next time `history.location` changes
@@ -46,7 +50,11 @@ function pathnameChange(history: RouterHistory, timeout = 1000) {
   });
 }
 
-describe("<InstrumentPage /> rendered inside <App />", () => {
+describe("<InstrumentPage /> rendered inside <App /> when logged out", () => {
+  beforeEach(() => {
+    useAuth.mockReturnValue(UNAUTHENTICATED);
+  });
+
   describe("given the canonical path for an instrument display page", () => {
     // One instrument has a space in its name to verify URL encoding behavior
     it.each(["/instruments/0/Flute/", "/instruments/4/Double%20Bass/"])(
@@ -129,9 +137,9 @@ describe("<InstrumentPage /> rendered inside <App />", () => {
 
   describe("given a navigation from an invalid path to a valid path", () => {
     it.each([
-      ["/instruments/0/Flute/", /^Flute/],
-      ["/instruments/4/Double%20Bass/edit/", /edit instrument.*double bass/i],
-    ])("renders data for the valid path %s", async (goodPath, headingText) => {
+      ["/instruments/0/Flute/", /\bFlute\b/],
+      ["/instruments/4/Double%20Bass/edit/", /\bDouble Bass\b/],
+    ])("renders data for the valid path %s", async (goodPath, textContent) => {
       const { history } = renderWithRouter(<App />, "/instruments/badPath/");
 
       // Invalid path
@@ -140,8 +148,7 @@ describe("<InstrumentPage /> rendered inside <App />", () => {
 
       // Valid path
       await waitFor(() => history.navigate(goodPath));
-      const heading2Valid = await screen.findByRole("heading", { level: 2 });
-      expect(heading2Valid).toHaveTextContent(headingText);
+      expect((await screen.findAllByText(textContent))[0]).toBeInTheDocument();
     });
   });
 
@@ -168,15 +175,102 @@ describe("<InstrumentPage /> rendered inside <App />", () => {
       );
 
       // First path
-      const heading2First = await screen.findByRole("heading", { level: 2 });
-      expect(heading2First).toHaveTextContent(/edit instrument.* flute/i);
+      expect((await screen.findAllByText(/\bFlute\b/))[0]).toBeInTheDocument();
 
       // Second path
       await waitFor(() =>
         history.navigate("/instruments/4/Double%20Bass/edit/")
       );
-      const heading2Second = await screen.findByRole("heading", { level: 2 });
-      expect(heading2Second).toHaveTextContent(/edit instrument.*double bass/i);
+      expect(
+        (await screen.findAllByText(/\bDouble Bass\b/))[0]
+      ).toBeInTheDocument();
+    });
+  });
+});
+
+describe("<InstrumentPage /> inside <App /> at an instrument edit path", () => {
+  const editPagePath = "/instruments/0/Flute/edit/";
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  const flute = MOCK_DATA.instruments.find(({ id }) => id === 0)!;
+
+  describe("given the LOADING auth state", () => {
+    it("displays the loading message", async () => {
+      useAuth.mockReturnValue(LOADING);
+      const { unmount } = renderWithRouter(<App />, editPagePath);
+
+      expect(await screen.findByText(/loading/i)).toBeInTheDocument();
+      unmount();
+    });
+  });
+
+  describe("given the ERRORED auth state", () => {
+    it('displays a "Not Permitted" message', async () => {
+      useAuth.mockReturnValue(ERRORED);
+      const { unmount } = renderWithRouter(<App />, editPagePath);
+
+      const heading2 = await screen.findByRole("heading", { level: 2 });
+      expect(heading2).toHaveTextContent("Not Permitted");
+      expect(screen.getByText(/you need to log in/i)).toBeInTheDocument();
+      unmount();
+    });
+  });
+
+  describe("given an UNAUTHENTICATED (logged out) user", () => {
+    it('displays a "Not Permitted" message', async () => {
+      useAuth.mockReturnValue(UNAUTHENTICATED);
+      const { unmount } = renderWithRouter(<App />, editPagePath);
+
+      const heading2 = await screen.findByRole("heading", { level: 2 });
+      expect(heading2).toHaveTextContent("Not Permitted");
+      expect(screen.getByText(/you need to log in/i)).toBeInTheDocument();
+      unmount();
+    });
+  });
+
+  // describe("given a user who does not own the instrument", () => {
+  describe("given an AUTHENTICATED user who doesn't own the instrument", () => {
+    it('displays a "Not Permitted" message', async () => {
+      useAuth.mockReturnValue({
+        ...AUTHENTICATED,
+        user: { ...AUTHENTICATED.user, sub: `${flute.userId}notOwner` },
+      });
+      const { unmount } = renderWithRouter(<App />, editPagePath);
+
+      const heading2 = await screen.findByRole("heading", { level: 2 });
+      expect(heading2).toHaveTextContent("Not Permitted");
+      expect(
+        screen.getByText(/you can only edit instruments.*created/i)
+      ).toBeInTheDocument();
+
+      unmount();
+    });
+  });
+
+  describe("given the AUTHENTICATED user who owns the instrument", () => {
+    it("displays the <InstrumentForm /> edit page", async () => {
+      useAuth.mockReturnValue({
+        ...AUTHENTICATED,
+        user: { ...AUTHENTICATED.user, sub: flute.userId },
+      });
+      const { unmount } = renderWithRouter(<App />, editPagePath);
+
+      const heading2 = await screen.findByRole("heading", { level: 2 });
+      expect(heading2).toHaveTextContent(/edit instrument.*flute/i);
+
+      unmount();
+    });
+  });
+
+  describe("given an AUTHENTICATED admin user", () => {
+    it("displays the <InstrumentForm /> edit page", async () => {
+      useAuth.mockReturnValue(AUTHENTICATED_ADMIN);
+      const { unmount } = renderWithRouter(<App />, editPagePath);
+
+      expect(AUTHENTICATED_ADMIN.user.sub).not.toEqual(flute.userId);
+      const heading2 = await screen.findByRole("heading", { level: 2 });
+      expect(heading2).toHaveTextContent(/edit instrument.*flute/i);
+
+      unmount();
     });
   });
 });

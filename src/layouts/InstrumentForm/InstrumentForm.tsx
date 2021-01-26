@@ -156,7 +156,9 @@ export function InstrumentForm({
             />
           </label>
         </p>
-        <button type="submit">Submit</button>
+        <button type="submit" disabled={categories.length === 0}>
+          Submit
+        </button>
         <button type="button" onClick={handleReset}>
           Reset
         </button>

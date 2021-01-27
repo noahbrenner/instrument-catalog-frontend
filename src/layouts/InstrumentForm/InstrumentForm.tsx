@@ -42,6 +42,7 @@ export function InstrumentForm({
   imageUrl = "",
 }: InstrumentFormProps & RouteComponentProps): JSX.Element {
   const form = useRef<HTMLFormElement>(null);
+  const [isFormSubmitting, setIsFormSubmitting] = useState(false);
   const [categories, setCategories] = useState<ICategory[]>([]);
   useEffect(() => {
     const { cancel } = getCategories({
@@ -56,6 +57,8 @@ export function InstrumentForm({
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    setIsFormSubmitting(true);
+
     const formInputs = event.currentTarget.elements as InstrumentFormInputs;
     const formValues: InstrumentFormValues = {
       categoryId: Number(formInputs.categoryId.value),
@@ -64,6 +67,7 @@ export function InstrumentForm({
       description: formInputs.description.value,
       imageUrl: formInputs.imageUrl.value,
     };
+
     if (id === undefined) {
       const newInstrument: Omit<IInstrument, "id"> = {
         ...formValues,
@@ -102,10 +106,11 @@ export function InstrumentForm({
               name="name"
               id={INPUT_IDS.name}
               defaultValue={name}
+              disabled={isFormSubmitting}
             />
           </label>
         </p>
-        <fieldset>
+        <fieldset disabled={isFormSubmitting}>
           <legend>Category</legend>
           {categories.map((cat) => (
             <p key={cat.id}>
@@ -130,6 +135,7 @@ export function InstrumentForm({
               name="summary"
               id={INPUT_IDS.summary}
               defaultValue={summary}
+              disabled={isFormSubmitting}
             />
           </label>
         </p>
@@ -142,6 +148,7 @@ export function InstrumentForm({
               defaultValue={description}
               cols={30}
               rows={10}
+              disabled={isFormSubmitting}
             />
           </label>
         </div>
@@ -153,13 +160,17 @@ export function InstrumentForm({
               name="imageUrl"
               id={INPUT_IDS.imageUrl}
               defaultValue={imageUrl}
+              disabled={isFormSubmitting}
             />
           </label>
         </p>
-        <button type="submit" disabled={categories.length === 0}>
+        <button
+          type="submit"
+          disabled={categories.length === 0 || isFormSubmitting}
+        >
           Submit
         </button>
-        <button type="button" onClick={handleReset}>
+        <button type="button" onClick={handleReset} disabled={isFormSubmitting}>
           Reset
         </button>
       </form>

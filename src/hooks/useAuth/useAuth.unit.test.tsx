@@ -28,7 +28,7 @@ function TestComponent() {
   );
 }
 
-describe("useAuth", () => {
+describe("useAuth()", () => {
   describe("given isLoading=true", () => {
     it("returns LOADING state when isAuthenticated=false", () => {
       mocked(useAuth0).mockReturnValueOnce({

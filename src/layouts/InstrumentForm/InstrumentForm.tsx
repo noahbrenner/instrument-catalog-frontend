@@ -1,9 +1,9 @@
 import type { RouteComponentProps } from "@reach/router";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import type { FormEvent } from "react";
 
-import { getCategories } from "#api";
-import type { ICategory, IInstrument } from "#src/types";
+import { useCategories } from "#hooks/useCategories";
+import type { IInstrument } from "#src/types";
 
 interface InstrumentFormInputs extends HTMLFormControlsCollection {
   categoryId: HTMLInputElement;
@@ -43,14 +43,7 @@ export function InstrumentForm({
 }: InstrumentFormProps & RouteComponentProps): JSX.Element {
   const form = useRef<HTMLFormElement>(null);
   const [isFormSubmitting, setIsFormSubmitting] = useState(false);
-  const [categories, setCategories] = useState<ICategory[]>([]);
-  useEffect(() => {
-    const { cancel } = getCategories({
-      onSuccess: (data) => setCategories(data.categories),
-      onError: (): void => undefined,
-    });
-    return cancel;
-  }, []);
+  const { categories } = useCategories();
 
   // TODO `const isNewInstrument = id === undefined` when TS can save typechecks
   // https://github.com/microsoft/TypeScript/issues/12184

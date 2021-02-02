@@ -18,6 +18,7 @@ export function resetCache(): void {
   requestInProgress = undefined;
 }
 
+/** Provides the cached array of categories, only fetched once per app load */
 export function useCategories(): {
   categories: ICategory[];
   categoriesHaveLoaded: boolean;

@@ -81,6 +81,7 @@ export function baseRequest<T>(
 
 /* CATEGORIES */
 
+/** You probably want "#hooks/useCategories" instead of this function */
 export function getCategories(handlers: APIHandlers<ICategories>): APIUtils {
   return baseRequest(handlers, {
     method: "GET",

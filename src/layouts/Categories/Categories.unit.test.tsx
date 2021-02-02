@@ -26,9 +26,16 @@ const CATEGORY2: ICategory = {
 
 describe("<Categories />", () => {
   describe("given 0 category objects", () => {
-    it("renders the loading message", () => {
+    it("renders a loading message if provided", () => {
       render(<Categories categories={[]} loadingMessage="I'm loading" />);
       expect(screen.getByText("I'm loading")).toBeInTheDocument();
+    });
+
+    it('renders "No categories" if no loading message is provided', () => {
+      render(<Categories categories={[]} />);
+      expect(
+        screen.getByText(/no categories have been defined/i)
+      ).toBeInTheDocument();
     });
   });
 
@@ -39,25 +46,50 @@ describe("<Categories />", () => {
       expect(screen.getByText(CATEGORY1.description)).toBeInTheDocument();
     });
 
-    it("does NOT render the loading message", () => {
-      render(<Categories categories={[CATEGORY1]} loadingMessage={MESSAGE} />);
+    it("does NOT render any loading message", () => {
+      // Pass a loading message
+      const { rerender } = render(
+        <Categories categories={[CATEGORY1]} loadingMessage={MESSAGE} />
+      );
       expect(screen.queryByText(MESSAGE)).not.toBeInTheDocument();
+
+      // Pass no loading message
+      rerender(<Categories categories={[CATEGORY1]} />);
+      expect(
+        screen.queryByText(/no categories have been defined/i)
+      ).not.toBeInTheDocument();
     });
   });
 
   describe("given 2 category objects", () => {
-    const categories = [CATEGORY1, CATEGORY2];
-
     it("renders both categories", () => {
-      render(<Categories categories={categories} loadingMessage={MESSAGE} />);
+      render(
+        <Categories
+          categories={[CATEGORY1, CATEGORY2]}
+          loadingMessage={MESSAGE}
+        />
+      );
+
       // We're only testing that <Category /> is rendered, not testing all props
       expect(screen.getByText(CATEGORY1.description)).toBeInTheDocument();
       expect(screen.getByText(CATEGORY2.description)).toBeInTheDocument();
     });
 
-    it("does NOT render the loading message", () => {
-      render(<Categories categories={categories} loadingMessage={MESSAGE} />);
+    it("does NOT render any loading message", () => {
+      // Pass a loading message
+      const { rerender } = render(
+        <Categories
+          categories={[CATEGORY1, CATEGORY2]}
+          loadingMessage={MESSAGE}
+        />
+      );
       expect(screen.queryByText(MESSAGE)).not.toBeInTheDocument();
+
+      // Pass no loading message
+      rerender(<Categories categories={[CATEGORY1, CATEGORY2]} />);
+      expect(
+        screen.queryByText(/no categories have been defined/i)
+      ).not.toBeInTheDocument();
     });
   });
 });

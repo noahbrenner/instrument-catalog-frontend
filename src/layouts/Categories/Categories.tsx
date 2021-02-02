@@ -5,7 +5,8 @@ import type { ICategory } from "#src/types";
 
 export interface CategoriesProps {
   categories: ICategory[];
-  loadingMessage: string;
+  /** Should be undefined once categories have loaded (even if they're []) */
+  loadingMessage?: string;
 }
 
 export function Categories({
@@ -16,7 +17,7 @@ export function Categories({
     <>
       <h2>Categories</h2>
       {categories.length === 0 ? (
-        <p>{loadingMessage}</p>
+        <p>{loadingMessage ?? "No categories have been defined yet."}</p>
       ) : (
         categories.map((category, index) => (
           <Fragment key={category.name}>

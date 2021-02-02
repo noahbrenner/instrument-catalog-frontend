@@ -27,15 +27,15 @@ function TestComponent() {
 
 function renderTestComponent() {
   const utils = render(<TestComponent />);
+  // Restrict queries so that <TestComponent /> can be rendered multiple times
   const { getByTestId } = within(utils.container as HTMLDivElement);
   const categoriesList = getByTestId("categories");
-  const categoriesHaveLoadedElement = getByTestId("categoriesHaveLoaded");
-  const errorMessageElement = getByTestId("errorMessage");
+
   return {
     ...utils,
     categoriesList,
-    categoriesHaveLoadedElement,
-    errorMessageElement,
+    categoriesHaveLoadedElement: getByTestId("categoriesHaveLoaded"),
+    errorMessageElement: getByTestId("errorMessage"),
     getCategories() {
       return [...categoriesList.children].map((li) => li.textContent);
     },

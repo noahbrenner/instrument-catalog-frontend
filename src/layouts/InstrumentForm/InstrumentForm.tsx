@@ -23,17 +23,9 @@ const INPUT_IDS: { readonly [key in keyof InstrumentFormValues]: string } = {
   imageUrl: "instrumentForm:imageUrl",
 } as const;
 
-type OptionalExcept<T, K extends keyof T> = {
-  [Key in K]: NonNullable<T[Key]>;
-} &
-  {
-    [Key in Exclude<keyof T, K>]?: T[Key];
-  };
-
-export type InstrumentFormProps = OptionalExcept<IInstrument, "userId">;
+export type InstrumentFormProps = Partial<Omit<IInstrument, "userId">>;
 
 export function InstrumentForm({
-  userId,
   id = undefined,
   categoryId = -1,
   name = "",
@@ -62,18 +54,9 @@ export function InstrumentForm({
     };
 
     if (id === undefined) {
-      const newInstrument: Omit<IInstrument, "id"> = {
-        ...formValues,
-        userId,
-      };
-      console.dir(newInstrument);
+      console.dir({ newInstrument: formValues });
     } else {
-      const updatedInstrument: IInstrument = {
-        ...formValues,
-        id,
-        userId,
-      };
-      console.dir(updatedInstrument);
+      console.dir({ id, updatedInstrument: formValues });
     }
   };
 

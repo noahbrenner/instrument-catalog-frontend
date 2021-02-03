@@ -6,7 +6,7 @@ import { InstrumentForm } from "./InstrumentForm";
 describe("<InstrumentForm />", () => {
   describe("given only required props", () => {
     it('renders a blank "New instrument" form', () => {
-      render(<InstrumentForm userId="foo|123" />);
+      render(<InstrumentForm />);
       // TODO Test for blank values
       const heading2 = screen.getByRole("heading", { level: 2 });
       expect(heading2).toHaveTextContent(/new instrument/i);
@@ -17,7 +17,6 @@ describe("<InstrumentForm />", () => {
     it('renders a pre-filled "Edit instrument" form', () => {
       render(
         <InstrumentForm
-          userId="foo|123"
           id={5}
           categoryId={2}
           name="Foo"

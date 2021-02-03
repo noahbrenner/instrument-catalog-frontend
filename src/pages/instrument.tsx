@@ -94,7 +94,6 @@ export default function InstrumentPage(_: RouteComponentProps): JSX.Element {
           <Suspense fallback={<p>{loadingMessage}</p>}>
             <InstrumentForm
               path="edit"
-              userId={auth.user.sub}
               id={instrument.id}
               categoryId={instrument.categoryId}
               name={instrument.name}

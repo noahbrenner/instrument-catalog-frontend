@@ -39,14 +39,19 @@ export function InstrumentForm({
   const form = useRef<HTMLFormElement>(null);
   const [isFormSubmitting, setIsFormSubmitting] = useState(false);
   const { categories } = useCategories();
+  const canSubmitForm = categories.length > 0 && !isFormSubmitting;
 
   // TODO `const isNewInstrument = id === undefined` when TS can save typechecks
   // https://github.com/microsoft/TypeScript/issues/12184
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    setIsFormSubmitting(true);
 
+    if (!canSubmitForm) {
+      return;
+    }
+
+    setIsFormSubmitting(true);
     const formInputs = event.currentTarget.elements as InstrumentFormElements;
     const formValues: InstrumentFormValues = {
       categoryId: Number(formInputs.categoryId.value),
@@ -145,10 +150,7 @@ export function InstrumentForm({
             />
           </label>
         </p>
-        <button
-          type="submit"
-          disabled={categories.length === 0 || isFormSubmitting}
-        >
+        <button type="submit" disabled={!canSubmitForm}>
           Submit
         </button>
         <button type="button" onClick={handleReset} disabled={isFormSubmitting}>

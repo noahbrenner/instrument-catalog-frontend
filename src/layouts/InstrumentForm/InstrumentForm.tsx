@@ -5,8 +5,8 @@ import type { FormEvent } from "react";
 import { useCategories } from "#hooks/useCategories";
 import type { IInstrument } from "#src/types";
 
-interface InstrumentFormInputs extends HTMLFormControlsCollection {
-  categoryId: HTMLInputElement;
+export interface InstrumentFormElements extends HTMLFormControlsCollection {
+  categoryId: RadioNodeList;
   name: HTMLInputElement;
   summary: HTMLInputElement;
   description: HTMLTextAreaElement;
@@ -15,7 +15,10 @@ interface InstrumentFormInputs extends HTMLFormControlsCollection {
 
 type InstrumentFormValues = Omit<IInstrument, "id" | "userId">;
 
-const INPUT_IDS: { readonly [key in keyof InstrumentFormValues]: string } = {
+const FORM_IDS: {
+  readonly [key in keyof InstrumentFormValues | "heading"]: string;
+} = {
+  heading: "instrumentForm:heading",
   categoryId: "instrumentForm:categoryId",
   name: "instrumentForm:name",
   summary: "instrumentForm:summary",
@@ -44,7 +47,7 @@ export function InstrumentForm({
     event.preventDefault();
     setIsFormSubmitting(true);
 
-    const formInputs = event.currentTarget.elements as InstrumentFormInputs;
+    const formInputs = event.currentTarget.elements as InstrumentFormElements;
     const formValues: InstrumentFormValues = {
       categoryId: Number(formInputs.categoryId.value),
       name: formInputs.name.value,
@@ -68,19 +71,21 @@ export function InstrumentForm({
 
   return (
     <>
-      {id === undefined ? (
-        <h2>New instrument</h2>
-      ) : (
-        <h2>Edit instrument: {name}</h2>
-      )}
-      <form ref={form} action="" onSubmit={handleSubmit}>
+      <h2 id={FORM_IDS.heading}>
+        {id === undefined ? "New instrument" : `Edit instrument: ${name}`}
+      </h2>
+      <form
+        ref={form}
+        onSubmit={handleSubmit}
+        aria-labelledby={FORM_IDS.heading}
+      >
         <p>
-          <label htmlFor={INPUT_IDS.name}>
+          <label htmlFor={FORM_IDS.name}>
             Instrument name
             <input
               type="text"
               name="name"
-              id={INPUT_IDS.name}
+              id={FORM_IDS.name}
               defaultValue={name}
               disabled={isFormSubmitting}
             />
@@ -90,11 +95,11 @@ export function InstrumentForm({
           <legend>Category</legend>
           {categories.map((cat) => (
             <p key={cat.id}>
-              <label htmlFor={INPUT_IDS.categoryId + cat.id}>
+              <label htmlFor={FORM_IDS.categoryId + cat.id}>
                 <input
                   type="radio"
                   name="categoryId"
-                  id={INPUT_IDS.categoryId + cat.id}
+                  id={FORM_IDS.categoryId + cat.id}
                   value={cat.id}
                   defaultChecked={cat.id === categoryId}
                 />
@@ -104,23 +109,23 @@ export function InstrumentForm({
           ))}
         </fieldset>
         <p>
-          <label htmlFor={INPUT_IDS.summary}>
+          <label htmlFor={FORM_IDS.summary}>
             Summary
             <input
               type="text"
               name="summary"
-              id={INPUT_IDS.summary}
+              id={FORM_IDS.summary}
               defaultValue={summary}
               disabled={isFormSubmitting}
             />
           </label>
         </p>
         <div>
-          <label htmlFor={INPUT_IDS.description}>
+          <label htmlFor={FORM_IDS.description}>
             Description
             <textarea
               name="description"
-              id={INPUT_IDS.description}
+              id={FORM_IDS.description}
               defaultValue={description}
               cols={30}
               rows={10}
@@ -129,12 +134,12 @@ export function InstrumentForm({
           </label>
         </div>
         <p>
-          <label htmlFor={INPUT_IDS.imageUrl}>
+          <label htmlFor={FORM_IDS.imageUrl}>
             Image URL
             <input
               type="text"
               name="imageUrl"
-              id={INPUT_IDS.imageUrl}
+              id={FORM_IDS.imageUrl}
               defaultValue={imageUrl}
               disabled={isFormSubmitting}
             />

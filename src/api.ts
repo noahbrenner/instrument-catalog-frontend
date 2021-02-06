@@ -1,3 +1,4 @@
+import type { Auth0ContextInterface, OAuthError } from "@auth0/auth0-react";
 import axios from "axios";
 import type {
   AxiosError,
@@ -48,6 +49,10 @@ export interface APIHandlers<T> {
   onError: (uiErrorMessage: string, error: AxiosError) => unknown;
 }
 
+export interface AuthenticatedAPIHandlers<T> extends APIHandlers<T> {
+  onError: (uiErrorMessage: string, error: AxiosError | OAuthError) => unknown;
+}
+
 export interface APIUtils {
   /** Cancel the request and prevent handlers from being called */
   cancel: Canceler;
@@ -71,6 +76,48 @@ export function baseRequest<T>(
         resolve();
         if (!axios.isCancel(err)) {
           onError(getUiErrorMessage(err), err);
+        }
+      }
+    );
+  });
+
+  return { cancel, completed };
+}
+
+export function baseAuthenticatedRequest<T>(
+  getAccessTokenSilently: Auth0ContextInterface["getAccessTokenSilently"],
+  handlers: AuthenticatedAPIHandlers<T>,
+  axiosParams: RequestParams
+): APIUtils {
+  let isCancelled = false;
+  let baseRequestCancel: () => void;
+  const cancel = (): void => {
+    if (baseRequestCancel) {
+      baseRequestCancel();
+    }
+    isCancelled = true;
+  };
+
+  const completed = new Promise<void>((resolve) => {
+    getAccessTokenSilently().then(
+      (accessToken) => {
+        if (isCancelled) {
+          resolve();
+        } else {
+          const request = baseRequest(handlers, {
+            ...axiosParams,
+            headers: { Authorization: `Bearer ${accessToken}` },
+          });
+          baseRequestCancel = request.cancel;
+          request.completed.then(resolve, resolve);
+        }
+      },
+      (err: OAuthError) => {
+        resolve();
+        if (!isCancelled) {
+          let message = `Error authenticating your request: "${err.error}". `;
+          message += "Try logging out and back in again.";
+          handlers.onError(message, err);
         }
       }
     );

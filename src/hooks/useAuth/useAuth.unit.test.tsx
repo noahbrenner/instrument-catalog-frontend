@@ -9,6 +9,7 @@ jest.mock("@auth0/auth0-react");
 
 const useAuth0DefaultReturnValue = {
   error: undefined,
+  getAccessTokenSilently: () => Promise.resolve("myM0ckacc3s570ken"),
   isAuthenticated: false,
   isLoading: false,
   user: undefined,
@@ -117,6 +118,7 @@ describe("useAuth()", () => {
       render(<TestComponent />);
       expect(screen.getByTestId("state")).toHaveTextContent(/^AUTHENTICATED$/);
       expect(screen.getByTestId("user")).toHaveTextContent("Foo Name");
+      expect(screen.getByTestId("getAccessTokenSilently")).toBeInTheDocument();
     });
   });
 });

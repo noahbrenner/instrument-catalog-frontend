@@ -28,11 +28,15 @@
   - Create an [Auth0](https://auth0.com/) account. They have a substantial free tier, so you shouldn't get any charges for testing out the app.
     - Create a new Tenant within your account (this happens automatically if you're creating a new Auth0 account)
     - Create a new Application for that Tenant and set its **Application Type** to "Single Page Application"
-    - In your new Application's settings, enter `http://localhost:5000` in all of the following fields _(**NOTE:** if you didn't set the `FRONTEND_DEVSERVER_PORT` env var to `5000`, use the port you chose instead)_:
-      - `Allowed Callback URLs`
-      - `Allowed Logout URLs`
-      - `Allowed Web Origins`
-    - Back in the repo, open up the `.env` file and enter your Auth0 Application's **Domain** and **Client ID** as the values of `AUTH0_DOMAIN` and `AUTH0_CLIENT_ID`, respectively.
+      - In your new Application's settings, enter `http://localhost:5000` in all of the following fields _(**NOTE:** if you didn't set the `FRONTEND_DEVSERVER_PORT` env var to `5000`, use the port you chose instead)_:
+        - `Allowed Callback URLs`
+        - `Allowed Logout URLs`
+        - `Allowed Web Origins`
+      - Back in the repo, open up the `.env` file and enter your Auth0 Application's **Domain** and **Client ID** as the values of `AUTH0_DOMAIN` and `AUTH0_CLIENT_ID`, respectively.
+    - Then, to create a new API definition representing the backend server:
+      - In the Auth0 dashboard's sidebar, click "APIs", then click the "CREATE API" button
+      - Choose a Name, Identifier, and Signing Algorithm. Choose any values you like, just note that the Identifier can't be changed and it will be included with the frontend code.
+      - Back in the repo, edit the `.env` file and enter your chosen **API Identifier** as the value of `AUTH0_BACKEND_API_IDENTIFIER`
   - _(Optional)_ Give yourself admin access. This allows you to edit or delete _any_ instrument on the site, not only the ones you create. You must complete the steps above before you can do this.
     - First, to give yourself the "admin" role within Auth0:
       - Start up the dev server (`npm start`), go to <http://localhost:5000>, and log into the app in order to create a User record within Auth0

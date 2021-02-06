@@ -1,7 +1,11 @@
 /** @jest-environment node */
+import { OAuthError } from "@auth0/auth0-react";
+import type { ResponseResolver } from "msw";
+
 import { rest, server, MOCK_DATA } from "#test_helpers/server";
 import {
   baseRequest,
+  baseAuthenticatedRequest,
   getCategories,
   getCategoryBySlug,
   getInstruments,
@@ -216,6 +220,145 @@ describe("baseRequest()", () => {
    * `.response` and `.request`, but that would just be testing JavaScript's
    * `else` keyword, it wouldn't provide any confidence about app behavior.
    */
+});
+
+describe("baseAuthenticatedRequest()", () => {
+  const ACCESS_TOKEN = "myM0ckacc3s570ken";
+  const getAccessTokenSilently = jest.fn(() => Promise.resolve(ACCESS_TOKEN));
+  function callBaseAuthenticatedRequest(
+    params: Omit<RequestParams, "url">,
+    resolver: ResponseResolver
+  ) {
+    const handlers = { onSuccess: jest.fn(), onError: jest.fn() };
+
+    const url = `${API_ROOT}/api-test`;
+    const method = params.method.toLowerCase() as keyof typeof rest;
+    const mockedResolver = jest.fn(resolver);
+    const serverCalls = mockedResolver.mock.calls;
+    server.use(rest[method](url, mockedResolver));
+
+    const allRequestParams = { ...params, url };
+    const { cancel, completed } = baseAuthenticatedRequest(
+      getAccessTokenSilently,
+      handlers,
+      allRequestParams
+    );
+    return { ...handlers, cancel, completed, serverCalls };
+  }
+
+  describe("given a request happy path", () => {
+    it.each(["DELETE", "POST", "PUT"] as const)(
+      "adds the correct Authorization header when sending a %s request",
+      async (method) => {
+        const request = callBaseAuthenticatedRequest(
+          { method, data: { foo: "bar" } },
+          (_req, res, ctx) => res(ctx.status(200))
+        );
+        await request.completed;
+        const [req] = request.serverCalls[0];
+
+        expect(req.headers.get("Authorization")).toBe(`Bearer ${ACCESS_TOKEN}`);
+        expect(req.body).toEqual({ foo: "bar" });
+        expect(request.onSuccess).toBeCalled();
+        expect(request.onError).not.toBeCalled();
+      }
+    );
+  });
+
+  describe("given an immediately cancelled request", () => {
+    it("the request is never sent to the server", async () => {
+      const request = callBaseAuthenticatedRequest(
+        { method: "POST", data: { foo: "bar" } },
+        (_req, res, ctx) => res(ctx.status(200))
+      );
+      request.cancel();
+      await request.completed;
+
+      expect(request.serverCalls).toHaveLength(0);
+      expect(request.onSuccess).not.toBeCalled();
+      expect(request.onError).not.toBeCalled();
+    });
+  });
+
+  describe("given a request cancelled after being sent to the server", () => {
+    it("the request is submitted, but neither callback is called", async () => {
+      const request = callBaseAuthenticatedRequest(
+        { method: "POST", data: { foo: "bar" } },
+        (_req, res, ctx) => {
+          request.cancel();
+          return res(ctx.status(200));
+        }
+      );
+      await request.completed;
+      const [req] = request.serverCalls[0];
+
+      expect(request.serverCalls).toHaveLength(1);
+      expect(req.body).toEqual({ foo: "bar" });
+      expect(request.onSuccess).not.toBeCalled();
+      expect(request.onError).not.toBeCalled();
+    });
+  });
+
+  describe("given an authentication error", () => {
+    it("calls onError() with an authentication error message", async () => {
+      getAccessTokenSilently.mockReturnValueOnce(
+        Promise.reject(new OAuthError("auth_error"))
+      );
+      const request = callBaseAuthenticatedRequest(
+        { method: "POST", data: { foo: "bar" } },
+        (_req, res, ctx) => res(ctx.status(200))
+      );
+      await request.completed;
+
+      expect(request.serverCalls).toHaveLength(0);
+      expect(request.onSuccess).not.toBeCalled();
+      expect(request.onError).toBeCalledTimes(1);
+
+      const [uiErrorMessage] = request.onError.mock.calls[0];
+      expect(uiErrorMessage).toMatch(
+        /error authenticating your request: "auth_error"/i
+      );
+    });
+  });
+
+  describe("given a temporary 500 server error", () => {
+    it.each(["DELETE", "PUT"] as const)(
+      "retries a %s request",
+      async (method) => {
+        let isFirstRequest = true;
+        const request = callBaseAuthenticatedRequest(
+          { method, data: { foo: "bar" } },
+          (_req, res, ctx) => {
+            const status = isFirstRequest ? 500 : 200;
+            isFirstRequest = false;
+            return res(ctx.status(status));
+          }
+        );
+        await request.completed;
+
+        expect(request.serverCalls).toHaveLength(2);
+        expect(request.onSuccess).toBeCalled();
+        expect(request.onError).not.toBeCalled();
+      }
+    );
+
+    it("does not retry a POST request", async () => {
+      let isFirstRequest = true;
+      const request = callBaseAuthenticatedRequest(
+        { method: "POST", data: { foo: "bar" } },
+        (_req, res, ctx) => {
+          const status = isFirstRequest ? 500 : 200;
+          isFirstRequest = false;
+          return res(ctx.status(status));
+        }
+      );
+      await request.completed;
+
+      expect(request.serverCalls).toHaveLength(1);
+      expect(request.onSuccess).not.toBeCalled();
+      expect(request.onError).toBeCalled();
+    });
+  });
 });
 
 const apiFunctions: [string, (handlers: APIHandlers<unknown>) => APIUtils][] = [

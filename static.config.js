@@ -5,7 +5,11 @@ import "dotenv/config"; // Load environment variables from .env
 
 (function checkForRequiredEnvironmentVariables() {
   const alwaysRequiredEnvVars = ["API_ROOT"];
-  const oauthEnvVars = ["AUTH0_DOMAIN", "AUTH0_CLIENT_ID"];
+  const oauthEnvVars = [
+    "AUTH0_DOMAIN",
+    "AUTH0_CLIENT_ID",
+    "AUTH0_BACKEND_API_IDENTIFIER",
+  ];
 
   const requiredEnvVars =
     process.env.NODE_ENV === "production"

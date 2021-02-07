@@ -1,6 +1,6 @@
 /** @jest-environment node */
 import { OAuthError } from "@auth0/auth0-react";
-import type { ResponseResolver } from "msw";
+import type { MockedRequest, ResponseResolver, restContext } from "msw";
 
 import { rest, server, MOCK_DATA } from "#test_helpers/server";
 import {
@@ -17,21 +17,23 @@ import type { APIHandlers, APIUtils, RequestParams } from "#api";
 const { API_ROOT } = process.env;
 
 describe("baseRequest()", () => {
-  function callBaseRequest(params: RequestParams) {
+  function callBaseRequest(
+    responseResolver: ResponseResolver<MockedRequest, typeof restContext>
+  ) {
+    const url = `${API_ROOT}/api-test`;
     const handlers = { onSuccess: jest.fn(), onError: jest.fn() };
-    const { cancel, completed } = baseRequest(handlers, params);
+    const requestParams: RequestParams = { method: "GET", url };
+
+    server.use(rest.get(url, responseResolver));
+    const { cancel, completed } = baseRequest(handlers, requestParams);
     return { ...handlers, cancel, completed };
   }
 
   describe("given a successful API response", () => {
     it("calls onSuccess() with the response data", async () => {
-      const url = `${API_ROOT}/api-test`;
-      server.use(
-        rest.get(url, (_req, res, ctx) => {
-          return res(ctx.json({ foo: "bar" }));
-        })
-      );
-      const request = callBaseRequest({ method: "GET", url });
+      const request = callBaseRequest((_req, res, ctx) => {
+        return res(ctx.json({ foo: "bar" }));
+      });
       await request.completed;
 
       expect(request.onSuccess).toBeCalledWith({ foo: "bar" });
@@ -41,13 +43,9 @@ describe("baseRequest()", () => {
 
   describe("given a call to cancel() before the request completes", () => {
     it("does not call onSuccess() or onError()", async () => {
-      const url = `${API_ROOT}/api-test`;
-      server.use(
-        rest.get(url, (_req, res, ctx) => {
-          return res(ctx.json({ foo: "bar" }));
-        })
-      );
-      const request = callBaseRequest({ method: "GET", url });
+      const request = callBaseRequest((_req, res, ctx) => {
+        return res(ctx.json({ foo: "bar" }));
+      });
       request.cancel();
       await request.completed;
 
@@ -58,13 +56,9 @@ describe("baseRequest()", () => {
 
   describe("given a call to cancel() after the request completes", () => {
     it("calling cancel() does not throw", async () => {
-      const url = `${API_ROOT}/api-test`;
-      server.use(
-        rest.get(url, (_req, res, ctx) => {
-          return res(ctx.json({ foo: "bar" }));
-        })
-      );
-      const request = callBaseRequest({ method: "GET", url });
+      const request = callBaseRequest((_req, res, ctx) => {
+        return res(ctx.json({ foo: "bar" }));
+      });
       await request.completed;
 
       expect(() => request.cancel()).not.toThrow();
@@ -75,13 +69,9 @@ describe("baseRequest()", () => {
 
   describe("given a network error", () => {
     it("calls onError() with a network error message if the error is persistent", async () => {
-      const url = `${API_ROOT}/api-test`;
-      server.use(
-        rest.get(url, (_req, res) => {
-          return res.networkError("Failed to connect");
-        })
-      );
-      const request = callBaseRequest({ method: "GET", url });
+      const request = callBaseRequest((_req, res) => {
+        return res.networkError("Failed to connect");
+      });
       await request.completed;
 
       expect(request.onSuccess).not.toBeCalled();
@@ -94,27 +84,17 @@ describe("baseRequest()", () => {
     });
 
     it("retries the request", async () => {
-      const url = `${API_ROOT}/api-test`;
-      // TODO Use a builtin msw method to return a NetworkError once, after msw
-      // implements such a method -- https://github.com/mswjs/msw/issues/413
-      // For now, this workaround does the trick
-      function enableSuccessfulApiResponse() {
-        server.use(
-          rest.get(url, (_req, res, ctx) => {
-            return res(ctx.json({ foo: "bar" }));
-          })
-        );
-      }
-      server.use(
-        rest.get(url, (_req, res) => {
-          enableSuccessfulApiResponse();
+      let isFirstRequest = true;
+      const request = callBaseRequest((_req, res, ctx) => {
+        if (isFirstRequest) {
+          isFirstRequest = false;
+          // res.networkError() is currently implemented by throwing an error,
           return res.networkError("Failed to connect");
-        })
-      );
-      const request = callBaseRequest({ method: "GET", url });
+        }
+        return res(ctx.json({ foo: "bar" }));
+      });
       await request.completed;
 
-      // console.log(request.onError.mock.calls[0][1].toJSON());
       expect(request.onError).not.toBeCalled();
       expect(request.onSuccess).toBeCalledWith({ foo: "bar" });
     });
@@ -122,13 +102,9 @@ describe("baseRequest()", () => {
 
   describe("given a 500 status code", () => {
     it("calls onError() with a status error message if the error is persistent", async () => {
-      const url = `${API_ROOT}/api-test`;
-      server.use(
-        rest.get(url, (_req, res, ctx) => {
-          return res(ctx.status(500, "My Error"));
-        })
-      );
-      const request = callBaseRequest({ method: "GET", url });
+      const request = callBaseRequest((_req, res, ctx) => {
+        return res(ctx.status(500, "My Error"));
+      });
       await request.completed;
 
       expect(request.onSuccess).not.toBeCalled();
@@ -141,18 +117,14 @@ describe("baseRequest()", () => {
     });
 
     it("retries the request", async () => {
-      const url = `${API_ROOT}/api-test`;
-      server.use(
-        // Return a 500 status once
-        rest.get(url, (_req, res, ctx) => {
-          return res.once(ctx.status(500, "My Error"));
-        }),
-        // Then return a successful response
-        rest.get(url, (_req, res, ctx) => {
-          return res(ctx.json({ foo: "bar" }));
-        })
-      );
-      const request = callBaseRequest({ method: "GET", url });
+      let isFirstRequest = true;
+      const request = callBaseRequest((_req, res, ctx) => {
+        if (isFirstRequest) {
+          isFirstRequest = false;
+          return res(ctx.status(500, "My Error"));
+        }
+        return res(ctx.json({ foo: "bar" }));
+      });
       await request.completed;
 
       expect(request.onSuccess).toBeCalledWith({ foo: "bar" });
@@ -162,16 +134,12 @@ describe("baseRequest()", () => {
 
   describe("given a 400 status code and a JSON error message", () => {
     it("calls onError() with a status error message including the JSON message", async () => {
-      const url = `${API_ROOT}/api-test`;
-      server.use(
-        rest.get(url, (_req, res, ctx) => {
-          return res(
-            ctx.status(400, "My Error"),
-            ctx.json({ error: "My Special Error" })
-          );
-        })
-      );
-      const request = callBaseRequest({ method: "GET", url });
+      const request = callBaseRequest((_req, res, ctx) => {
+        return res(
+          ctx.status(400, "My Error"),
+          ctx.json({ error: "My Special Error" })
+        );
+      });
       await request.completed;
 
       expect(request.onSuccess).not.toBeCalled();
@@ -184,21 +152,17 @@ describe("baseRequest()", () => {
     });
 
     it("does not retry the request", async () => {
-      const url = `${API_ROOT}/api-test`;
-      server.use(
-        // Return a 400 status once
-        rest.get(url, (_req, res, ctx) => {
-          return res.once(
+      let isFirstRequest = true;
+      const request = callBaseRequest((_req, res, ctx) => {
+        if (isFirstRequest) {
+          isFirstRequest = false;
+          return res(
             ctx.status(400, "My Error"),
             ctx.json({ error: "My Special Error" })
           );
-        }),
-        // Then return a successful response
-        rest.get(url, (_req, res, ctx) => {
-          return res(ctx.json({ foo: "bar" }));
-        })
-      );
-      const request = callBaseRequest({ method: "GET", url });
+        }
+        return res(ctx.json({ foo: "bar" }));
+      });
       await request.completed;
 
       expect(request.onSuccess).not.toBeCalled();
@@ -226,18 +190,17 @@ describe("baseAuthenticatedRequest()", () => {
   const ACCESS_TOKEN = "myM0ckacc3s570ken";
   const getAccessTokenSilently = jest.fn(() => Promise.resolve(ACCESS_TOKEN));
   function callBaseAuthenticatedRequest(
-    params: Omit<RequestParams, "url">,
-    resolver: ResponseResolver
+    requestParams: Omit<RequestParams, "url">,
+    responseResolver: ResponseResolver<MockedRequest, typeof restContext>
   ) {
-    const handlers = { onSuccess: jest.fn(), onError: jest.fn() };
-
     const url = `${API_ROOT}/api-test`;
-    const method = params.method.toLowerCase() as keyof typeof rest;
-    const mockedResolver = jest.fn(resolver);
-    const serverCalls = mockedResolver.mock.calls;
-    server.use(rest[method](url, mockedResolver));
+    const method = requestParams.method.toLowerCase() as keyof typeof rest;
+    const mockedResponseResolver = jest.fn(responseResolver);
+    const serverCalls = mockedResponseResolver.mock.calls;
+    server.use(rest[method](url, mockedResponseResolver));
 
-    const allRequestParams = { ...params, url };
+    const handlers = { onSuccess: jest.fn(), onError: jest.fn() };
+    const allRequestParams: RequestParams = { ...requestParams, url };
     const { cancel, completed } = baseAuthenticatedRequest(
       getAccessTokenSilently,
       handlers,

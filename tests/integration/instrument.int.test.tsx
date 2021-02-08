@@ -6,7 +6,7 @@
  */
 import type { History as RouterHistory } from "@reach/router";
 import { screen, waitFor } from "@testing-library/react";
-import React, { createContext } from "react";
+import React from "react";
 
 import {
   useAuth,
@@ -19,11 +19,6 @@ import {
 import { App } from "#src/App";
 import { MOCK_DATA } from "#src/server_routes.mock";
 import { renderWithRouter } from "#test_helpers/renderWithRouter";
-
-// Mock Auth0Provider as a noop
-jest.mock("@auth0/auth0-react", () => ({
-  Auth0Provider: createContext(undefined).Provider,
-}));
 
 /**
  * Return a promise which resolves the next time `history.location` changes

@@ -18,7 +18,7 @@ describe("<LoginButton />", () => {
     ["UNAUTHENTICATED", UNAUTHENTICATED],
   ])("given %s state from useAuth()", (_, AUTH_VALUE) => {
     it('renders a "Log in" button', () => {
-      useAuth.mockReturnValueOnce(AUTH_VALUE);
+      useAuth.mockReturnValue(AUTH_VALUE);
       render(<LoginButton />);
 
       const button = screen.getByRole("button");
@@ -31,7 +31,7 @@ describe("<LoginButton />", () => {
 
   describe("given AUTHENTICATED state from useAuth()", () => {
     it('renders a "Log out" button', () => {
-      useAuth.mockReturnValueOnce(AUTHENTICATED);
+      useAuth.mockReturnValue(AUTHENTICATED);
       render(<LoginButton />);
 
       const button = screen.getByRole("button");

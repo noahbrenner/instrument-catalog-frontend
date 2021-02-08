@@ -1,14 +1,9 @@
 import { screen } from "@testing-library/react";
-import React, { createContext } from "react";
+import React from "react";
 
 import { useAuth, UNAUTHENTICATED, AUTHENTICATED } from "#mocks/useAuth";
 import { App } from "#src/App";
 import { renderWithRouter } from "#test_helpers/renderWithRouter";
-
-// Mock Auth0Provider as a noop
-jest.mock("@auth0/auth0-react", () => ({
-  Auth0Provider: createContext(undefined).Provider,
-}));
 
 describe("<App />", () => {
   describe.each([

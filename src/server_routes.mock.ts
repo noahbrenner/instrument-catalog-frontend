@@ -125,6 +125,14 @@ export const MOCK_DATA: {
   ],
 };
 
+let DB: typeof MOCK_DATA;
+const MOCK_DATA_JSON = JSON.stringify(MOCK_DATA);
+DB = JSON.parse(MOCK_DATA_JSON);
+
+export function resetDB(): void {
+  DB = JSON.parse(MOCK_DATA_JSON);
+}
+
 export function apiResponse(
   ...transformers: ResponseTransformer[]
 ): MockedResponse {
@@ -143,13 +151,13 @@ export function apiResponse(
 export const handlers: RequestHandler<any, any, any, any>[] = [
   // GET all Categories: /categories/all
   rest.get(`${ENDPOINTS.categories}/all`, () => {
-    const { categories } = MOCK_DATA;
+    const { categories } = DB;
     return apiResponse(ctx.json({ categories }));
   }),
 
   // GET Category: /categories/<category-slug>
   rest.get(`${ENDPOINTS.categories}/:categorySlug`, (req) => {
-    const category = MOCK_DATA.categories.find(
+    const category = DB.categories.find(
       ({ slug }) => slug === req.params.categorySlug
     );
     return category
@@ -159,13 +167,13 @@ export const handlers: RequestHandler<any, any, any, any>[] = [
 
   // GET all Instruments: /instruments/all
   rest.get(`${ENDPOINTS.instruments}/all`, () => {
-    const { instruments } = MOCK_DATA;
+    const { instruments } = DB;
     return apiResponse(ctx.json({ instruments }));
   }),
 
   // GET Instrument: /instruments/<instrumentId>
   rest.get(`${ENDPOINTS.instruments}/:id`, (req) => {
-    const instrument = MOCK_DATA.instruments.find(
+    const instrument = DB.instruments.find(
       ({ id }) => id === Number(req.params.id)
     );
     return instrument
@@ -188,7 +196,7 @@ export const handlers: RequestHandler<any, any, any, any>[] = [
     }
 
     // TODO Handle IDs having a valid format but no corresponding category
-    const instruments = MOCK_DATA.instruments.filter(
+    const instruments = DB.instruments.filter(
       ({ categoryId }) => categoryId === Number(reqCategoryId)
     );
     return apiResponse(ctx.json({ instruments }));

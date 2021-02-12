@@ -64,6 +64,7 @@ module.exports = {
           "static.config.js",
           "jest.config.js",
           "**/*.test.ts?(x)",
+          "src/server_routes.mock.ts",
           "tests/**",
         ],
       },

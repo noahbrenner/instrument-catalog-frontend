@@ -4,9 +4,14 @@
  * build if it's outside the `src/` directory
  */
 
-// eslint-disable-next-line import/no-extraneous-dependencies
+import jws from "jws";
 import { context as ctx, response, rest } from "msw";
-import type { MockedResponse, RequestHandler, ResponseTransformer } from "msw";
+import type {
+  MockedRequest,
+  MockedResponse,
+  RequestHandler,
+  ResponseTransformer,
+} from "msw";
 
 import { ENDPOINTS } from "./api_endpoints";
 import type { ICategory, IInstrument, IUser } from "./types";
@@ -125,12 +130,12 @@ export const MOCK_DATA: {
   ],
 };
 
-let DB: typeof MOCK_DATA;
 const MOCK_DATA_JSON = JSON.stringify(MOCK_DATA);
-DB = JSON.parse(MOCK_DATA_JSON);
+const DB: typeof MOCK_DATA = JSON.parse(MOCK_DATA_JSON);
 
 export function resetDB(): void {
-  DB = JSON.parse(MOCK_DATA_JSON);
+  Object.keys(DB).forEach((key) => delete DB[key as keyof typeof DB]);
+  Object.assign(DB, JSON.parse(MOCK_DATA_JSON));
 }
 
 export function apiResponse(
@@ -141,6 +146,25 @@ export function apiResponse(
   return typeof Headers === "undefined"
     ? response(...transformers)
     : response(...transformers, ctx.set("Access-Control-Allow-Origin", "*"));
+}
+
+function getUserCredentials(
+  req: MockedRequest
+):
+  | { userId: string; isAdmin: boolean; errResponse: undefined }
+  | { userId: undefined; isAdmin: false; errResponse: MockedResponse } {
+  const authorizationHeader = req.headers.get("Authorization") || "";
+  const jwt = jws.decode(authorizationHeader.slice("Bearer ".length));
+
+  // jwt can be null for invalid data, though the types don't reflect that
+  if (jwt?.payload?.sub === undefined) {
+    const errResponse = apiResponse(ctx.status(403, "Forbidden"));
+    return { userId: undefined, isAdmin: false, errResponse };
+  }
+  const userId = jwt.payload.sub as string;
+  const roles = jwt.payload["http:auth/roles"];
+  const isAdmin = Array.isArray(roles) && roles.includes("admin");
+  return { userId, isAdmin, errResponse: undefined };
 }
 
 /*
@@ -200,6 +224,34 @@ export const handlers: RequestHandler<any, any, any, any>[] = [
       ({ categoryId }) => categoryId === Number(reqCategoryId)
     );
     return apiResponse(ctx.json({ instruments }));
+  }),
+
+  // PUT (update) Instrument: /instruments/<instrumentId>
+  rest.put(`${ENDPOINTS.instruments}/:id`, (req) => {
+    // Validate user
+    const { userId, isAdmin, errResponse } = getUserCredentials(req);
+    if (errResponse) {
+      return errResponse;
+    }
+
+    // Validate instrument ID
+    if (!/^[0-9]+$/.test(req.params.id)) {
+      return apiResponse(ctx.status(400, "Bad Request"));
+    }
+    const instrumentId = Number(req.params.id);
+    const instrument = DB.instruments.find(({ id }) => id === instrumentId);
+    if (!instrument) {
+      return apiResponse(ctx.status(404, "Not Found"));
+    }
+
+    // Validate permissions
+    if (userId !== instrument.userId && !isAdmin) {
+      return apiResponse(ctx.status(403, "Forbidden"));
+    }
+
+    // Update instrument
+    Object.assign(instrument, req.body); // Real server should verify the data
+    return apiResponse(ctx.status(204, "No Content"));
   }),
 
   // Default: 404

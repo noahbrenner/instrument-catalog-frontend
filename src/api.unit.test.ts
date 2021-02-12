@@ -1,5 +1,6 @@
 /** @jest-environment node */
 import { OAuthError } from "@auth0/auth0-react";
+import jws from "jws";
 import type { MockedRequest, ResponseResolver, restContext } from "msw";
 
 import { rest, server, MOCK_DATA } from "#test_helpers/server";
@@ -11,6 +12,7 @@ import {
   getInstruments,
   getInstrumentsByCategoryId,
   getInstrumentById,
+  updateInstrument,
 } from "#api";
 import type { APIHandlers, APIUtils, RequestParams } from "#api";
 
@@ -324,6 +326,9 @@ describe("baseAuthenticatedRequest()", () => {
   });
 });
 
+// Most of the tests from here on down are technically integration tests, since
+// they rely on the behavior of the mock server
+
 const apiFunctions: [string, (handlers: APIHandlers<unknown>) => APIUtils][] = [
   ["getCategories", (handlers) => getCategories(handlers)],
   ["getCategoryBySlug", (handlers) => getCategoryBySlug("strings", handlers)],
@@ -558,3 +563,146 @@ describe("getInstrumentById()", () => {
     );
   });
 });
+
+// Tests for error responses in this block only entail checking that onError()
+// was called. *What* it's called with is up to baseAuthenticatedRequest().
+(function authenticatedRequests() {
+  const instrument = MOCK_DATA.instruments[1];
+  const { id: instrumentId, userId } = instrument;
+  const ownerAccessTokenPromise = Promise.resolve(
+    jws.sign({
+      header: { alg: "HS256", typ: "JWT" },
+      payload: { sub: userId },
+      secret: "doesn't matter for this test",
+    })
+  );
+  const nonOwnerAccessTokenPromise = Promise.resolve(
+    jws.sign({
+      header: { alg: "HS256", typ: "JWT" },
+      payload: { sub: "not|theOwner" },
+      secret: "doesn't matter for this test",
+    })
+  );
+  const adminAccessTokenPromise = Promise.resolve(
+    jws.sign({
+      header: { alg: "HS256", typ: "JWT" },
+      payload: { sub: "not|theOwner", "http:auth/roles": ["admin"] },
+      secret: "doesn't matter for this test",
+    })
+  );
+
+  describe("updateInstrument()", () => {
+    type UpdateInstrumentData = Parameters<typeof updateInstrument>[1];
+    const mockUpdatedInstrument: UpdateInstrumentData = {
+      name: "Foo",
+      categoryId: 2,
+      summary: "Foo is a fake instrument",
+      description: "I just made it up",
+      imageUrl: "",
+    };
+
+    describe("an authenticated user", () => {
+      it.each([
+        ["the owning user", ownerAccessTokenPromise],
+        ["an admin user", adminAccessTokenPromise],
+      ])("calls onSuccess() for %s", async (user, accessTokenPromise) => {
+        const getAccessTokenSilently = () => accessTokenPromise;
+        const updatedInstrumentData: UpdateInstrumentData = {
+          ...mockUpdatedInstrument,
+          description: `Created by ${user}`, // Unique for both tests
+        };
+
+        {
+          const handlers = { onSuccess: jest.fn(), onError: jest.fn() };
+          const { completed } = updateInstrument(
+            instrumentId,
+            updatedInstrumentData,
+            getAccessTokenSilently,
+            handlers
+          );
+          await completed;
+
+          expect(handlers.onSuccess).toBeCalled();
+          expect(handlers.onError).not.toBeCalled();
+        }
+
+        // Verify that the new data was stored
+        {
+          const handlers = { onSuccess: jest.fn(), onError: jest.fn() };
+          const { completed } = getInstrumentById(instrumentId, handlers);
+          await completed;
+          expect(handlers.onSuccess).toBeCalledWith({
+            ...updatedInstrumentData,
+            id: instrumentId,
+            userId,
+          });
+        }
+      });
+
+      it("calls onError() for a user who isn't the owner", async () => {
+        const getAccessTokenSilently = () => nonOwnerAccessTokenPromise;
+        const handlers = { onSuccess: jest.fn(), onError: jest.fn() };
+        const { completed } = updateInstrument(
+          instrumentId,
+          mockUpdatedInstrument,
+          getAccessTokenSilently,
+          handlers
+        );
+        await completed;
+
+        expect(handlers.onSuccess).not.toBeCalled();
+        expect(handlers.onError).toBeCalled();
+      });
+    });
+
+    describe("given an invalid access token", () => {
+      const invalidJWS = "not-a-valid-jws";
+      const jwsWithoutPayloadSub = jws.sign({
+        header: { alg: "HS256", typ: "JWT" },
+        payload: {}, // No .sub (subject/userId)
+        secret: "doesn't matter for this test",
+      });
+      it.each([
+        ["invalid JSON Web Signature", invalidJWS],
+        ["JSON Web Signature without payload.sub", jwsWithoutPayloadSub],
+      ])("calls onError() for %s", async (_description, accessToken) => {
+        const getAccessTokenSilently = () => Promise.resolve(accessToken);
+        const handlers = { onSuccess: jest.fn(), onError: jest.fn() };
+        const { completed } = updateInstrument(
+          instrumentId,
+          mockUpdatedInstrument,
+          getAccessTokenSilently,
+          handlers
+        );
+        await completed;
+
+        expect(handlers.onSuccess).not.toBeCalled();
+        expect(handlers.onError).toBeCalled();
+      });
+    });
+
+    describe("given an invalid instrument ID", () => {
+      it.each([
+        ["a valid ID, but one not present in the DB", 1337],
+        ["a large integer represented in scientific notation", 1e99],
+        ["a fractional number", 1.1],
+        ["a negative integer", -1],
+        ["Infinity", Infinity],
+        ["NaN", NaN],
+      ])("calls onError() for %s", async (_description, id) => {
+        const getAccessTokenSilently = () => nonOwnerAccessTokenPromise;
+        const handlers = { onSuccess: jest.fn(), onError: jest.fn() };
+        const { completed } = updateInstrument(
+          id,
+          mockUpdatedInstrument,
+          getAccessTokenSilently,
+          handlers
+        );
+        await completed;
+
+        expect(handlers.onSuccess).not.toBeCalled();
+        expect(handlers.onError).toBeCalled();
+      });
+    });
+  });
+})();

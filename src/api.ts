@@ -175,3 +175,16 @@ export function getInstrumentById(
     url: `${ENDPOINTS.instruments}/${id}`,
   });
 }
+
+export function updateInstrument(
+  id: number,
+  newData: Omit<IInstrument, "id" | "userId">,
+  getAccessTokenSilently: Auth0ContextInterface["getAccessTokenSilently"],
+  handlers: AuthenticatedAPIHandlers<void>
+): APIUtils {
+  return baseAuthenticatedRequest(getAccessTokenSilently, handlers, {
+    method: "PUT",
+    url: `${ENDPOINTS.instruments}/${id}`,
+    data: newData,
+  });
+}

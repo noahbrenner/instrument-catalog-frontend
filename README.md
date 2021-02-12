@@ -56,7 +56,8 @@
          
           // Auth0 requires the namespace to start with http: or https:
           const namespace = "http:auth";
-          context.idToken[`${namespace}/roles`] = roles;
+          context.idToken[`${namespace}/roles`] = roles; // For the frontend
+          context.accessToken[`${namespace}/roles`] = roles; // For the backend
          
           return callback(null, user, context);
         }

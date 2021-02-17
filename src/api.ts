@@ -92,9 +92,7 @@ export function baseAuthenticatedRequest<T>(
   let isCancelled = false;
   let baseRequestCancel: () => void;
   const cancel = (): void => {
-    if (baseRequestCancel) {
-      baseRequestCancel();
-    }
+    baseRequestCancel?.();
     isCancelled = true;
   };
 
@@ -180,7 +178,7 @@ export function updateInstrument(
   id: number,
   newData: Omit<IInstrument, "id" | "userId">,
   getAccessTokenSilently: Auth0ContextInterface["getAccessTokenSilently"],
-  handlers: AuthenticatedAPIHandlers<void>
+  handlers: AuthenticatedAPIHandlers<IInstrument>
 ): APIUtils {
   return baseAuthenticatedRequest(getAccessTokenSilently, handlers, {
     method: "PUT",

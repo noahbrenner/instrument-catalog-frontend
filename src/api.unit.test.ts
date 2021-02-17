@@ -601,7 +601,7 @@ describe("getInstrumentById()", () => {
       imageUrl: "",
     };
 
-    describe("an authenticated user", () => {
+    describe("given an authenticated user", () => {
       it.each([
         ["the owning user", ownerAccessTokenPromise],
         ["an admin user", adminAccessTokenPromise],
@@ -610,6 +610,11 @@ describe("getInstrumentById()", () => {
         const updatedInstrumentData: UpdateInstrumentData = {
           ...mockUpdatedInstrument,
           description: `Created by ${user}`, // Unique for both tests
+        };
+        const expectedResult = {
+          ...updatedInstrumentData,
+          id: instrumentId,
+          userId,
         };
 
         {
@@ -622,20 +627,16 @@ describe("getInstrumentById()", () => {
           );
           await completed;
 
-          expect(handlers.onSuccess).toBeCalled();
+          expect(handlers.onSuccess).toBeCalledWith(expectedResult);
           expect(handlers.onError).not.toBeCalled();
         }
 
-        // Verify that the new data was stored
+        // Verify that the change persists (really a test for the mock server)
         {
           const handlers = { onSuccess: jest.fn(), onError: jest.fn() };
           const { completed } = getInstrumentById(instrumentId, handlers);
           await completed;
-          expect(handlers.onSuccess).toBeCalledWith({
-            ...updatedInstrumentData,
-            id: instrumentId,
-            userId,
-          });
+          expect(handlers.onSuccess).toBeCalledWith(expectedResult);
         }
       });
 

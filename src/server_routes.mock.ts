@@ -251,7 +251,7 @@ export const handlers: RequestHandler<any, any, any, any>[] = [
 
     // Update instrument
     Object.assign(instrument, req.body); // Real server should verify the data
-    return apiResponse(ctx.status(204, "No Content"));
+    return apiResponse(ctx.status(200), ctx.json(instrument));
   }),
 
   // Default: 404

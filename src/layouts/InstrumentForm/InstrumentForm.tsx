@@ -76,9 +76,14 @@ export function InstrumentForm({
 
   return (
     <>
-      <h2 id={FORM_IDS.heading}>
-        {id === undefined ? "New instrument" : `Edit instrument: ${name}`}
-      </h2>
+      {id === undefined ? (
+        <h2 id={FORM_IDS.heading}>New instrument</h2>
+      ) : (
+        <h2 id={FORM_IDS.heading}>
+          Edit instrument:{" "}
+          <Link to={getInstrumentPath({ name, id })}>{name}</Link>
+        </h2>
+      )}
       <form
         ref={form}
         onSubmit={handleSubmit}

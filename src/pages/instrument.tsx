@@ -34,7 +34,7 @@ interface InstrumentPageProps {
 export default function InstrumentPage(_: RouteComponentProps): JSX.Element {
   const { instrumentId } = useParams() as InstrumentPageProps;
   const [loadingMessage, setLoadingMessage] = useState("...Loading");
-  const [instrument, setInstrument] = useState<IInstrument>();
+  const [instrument, setInstrument] = useState<IInstrument | undefined>();
   const [instrumentExists, setInstrumentExists] = useState(true);
   const auth = useAuth();
   const location = useLocation();

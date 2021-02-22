@@ -6,11 +6,11 @@ import { App } from "#src/App";
 import { renderWithRouter } from "#test_helpers/renderWithRouter";
 import { rest, server, ENDPOINTS } from "#test_helpers/server";
 
-// We're only testing the LOADING auth state because that's the initial state
-// and the page content we're testing doesn't depend on being authenticated
-useAuth.mockReturnValue(LOADING);
-
 describe("<CategoryPage /> rendered inside <App />", () => {
+  // We're only testing the LOADING auth state because that's the initial state
+  // and the page content we're testing doesn't depend on being authenticated
+  beforeEach(() => useAuth.mockReturnValue(LOADING));
+
   describe("given the path /categories/percussion/", () => {
     it("renders data for the category and its instruments", async () => {
       renderWithRouter(<App />, "/categories/percussion/");

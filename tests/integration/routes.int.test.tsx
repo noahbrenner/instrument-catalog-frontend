@@ -1,18 +1,20 @@
 import { screen } from "@testing-library/react";
 import React from "react";
 
-import { useAuth, UNAUTHENTICATED, AUTHENTICATED } from "#mocks/useAuth";
+import {
+  mockAuthenticatedUser,
+  useAuth,
+  UNAUTHENTICATED,
+} from "#mocks/useAuth";
 import { App } from "#src/App";
 import { renderWithRouter } from "#test_helpers/renderWithRouter";
 
 describe("<App />", () => {
   describe.each([
-    ["logged out", UNAUTHENTICATED],
-    ["logged in", AUTHENTICATED],
-  ])("when %s", (_, AUTH_VALUE) => {
-    beforeEach(() => {
-      useAuth.mockReturnValue(AUTH_VALUE);
-    });
+    ["logged out", () => useAuth.mockReturnValue(UNAUTHENTICATED)],
+    ["logged in", () => mockAuthenticatedUser("foo|123")],
+  ])("when %s", (_, mockAuthState) => {
+    beforeEach(mockAuthState);
 
     describe("given the route '/'", () => {
       it("displays content from Home page", async () => {

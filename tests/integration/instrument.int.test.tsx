@@ -9,15 +9,14 @@ import { screen, waitFor } from "@testing-library/react";
 import React from "react";
 
 import {
+  mockAuthenticatedUser,
   useAuth,
-  AUTHENTICATED,
-  AUTHENTICATED_ADMIN,
   ERRORED,
   LOADING,
   UNAUTHENTICATED,
 } from "#mocks/useAuth";
 import { App } from "#src/App";
-import { MOCK_DATA } from "#src/server_routes.mock";
+import { MOCK_DATA } from "#server_routes.mock";
 import { renderWithRouter } from "#test_helpers/renderWithRouter";
 
 /**
@@ -222,13 +221,9 @@ describe("<InstrumentPage /> inside <App /> at an instrument edit path", () => {
     });
   });
 
-  // describe("given a user who does not own the instrument", () => {
   describe("given an AUTHENTICATED user who doesn't own the instrument", () => {
     it('displays a "Not Permitted" message', async () => {
-      useAuth.mockReturnValue({
-        ...AUTHENTICATED,
-        user: { ...AUTHENTICATED.user, sub: `${flute.userId}notOwner` },
-      });
+      mockAuthenticatedUser(`${flute.userId}notOwner`);
       const { unmount } = renderWithRouter(<App />, editPagePath);
 
       const heading2 = await screen.findByRole("heading", { level: 2 });
@@ -243,10 +238,7 @@ describe("<InstrumentPage /> inside <App /> at an instrument edit path", () => {
 
   describe("given the AUTHENTICATED user who owns the instrument", () => {
     it("displays the <InstrumentForm /> edit page", async () => {
-      useAuth.mockReturnValue({
-        ...AUTHENTICATED,
-        user: { ...AUTHENTICATED.user, sub: flute.userId },
-      });
+      mockAuthenticatedUser(flute.userId);
       const { unmount } = renderWithRouter(<App />, editPagePath);
 
       const heading2 = await screen.findByRole("heading", { level: 2 });
@@ -258,10 +250,9 @@ describe("<InstrumentPage /> inside <App /> at an instrument edit path", () => {
 
   describe("given an AUTHENTICATED admin user", () => {
     it("displays the <InstrumentForm /> edit page", async () => {
-      useAuth.mockReturnValue(AUTHENTICATED_ADMIN);
+      mockAuthenticatedUser(`${flute.userId}notOwner`, /* isAdmin */ true);
       const { unmount } = renderWithRouter(<App />, editPagePath);
 
-      expect(AUTHENTICATED_ADMIN.user.sub).not.toEqual(flute.userId);
       const heading2 = await screen.findByRole("heading", { level: 2 });
       expect(heading2).toHaveTextContent(/edit instrument.*flute/i);
 

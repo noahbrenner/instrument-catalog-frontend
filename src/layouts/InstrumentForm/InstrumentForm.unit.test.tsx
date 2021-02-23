@@ -41,28 +41,20 @@ function renderInstrumentForm(props: InstrumentFormProps = {}) {
 }
 
 describe("<InstrumentForm />", () => {
-  describe("given only required props", () => {
+  describe("given no props", () => {
     it('renders a blank "New instrument" form', async () => {
-      const {
-        heading,
-        nameInput,
-        getCategoryInputs,
-        summaryInput,
-        descriptionTextarea,
-        imageUrlInput,
-        waitForInitialLoad,
-      } = await renderInstrumentForm();
-      await waitForInitialLoad();
+      const utils = await renderInstrumentForm();
+      await utils.waitForInitialLoad();
 
-      const categoryInputs = getCategoryInputs();
+      const categoryInputs = utils.getCategoryInputs();
 
-      expect(heading).toHaveTextContent(/new instrument/i);
-      expect(nameInput).toHaveValue("");
+      expect(utils.heading).toHaveTextContent(/new instrument/i);
+      expect(utils.nameInput).toHaveValue("");
       expect(categoryInputs.length).toBeGreaterThan(0);
       categoryInputs.forEach((input) => expect(input).not.toBeChecked());
-      expect(summaryInput).toHaveValue("");
-      expect(descriptionTextarea).toHaveValue("");
-      expect(imageUrlInput).toHaveValue("");
+      expect(utils.summaryInput).toHaveValue("");
+      expect(utils.descriptionTextarea).toHaveValue("");
+      expect(utils.imageUrlInput).toHaveValue("");
     });
   });
 
@@ -76,23 +68,15 @@ describe("<InstrumentForm />", () => {
         description: "Foo description",
         imageUrl: "https://example.com/foo.jpg",
       };
-      const {
-        heading,
-        nameInput,
-        getCategoryInputByValue,
-        summaryInput,
-        descriptionTextarea,
-        imageUrlInput,
-        waitForInitialLoad,
-      } = renderInstrumentForm(props);
-      await waitForInitialLoad();
+      const utils = renderInstrumentForm(props);
+      await utils.waitForInitialLoad();
 
-      expect(heading).toHaveTextContent(/edit instrument: foo/i);
-      expect(nameInput).toHaveValue(props.name);
-      expect(getCategoryInputByValue(props.categoryId)).toBeChecked();
-      expect(summaryInput).toHaveValue(props.summary);
-      expect(descriptionTextarea).toHaveValue(props.description);
-      expect(imageUrlInput).toHaveValue(props.imageUrl);
+      expect(utils.heading).toHaveTextContent(/edit instrument: foo/i);
+      expect(utils.nameInput).toHaveValue(props.name);
+      expect(utils.getCategoryInputByValue(props.categoryId)).toBeChecked();
+      expect(utils.summaryInput).toHaveValue(props.summary);
+      expect(utils.descriptionTextarea).toHaveValue(props.description);
+      expect(utils.imageUrlInput).toHaveValue(props.imageUrl);
     });
   });
 });

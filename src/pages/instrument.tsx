@@ -47,13 +47,14 @@ export default function InstrumentPage(_: RouteComponentProps): JSX.Element {
       return;
     }
 
-    // Make sure the URL reflects the correct instrument name and ends with "/"
-    if (instrument && instrument.id === Number(instrumentId)) {
+    // Have we already loaded data for the current page?
+    if (instrument?.id === Number(instrumentId)) {
+      // Validate the URL (use the correct instrument name & end with "/")
       const canonicalPath = getInstrumentPath(instrument, isEditPage);
       if (location.pathname !== canonicalPath) {
         navigate(canonicalPath, { replace: true });
       }
-      return;
+      return; // No need to fetch the data again
     }
 
     // Reset the state before fetching new instrument data
@@ -100,6 +101,7 @@ export default function InstrumentPage(_: RouteComponentProps): JSX.Element {
               summary={instrument.summary}
               description={instrument.description}
               imageUrl={instrument.imageUrl}
+              setInstrument={setInstrument}
             />
           </Suspense>
         ) : (

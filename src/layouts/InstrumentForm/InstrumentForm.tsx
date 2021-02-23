@@ -1,16 +1,24 @@
+import { Link, useNavigate } from "@reach/router";
 import type { RouteComponentProps } from "@reach/router";
 import React, { useRef, useState } from "react";
 import type { FormEvent } from "react";
 
+import { updateInstrument } from "#api";
+import { useAuth } from "#hooks/useAuth";
 import { useCategories } from "#hooks/useCategories";
 import type { IInstrument } from "#src/types";
+import { getInstrumentPath } from "#utils/paths";
 
-export interface InstrumentFormElements extends HTMLFormControlsCollection {
+interface InstrumentFormControls extends HTMLFormControlsCollection {
   categoryId: RadioNodeList;
   name: HTMLInputElement;
   summary: HTMLInputElement;
   description: HTMLTextAreaElement;
   imageUrl: HTMLInputElement;
+}
+
+export interface InstrumentFormElement extends HTMLFormElement {
+  elements: InstrumentFormControls;
 }
 
 type InstrumentFormValues = Omit<IInstrument, "id" | "userId">;
@@ -26,7 +34,9 @@ const FORM_IDS: {
   imageUrl: "instrumentForm:imageUrl",
 } as const;
 
-export type InstrumentFormProps = Partial<Omit<IInstrument, "userId">>;
+export type InstrumentFormProps = Partial<Omit<IInstrument, "userId">> & {
+  setInstrument?: (value: IInstrument) => void;
+};
 
 export function InstrumentForm({
   id = undefined,
@@ -35,36 +45,71 @@ export function InstrumentForm({
   summary = "",
   description = "",
   imageUrl = "",
+  setInstrument,
 }: InstrumentFormProps & RouteComponentProps): JSX.Element {
-  const form = useRef<HTMLFormElement>(null);
+  const auth = useAuth();
+  const navigate = useNavigate();
+  const form = useRef<InstrumentFormElement>(null);
   const [isFormSubmitting, setIsFormSubmitting] = useState(false);
   const { categories } = useCategories();
   const canSubmitForm = categories.length > 0 && !isFormSubmitting;
 
+  if (auth.state !== "AUTHENTICATED") {
+    return (
+      <p>
+        Whoops, you found a bug! InstrumentForm should never be mounted if
+        you’re not authenticated.
+      </p>
+    );
+  }
+
   // TODO `const isNewInstrument = id === undefined` when TS can save typechecks
   // https://github.com/microsoft/TypeScript/issues/12184
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (event: FormEvent<InstrumentFormElement>) => {
     event.preventDefault();
 
-    if (!canSubmitForm) {
+    if (!canSubmitForm || !event.currentTarget.checkValidity()) {
       return;
     }
 
     setIsFormSubmitting(true);
-    const formInputs = event.currentTarget.elements as InstrumentFormElements;
+
+    const formInputs = event.currentTarget.elements;
+
+    // I'd rather use `formInputs.categoryId` but jsdom doesn't implement
+    // `RadioNodeList`, so tests would fail even though it works in the browser:
+    // https://github.com/jsdom/jsdom/issues/2600
+    const categoryIdInput = event.currentTarget.querySelector<HTMLInputElement>(
+      "input[name=categoryId]:checked"
+    );
+    if (categoryIdInput === null) {
+      return;
+    }
     const formValues: InstrumentFormValues = {
-      categoryId: Number(formInputs.categoryId.value),
+      categoryId: Number(categoryIdInput.value),
       name: formInputs.name.value,
       summary: formInputs.summary.value,
       description: formInputs.description.value,
       imageUrl: formInputs.imageUrl.value,
     };
 
+    const handlers = {
+      onSuccess(newInstrument: IInstrument) {
+        setIsFormSubmitting(false);
+        setInstrument?.(newInstrument);
+        navigate(getInstrumentPath(newInstrument));
+      },
+      onError(uiErrorMessage: string) {
+        setIsFormSubmitting(false);
+        console.log(uiErrorMessage);
+      },
+    };
+
     if (id === undefined) {
       console.dir({ newInstrument: formValues });
     } else {
-      console.dir({ id, updatedInstrument: formValues });
+      updateInstrument(id, formValues, auth.getAccessTokenSilently, handlers);
     }
   };
 
@@ -112,6 +157,7 @@ export function InstrumentForm({
                   id={FORM_IDS.categoryId + cat.id}
                   value={cat.id}
                   defaultChecked={cat.id === categoryId}
+                  required
                 />
                 {cat.name}
               </label>

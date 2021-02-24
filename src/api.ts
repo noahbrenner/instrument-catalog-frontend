@@ -50,7 +50,10 @@ export interface APIHandlers<T> {
 }
 
 export interface AuthenticatedAPIHandlers<T> extends APIHandlers<T> {
-  onError: (uiErrorMessage: string, error: AxiosError | OAuthError) => unknown;
+  onError: (
+    uiErrorMessage: string,
+    error: AxiosError<{ error?: string } | undefined> | OAuthError
+  ) => unknown;
 }
 
 export interface APIUtils {
@@ -123,6 +126,8 @@ export function baseAuthenticatedRequest<T>(
 
   return { cancel, completed };
 }
+
+export const { isAxiosError } = axios;
 
 /* CATEGORIES */
 

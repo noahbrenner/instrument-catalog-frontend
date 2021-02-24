@@ -158,7 +158,10 @@ function getUserCredentials(
 
   // jwt can be null for invalid data, though the types don't reflect that
   if (jwt?.payload?.sub === undefined) {
-    const errResponse = apiResponse(ctx.status(403, "Forbidden"));
+    const errResponse = apiResponse(
+      ctx.status(403, "Forbidden"),
+      ctx.json({ error: "You need to log in before you can do that" })
+    );
     return { userId: undefined, isAdmin: false, errResponse };
   }
   const userId = jwt.payload.sub as string;
@@ -236,17 +239,20 @@ export const handlers: RequestHandler<any, any, any, any>[] = [
 
     // Validate instrument ID
     if (!/^[0-9]+$/.test(req.params.id)) {
-      return apiResponse(ctx.status(400, "Bad Request"));
+      const error = `Invalid instrument ID: "${req.params.id}"`;
+      return apiResponse(ctx.status(400, "Bad Request"), ctx.json({ error }));
     }
     const instrumentId = Number(req.params.id);
     const instrument = DB.instruments.find(({ id }) => id === instrumentId);
     if (!instrument) {
-      return apiResponse(ctx.status(404, "Not Found"));
+      const error = `There is no existing instrument with ID "${instrumentId}"`;
+      return apiResponse(ctx.status(404, "Not Found"), ctx.json({ error }));
     }
 
     // Validate permissions
     if (userId !== instrument.userId && !isAdmin) {
-      return apiResponse(ctx.status(403, "Forbidden"));
+      const error = "You don't have permission to edit this instrument";
+      return apiResponse(ctx.status(403, "Forbidden"), ctx.json({ error }));
     }
 
     // Update instrument

@@ -3,7 +3,8 @@ import type { RouteComponentProps } from "@reach/router";
 import React, { useRef, useState } from "react";
 import type { FormEvent } from "react";
 
-import { updateInstrument } from "#api";
+import { isAxiosError, updateInstrument } from "#api";
+import type { AuthenticatedAPIHandlers } from "#api";
 import { useAuth } from "#hooks/useAuth";
 import { useCategories } from "#hooks/useCategories";
 import type { IInstrument } from "#src/types";
@@ -51,6 +52,7 @@ export function InstrumentForm({
   const navigate = useNavigate();
   const form = useRef<InstrumentFormElement>(null);
   const [isFormSubmitting, setIsFormSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
   const { categories } = useCategories();
   const canSubmitForm = categories.length > 0 && !isFormSubmitting;
 
@@ -74,6 +76,7 @@ export function InstrumentForm({
     }
 
     setIsFormSubmitting(true);
+    setErrorMessage("");
 
     const formInputs = event.currentTarget.elements;
 
@@ -94,15 +97,19 @@ export function InstrumentForm({
       imageUrl: formInputs.imageUrl.value,
     };
 
-    const handlers = {
-      onSuccess(newInstrument: IInstrument) {
+    const handlers: AuthenticatedAPIHandlers<IInstrument> = {
+      onSuccess(newInstrument) {
         setIsFormSubmitting(false);
         setInstrument?.(newInstrument);
         navigate(getInstrumentPath(newInstrument));
       },
-      onError(uiErrorMessage: string) {
+      onError(uiErrorMessage, err) {
         setIsFormSubmitting(false);
-        console.log(uiErrorMessage);
+        if (isAxiosError(err) && err.response?.data?.error) {
+          setErrorMessage(err.response.data.error);
+        } else {
+          setErrorMessage(uiErrorMessage);
+        }
       },
     };
 
@@ -129,6 +136,7 @@ export function InstrumentForm({
           <Link to={getInstrumentPath({ name, id })}>{name}</Link>
         </h2>
       )}
+      {errorMessage && <p style={{ color: "red" }}>{errorMessage}</p>}
       <form
         ref={form}
         onSubmit={handleSubmit}

@@ -3,8 +3,8 @@ import userEvent from "@testing-library/user-event";
 import React from "react";
 
 import { mockAuthenticatedUser } from "#mocks/useAuth";
-import { MOCK_DATA } from "#server_routes.mock";
 import { renderWithRouter } from "#test_helpers/renderWithRouter";
+import { ENDPOINTS, MOCK_DATA, rest, server } from "#test_helpers/server";
 import { InstrumentForm } from "./InstrumentForm";
 import type {
   InstrumentFormElement,
@@ -146,22 +146,45 @@ describe("<InstrumentForm />", () => {
     });
 
     test("Edit form error path works", async () => {
-      const instrument = MOCK_DATA.instruments[4];
-      mockAuthenticatedUser(`${instrument.userId}notTheOwner`);
+      const error = "You can't do that";
+      server.use(
+        rest.put(`${ENDPOINTS.instruments}/*`, (_req, res, ctx) =>
+          // `res.once` so that request #2 gets the default implementation
+          res.once(ctx.status(403, "Forbidden"), ctx.json({ error }))
+        )
+      );
+      const instrument = MOCK_DATA.instruments[0];
+      mockAuthenticatedUser(instrument.userId);
       const setInstrument = jest.fn();
       const utils = renderInstrumentForm({ ...instrument, setInstrument });
       const initialPathname = utils.history.location.pathname;
       await utils.waitForInitialLoad();
 
+      // Form submission 1: Error response from API
       userEvent.type(utils.nameInput, "Baz");
       userEvent.click(utils.submitButton);
 
-      // Inputs are re-enabled when the form submission completes
-      expect(utils.nameInput).toBeDisabled();
+      expect(utils.nameInput).toBeDisabled(); // Until form submission response
       await waitFor(() => expect(utils.nameInput).toBeEnabled());
 
       expect(setInstrument).not.toBeCalled();
+      expect(utils.getByText(error)).toBeInTheDocument();
       expect(utils.history.location.pathname).toBe(initialPathname);
+
+      // Form submission 2: Successful response from API
+      userEvent.click(utils.submitButton);
+
+      expect(utils.queryByText(error)).not.toBeInTheDocument();
+      expect(utils.nameInput).toBeDisabled(); // Until form submission response
+      await waitFor(() => expect(utils.nameInput).toBeEnabled());
+
+      expect(setInstrument).toBeCalledWith({
+        ...instrument,
+        name: `${instrument.name}Baz`,
+      });
+      expect(utils.history.location.pathname).toBe(
+        `/instruments/${instrument.id}/${instrument.name}Baz/`
+      );
     });
   });
 });

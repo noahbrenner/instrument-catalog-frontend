@@ -146,11 +146,11 @@ export function InstrumentForm({
           <label htmlFor={FORM_IDS.name}>
             Instrument name
             <input
-              type="text"
-              name="name"
-              id={FORM_IDS.name}
               defaultValue={name}
               disabled={isFormSubmitting}
+              id={FORM_IDS.name}
+              name="name"
+              type="text"
             />
           </label>
         </p>
@@ -160,12 +160,12 @@ export function InstrumentForm({
             <p key={cat.id}>
               <label htmlFor={FORM_IDS.categoryId + cat.id}>
                 <input
-                  type="radio"
-                  name="categoryId"
-                  id={FORM_IDS.categoryId + cat.id}
-                  value={cat.id}
                   defaultChecked={cat.id === categoryId}
+                  id={FORM_IDS.categoryId + cat.id}
+                  name="categoryId"
                   required
+                  type="radio"
+                  value={cat.id}
                 />
                 {cat.name}
               </label>
@@ -176,11 +176,11 @@ export function InstrumentForm({
           <label htmlFor={FORM_IDS.summary}>
             Summary
             <input
-              type="text"
-              name="summary"
-              id={FORM_IDS.summary}
               defaultValue={summary}
               disabled={isFormSubmitting}
+              id={FORM_IDS.summary}
+              name="summary"
+              type="text"
             />
           </label>
         </p>
@@ -188,12 +188,12 @@ export function InstrumentForm({
           <label htmlFor={FORM_IDS.description}>
             Description
             <textarea
-              name="description"
-              id={FORM_IDS.description}
-              defaultValue={description}
               cols={30}
-              rows={10}
+              defaultValue={description}
               disabled={isFormSubmitting}
+              id={FORM_IDS.description}
+              name="description"
+              rows={10}
             />
           </label>
         </div>
@@ -201,11 +201,11 @@ export function InstrumentForm({
           <label htmlFor={FORM_IDS.imageUrl}>
             Image URL
             <input
-              type="text"
-              name="imageUrl"
-              id={FORM_IDS.imageUrl}
               defaultValue={imageUrl}
               disabled={isFormSubmitting}
+              id={FORM_IDS.imageUrl}
+              name="imageUrl"
+              type="text"
             />
           </label>
         </p>

@@ -136,9 +136,16 @@ export function InstrumentForm({
   const navigate = useNavigate();
   const form = useRef<InstrumentFormElement>(null);
   const [isFormSubmitting, setIsFormSubmitting] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
+  const [errorMessage, setErrorMessageValueOnly] = useState("");
   const { categories } = useCategories();
   const canSubmitForm = categories.length > 0 && !isFormSubmitting;
+
+  const setErrorMessage = (msg: string) => {
+    setErrorMessageValueOnly(msg);
+    if (msg !== "") {
+      window.scroll(0, 0);
+    }
+  };
 
   if (auth.state !== "AUTHENTICATED") {
     return (
@@ -154,25 +161,26 @@ export function InstrumentForm({
 
   const handleSubmit = (event: FormEvent<InstrumentFormElement>) => {
     event.preventDefault();
+    const thisForm = event.currentTarget;
+    const formInputs = thisForm.elements;
 
-    if (!canSubmitForm || !event.currentTarget.checkValidity()) {
+    if (!canSubmitForm || !thisForm.reportValidity()) {
       return;
     }
-
-    setIsFormSubmitting(true);
-    setErrorMessage("");
-
-    const formInputs = event.currentTarget.elements;
 
     // I'd rather use `formInputs.categoryId` but jsdom doesn't implement
     // `RadioNodeList`, so tests would fail even though it works in the browser:
     // https://github.com/jsdom/jsdom/issues/2600
-    const categoryIdInput = event.currentTarget.querySelector<HTMLInputElement>(
+    const categoryIdInput = thisForm.querySelector<HTMLInputElement>(
       "input[name=categoryId]:checked"
     );
+
+    // Check to narrow type (but should already be validated by reportValidity)
     if (categoryIdInput === null) {
+      setErrorMessage("Please choose a category before submitting the form");
       return;
     }
+
     const formValues: InstrumentFormValues = {
       categoryId: Number(categoryIdInput.value),
       name: formInputs.name.value.trim(),
@@ -196,6 +204,9 @@ export function InstrumentForm({
         }
       },
     };
+
+    setIsFormSubmitting(true);
+    setErrorMessage("");
 
     if (id === undefined) {
       console.dir({ newInstrument: formValues });

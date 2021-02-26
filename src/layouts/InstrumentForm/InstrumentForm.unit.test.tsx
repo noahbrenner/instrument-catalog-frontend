@@ -114,11 +114,12 @@ describe("<InstrumentForm />", () => {
       ];
       await utils.waitForInitialLoad();
 
-      clearAndType(utils.nameInput, "Bar");
+      // Enter values; Text includes whitespace which should be trimmed
+      clearAndType(utils.nameInput, "  Bar  ");
       userEvent.click(utils.getCategoryInputByValue(1));
-      clearAndType(utils.summaryInput, "Bar summary");
-      clearAndType(utils.descriptionTextarea, "Bar description");
-      clearAndType(utils.imageUrlInput, "https://example.com/foo.jpg");
+      clearAndType(utils.summaryInput, "  Bar summary  ");
+      clearAndType(utils.descriptionTextarea, "  Bar description  ");
+      clearAndType(utils.imageUrlInput, "  https://example.com/foo.jpg  ");
       userEvent.click(utils.submitButton);
 
       // Inputs are disabled when the form is submitted

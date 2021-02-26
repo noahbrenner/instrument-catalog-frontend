@@ -91,10 +91,10 @@ export function InstrumentForm({
     }
     const formValues: InstrumentFormValues = {
       categoryId: Number(categoryIdInput.value),
-      name: formInputs.name.value,
-      summary: formInputs.summary.value,
-      description: formInputs.description.value,
-      imageUrl: formInputs.imageUrl.value,
+      name: formInputs.name.value.trim(),
+      summary: formInputs.summary.value.trim(),
+      description: formInputs.description.value.trim(),
+      imageUrl: formInputs.imageUrl.value.trim(),
     };
 
     const handlers: AuthenticatedAPIHandlers<IInstrument> = {
@@ -141,15 +141,23 @@ export function InstrumentForm({
         ref={form}
         onSubmit={handleSubmit}
         aria-labelledby={FORM_IDS.heading}
+        // All text values should be unique per instrument. Autocompleting old
+        // text when editing is unhelpful since the *point* is entering new text
+        autoComplete="off"
       >
         <p>
           <label htmlFor={FORM_IDS.name}>
             Instrument name
             <input
+              autoCorrect="off" // Many instruments aren't in the dictionary
               defaultValue={name}
               disabled={isFormSubmitting}
               id={FORM_IDS.name}
+              maxLength={30}
               name="name"
+              pattern=".*\S.*" // At least 1 non-whitespace character
+              required
+              spellCheck="false" // Many instruments aren't in the dictionary
               type="text"
             />
           </label>
@@ -179,7 +187,9 @@ export function InstrumentForm({
               defaultValue={summary}
               disabled={isFormSubmitting}
               id={FORM_IDS.summary}
+              maxLength={150}
               name="summary"
+              required
               type="text"
             />
           </label>
@@ -201,11 +211,15 @@ export function InstrumentForm({
           <label htmlFor={FORM_IDS.imageUrl}>
             Image URL
             <input
+              autoCorrect="off"
               defaultValue={imageUrl}
               disabled={isFormSubmitting}
               id={FORM_IDS.imageUrl}
+              maxLength={500}
               name="imageUrl"
-              type="text"
+              placeholder="https://www.example.com/img.jpg"
+              spellCheck="false"
+              type="url"
             />
           </label>
         </p>

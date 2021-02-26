@@ -2,6 +2,7 @@ import { Link, useNavigate } from "@reach/router";
 import type { RouteComponentProps } from "@reach/router";
 import React, { useRef, useState } from "react";
 import type { FormEvent } from "react";
+import styled from "styled-components";
 
 import { isAxiosError, updateInstrument } from "#api";
 import type { AuthenticatedAPIHandlers } from "#api";
@@ -9,6 +10,89 @@ import { useAuth } from "#hooks/useAuth";
 import { useCategories } from "#hooks/useCategories";
 import type { IInstrument } from "#src/types";
 import { getInstrumentPath } from "#utils/paths";
+
+const StyledForm = styled.form`
+  fieldset,
+  input[type="text"],
+  input[type="url"],
+  textarea {
+    display: block;
+    border: 1px solid #999;
+    border-radius: 4px;
+    padding: 0.5em;
+    width: 100%;
+    font-size: 0.9em;
+  }
+
+  input:focus,
+  textarea:focus {
+    background: #f3f3f3;
+  }
+
+  label,
+  legend {
+    font-weight: bold;
+  }
+
+  fieldset label {
+    font-weight: normal;
+  }
+
+  fieldset {
+    display: flex;
+    flex-flow: column nowrap;
+
+    div {
+      line-height: 3em;
+    }
+
+    input[type="radio"] {
+      margin-right: 0.5em;
+    }
+
+    @media (min-width: ${({ theme }) => theme.mobileBreakpoint}) {
+      flex-flow: row wrap;
+
+      div {
+        line-height: 1.5em;
+        margin-left: 1.5em;
+
+        &:first-of-type {
+          margin-left: 0;
+        }
+      }
+    }
+  }
+
+  textarea {
+    resize: vertical;
+    height: 12em;
+    overflow: auto;
+    font-family: inherit;
+  }
+
+  button {
+    padding: 0.5em 1em;
+    font-size: 1em;
+  }
+
+  .button-container {
+    display: flex;
+    justify-content: space-between;
+
+    @media (min-width: ${({ theme }) => theme.mobileBreakpoint}) {
+      justify-content: flex-start;
+
+      button {
+        margin-left: 1.5em;
+
+        &:first-child {
+          margin-left: 0;
+        }
+      }
+    }
+  }
+`;
 
 interface InstrumentFormControls extends HTMLFormControlsCollection {
   categoryId: RadioNodeList;
@@ -137,7 +221,7 @@ export function InstrumentForm({
         </h2>
       )}
       {errorMessage && <p style={{ color: "red" }}>{errorMessage}</p>}
-      <form
+      <StyledForm
         ref={form}
         onSubmit={handleSubmit}
         aria-labelledby={FORM_IDS.heading}
@@ -165,7 +249,7 @@ export function InstrumentForm({
         <fieldset disabled={isFormSubmitting}>
           <legend>Category</legend>
           {categories.map((cat) => (
-            <p key={cat.id}>
+            <div key={cat.id}>
               <label htmlFor={FORM_IDS.categoryId + cat.id}>
                 <input
                   defaultChecked={cat.id === categoryId}
@@ -177,7 +261,7 @@ export function InstrumentForm({
                 />
                 {cat.name}
               </label>
-            </p>
+            </div>
           ))}
         </fieldset>
         <p>
@@ -198,12 +282,10 @@ export function InstrumentForm({
           <label htmlFor={FORM_IDS.description}>
             Description
             <textarea
-              cols={30}
               defaultValue={description}
               disabled={isFormSubmitting}
               id={FORM_IDS.description}
               name="description"
-              rows={10}
             />
           </label>
         </div>
@@ -223,13 +305,19 @@ export function InstrumentForm({
             />
           </label>
         </p>
-        <button type="submit" disabled={!canSubmitForm}>
-          Submit
-        </button>
-        <button type="button" onClick={handleReset} disabled={isFormSubmitting}>
-          Reset
-        </button>
-      </form>
+        <div className="button-container">
+          <button type="submit" disabled={!canSubmitForm}>
+            Submit
+          </button>
+          <button
+            type="button"
+            onClick={handleReset}
+            disabled={isFormSubmitting}
+          >
+            Reset
+          </button>
+        </div>
+      </StyledForm>
     </>
   );
 }

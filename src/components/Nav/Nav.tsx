@@ -29,6 +29,10 @@ const StyledNav = styled.nav`
     left: 0;
   }
 
+  & button {
+    font-size: 0.9em;
+  }
+
   & ul {
     margin: 0;
     padding: 0;

@@ -22,16 +22,47 @@
 - Create `.env` by copying `template.env`
   ```bash
   $ cp template.env .env
-  # Then edit `.env` as needed
+  # Then edit `.env` to set environment variables as needed
   ```
-- **OPTIONAL** _(but recommended)_: If you want to use any login functionality, you'll need to create an [Auth0](https://auth0.com/) account (they have a substantial free tier, so you shouldn't get any charges for testing out the app)
-  - Create a new Tenant (this happens automatically if you're creating a new Auth0 account)
-  - Create a new Application for that Tenant and set its **Application Type** to "Single Page Application"
-  - In your new Application's settings, enter `http://localhost:5000` in all of the following fields _(if you set `FRONTEND_DEVSERVER_PORT` to something other than `5000`, enter your value for the port number instead)_:
-    - `Allowed Callback URLs`
-    - `Allowed Logout URLs`
-    - `Allowed Web Origins`
-  - Back in the repo, open up the `.env` file and enter your Auth0 Application's **Domain** and **Client ID** as the values of `AUTH0_DOMAIN` and `AUTH0_CLIENT_ID`, respectively.
+- Enable login functionality _(Optional, but the site is read-only without it)_
+  - Create an [Auth0](https://auth0.com/) account. They have a substantial free tier, so you shouldn't get any charges for testing out the app.
+    - Create a new Tenant within your account (this happens automatically if you're creating a new Auth0 account)
+    - Create a new Application for that Tenant and set its **Application Type** to "Single Page Application"
+      - In your new Application's settings, enter `http://localhost:5000` in all of the following fields _(**NOTE:** if you didn't set the `FRONTEND_DEVSERVER_PORT` env var to `5000`, use the port you chose instead)_:
+        - `Allowed Callback URLs`
+        - `Allowed Logout URLs`
+        - `Allowed Web Origins`
+      - Back in the repo, open up the `.env` file and enter your Auth0 Application's **Domain** and **Client ID** as the values of `AUTH0_DOMAIN` and `AUTH0_CLIENT_ID`, respectively.
+    - Then, to create a new API definition representing the backend server:
+      - In the Auth0 dashboard's sidebar, click "APIs", then click the "CREATE API" button
+      - Choose a Name, Identifier, and Signing Algorithm. Choose any values you like, just note that the Identifier can't be changed and it will be included with the frontend code.
+      - Back in the repo, edit the `.env` file and enter your chosen **API Identifier** as the value of `AUTH0_BACKEND_API_IDENTIFIER`
+  - _(Optional)_ Give yourself admin access. This allows you to edit or delete _any_ instrument on the site, not only the ones you create. You must complete the steps above before you can do this.
+    - First, to give yourself the "admin" role within Auth0:
+      - Start up the dev server (`npm start`), go to <http://localhost:5000>, and log into the app in order to create a User record within Auth0
+      - In the Auth0 dashboard's sidebar, click "Users & Roles" > "Roles"
+        - Create a role named "admin" (lower case, no quotes)
+      - In the Auth0 dashboard's sidebar, click "Users & Roles" > "Users"
+        - Find yourself in the user list, click the `...` button on the right side of that row, and select "Assign Roles"
+        - Select the admin role and assign it
+    - Next, to make Auth0's server insert the array of a user's roles in each idToken (so we can read them from the frontend app):
+      - In the Auth0 dashboard's sidebar, click "Rules"
+      - Click the "CREATE RULE" button
+      - Click "Empty rule" and enter the following:
+        <!-- prettier-ignore -->
+        ```javascript
+        function includeUserRoles(user, context, callback) {
+          const roles = (context.authorization && context.authorization.roles) || [];
+         
+          // Auth0 requires the namespace to start with http: or https:
+          const namespace = "http:auth";
+          context.idToken[`${namespace}/roles`] = roles; // For the frontend
+          context.accessToken[`${namespace}/roles`] = roles; // For the backend
+         
+          return callback(null, user, context);
+        }
+        ```
+    - Now that you have an admin account, it's a good idea to create an additional account on the dev site _without_ the admin role so that you can easily view the site as a regular user.
 
 ## Scripts for local development
 
@@ -61,9 +92,8 @@
 
 ## Deployment
 
-When building the site for deployment, some environment variables need to be set (**see `template.env` for reference**).
-
-- If you're building on your local machine, you can just set the values in `.env`.
-- If building and deploying from a CD server, use the CD platform's interface to set the required variables.
-
-Build the site using **`$ npm run build`**, then deploy the contents of the `dist/` directory.
+- Update your Auth0 Application's settings to reflect the domain that the site will be served from, replacing the `localhost:5000` values.
+- Set env vars: When building the site for deployment, some environment variables need to be set (**see `template.env` for reference**).
+  - If you're building on your local machine, you can just set the values in `.env`.
+  - If building and deploying from a CI/CD server, use the CD platform's interface to set the required variables.
+- Build the site using **`$ npm run build`**, then deploy the contents of the `dist/` directory.

@@ -1,3 +1,4 @@
+import type { RouteComponentProps } from "@reach/router";
 import React from "react";
 import styled from "styled-components";
 
@@ -58,7 +59,7 @@ export function Instrument({
   summary,
   description,
   imageUrl,
-}: InstrumentProps): JSX.Element {
+}: InstrumentProps & RouteComponentProps): JSX.Element {
   return (
     <InstrumentContainer>
       <h2>{name}</h2>

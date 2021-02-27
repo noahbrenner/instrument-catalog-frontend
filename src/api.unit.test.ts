@@ -1,34 +1,41 @@
 /** @jest-environment node */
+import { OAuthError } from "@auth0/auth0-react";
+import jws from "jws";
+import type { MockedRequest, ResponseResolver, restContext } from "msw";
+
 import { rest, server, MOCK_DATA } from "#test_helpers/server";
 import {
   baseRequest,
+  baseAuthenticatedRequest,
   getCategories,
   getCategoryBySlug,
   getInstruments,
   getInstrumentsByCategoryId,
   getInstrumentById,
-  getUsers,
+  updateInstrument,
 } from "#api";
 import type { APIHandlers, APIUtils, RequestParams } from "#api";
 
 const { API_ROOT } = process.env;
 
 describe("baseRequest()", () => {
-  function callBaseRequest(params: RequestParams) {
+  function callBaseRequest(
+    responseResolver: ResponseResolver<MockedRequest, typeof restContext>
+  ) {
+    const url = `${API_ROOT}/api-test`;
     const handlers = { onSuccess: jest.fn(), onError: jest.fn() };
-    const { cancel, completed } = baseRequest(handlers, params);
+    const requestParams: RequestParams = { method: "GET", url };
+
+    server.use(rest.get(url, responseResolver));
+    const { cancel, completed } = baseRequest(handlers, requestParams);
     return { ...handlers, cancel, completed };
   }
 
   describe("given a successful API response", () => {
     it("calls onSuccess() with the response data", async () => {
-      const url = `${API_ROOT}/api-test`;
-      server.use(
-        rest.get(url, (_req, res, ctx) => {
-          return res(ctx.json({ foo: "bar" }));
-        })
-      );
-      const request = callBaseRequest({ method: "GET", url });
+      const request = callBaseRequest((_req, res, ctx) => {
+        return res(ctx.json({ foo: "bar" }));
+      });
       await request.completed;
 
       expect(request.onSuccess).toBeCalledWith({ foo: "bar" });
@@ -38,13 +45,9 @@ describe("baseRequest()", () => {
 
   describe("given a call to cancel() before the request completes", () => {
     it("does not call onSuccess() or onError()", async () => {
-      const url = `${API_ROOT}/api-test`;
-      server.use(
-        rest.get(url, (_req, res, ctx) => {
-          return res(ctx.json({ foo: "bar" }));
-        })
-      );
-      const request = callBaseRequest({ method: "GET", url });
+      const request = callBaseRequest((_req, res, ctx) => {
+        return res(ctx.json({ foo: "bar" }));
+      });
       request.cancel();
       await request.completed;
 
@@ -55,13 +58,9 @@ describe("baseRequest()", () => {
 
   describe("given a call to cancel() after the request completes", () => {
     it("calling cancel() does not throw", async () => {
-      const url = `${API_ROOT}/api-test`;
-      server.use(
-        rest.get(url, (_req, res, ctx) => {
-          return res(ctx.json({ foo: "bar" }));
-        })
-      );
-      const request = callBaseRequest({ method: "GET", url });
+      const request = callBaseRequest((_req, res, ctx) => {
+        return res(ctx.json({ foo: "bar" }));
+      });
       await request.completed;
 
       expect(() => request.cancel()).not.toThrow();
@@ -72,13 +71,9 @@ describe("baseRequest()", () => {
 
   describe("given a network error", () => {
     it("calls onError() with a network error message if the error is persistent", async () => {
-      const url = `${API_ROOT}/api-test`;
-      server.use(
-        rest.get(url, (_req, res) => {
-          return res.networkError("Failed to connect");
-        })
-      );
-      const request = callBaseRequest({ method: "GET", url });
+      const request = callBaseRequest((_req, res) => {
+        return res.networkError("Failed to connect");
+      });
       await request.completed;
 
       expect(request.onSuccess).not.toBeCalled();
@@ -91,27 +86,17 @@ describe("baseRequest()", () => {
     });
 
     it("retries the request", async () => {
-      const url = `${API_ROOT}/api-test`;
-      // TODO Use a builtin msw method to return a NetworkError once, after msw
-      // implements such a method -- https://github.com/mswjs/msw/issues/413
-      // For now, this workaround does the trick
-      function enableSuccessfulApiResponse() {
-        server.use(
-          rest.get(url, (_req, res, ctx) => {
-            return res(ctx.json({ foo: "bar" }));
-          })
-        );
-      }
-      server.use(
-        rest.get(url, (_req, res) => {
-          enableSuccessfulApiResponse();
+      let isFirstRequest = true;
+      const request = callBaseRequest((_req, res, ctx) => {
+        if (isFirstRequest) {
+          isFirstRequest = false;
+          // res.networkError() is currently implemented by throwing an error,
           return res.networkError("Failed to connect");
-        })
-      );
-      const request = callBaseRequest({ method: "GET", url });
+        }
+        return res(ctx.json({ foo: "bar" }));
+      });
       await request.completed;
 
-      // console.log(request.onError.mock.calls[0][1].toJSON());
       expect(request.onError).not.toBeCalled();
       expect(request.onSuccess).toBeCalledWith({ foo: "bar" });
     });
@@ -119,13 +104,9 @@ describe("baseRequest()", () => {
 
   describe("given a 500 status code", () => {
     it("calls onError() with a status error message if the error is persistent", async () => {
-      const url = `${API_ROOT}/api-test`;
-      server.use(
-        rest.get(url, (_req, res, ctx) => {
-          return res(ctx.status(500, "My Error"));
-        })
-      );
-      const request = callBaseRequest({ method: "GET", url });
+      const request = callBaseRequest((_req, res, ctx) => {
+        return res(ctx.status(500, "My Error"));
+      });
       await request.completed;
 
       expect(request.onSuccess).not.toBeCalled();
@@ -138,18 +119,14 @@ describe("baseRequest()", () => {
     });
 
     it("retries the request", async () => {
-      const url = `${API_ROOT}/api-test`;
-      server.use(
-        // Return a 500 status once
-        rest.get(url, (_req, res, ctx) => {
-          return res.once(ctx.status(500, "My Error"));
-        }),
-        // Then return a successful response
-        rest.get(url, (_req, res, ctx) => {
-          return res(ctx.json({ foo: "bar" }));
-        })
-      );
-      const request = callBaseRequest({ method: "GET", url });
+      let isFirstRequest = true;
+      const request = callBaseRequest((_req, res, ctx) => {
+        if (isFirstRequest) {
+          isFirstRequest = false;
+          return res(ctx.status(500, "My Error"));
+        }
+        return res(ctx.json({ foo: "bar" }));
+      });
       await request.completed;
 
       expect(request.onSuccess).toBeCalledWith({ foo: "bar" });
@@ -159,16 +136,12 @@ describe("baseRequest()", () => {
 
   describe("given a 400 status code and a JSON error message", () => {
     it("calls onError() with a status error message including the JSON message", async () => {
-      const url = `${API_ROOT}/api-test`;
-      server.use(
-        rest.get(url, (_req, res, ctx) => {
-          return res(
-            ctx.status(400, "My Error"),
-            ctx.json({ error: "My Special Error" })
-          );
-        })
-      );
-      const request = callBaseRequest({ method: "GET", url });
+      const request = callBaseRequest((_req, res, ctx) => {
+        return res(
+          ctx.status(400, "My Error"),
+          ctx.json({ error: "My Special Error" })
+        );
+      });
       await request.completed;
 
       expect(request.onSuccess).not.toBeCalled();
@@ -181,21 +154,17 @@ describe("baseRequest()", () => {
     });
 
     it("does not retry the request", async () => {
-      const url = `${API_ROOT}/api-test`;
-      server.use(
-        // Return a 400 status once
-        rest.get(url, (_req, res, ctx) => {
-          return res.once(
+      let isFirstRequest = true;
+      const request = callBaseRequest((_req, res, ctx) => {
+        if (isFirstRequest) {
+          isFirstRequest = false;
+          return res(
             ctx.status(400, "My Error"),
             ctx.json({ error: "My Special Error" })
           );
-        }),
-        // Then return a successful response
-        rest.get(url, (_req, res, ctx) => {
-          return res(ctx.json({ foo: "bar" }));
-        })
-      );
-      const request = callBaseRequest({ method: "GET", url });
+        }
+        return res(ctx.json({ foo: "bar" }));
+      });
       await request.completed;
 
       expect(request.onSuccess).not.toBeCalled();
@@ -219,6 +188,147 @@ describe("baseRequest()", () => {
    */
 });
 
+describe("baseAuthenticatedRequest()", () => {
+  const ACCESS_TOKEN = "myM0ckacc3s570ken";
+  const getAccessTokenSilently = jest.fn(() => Promise.resolve(ACCESS_TOKEN));
+  function callBaseAuthenticatedRequest(
+    requestParams: Omit<RequestParams, "url">,
+    responseResolver: ResponseResolver<MockedRequest, typeof restContext>
+  ) {
+    const url = `${API_ROOT}/api-test`;
+    const method = requestParams.method.toLowerCase() as keyof typeof rest;
+    const mockedResponseResolver = jest.fn(responseResolver);
+    const serverCalls = mockedResponseResolver.mock.calls;
+    server.use(rest[method](url, mockedResponseResolver));
+
+    const handlers = { onSuccess: jest.fn(), onError: jest.fn() };
+    const allRequestParams: RequestParams = { ...requestParams, url };
+    const { cancel, completed } = baseAuthenticatedRequest(
+      getAccessTokenSilently,
+      handlers,
+      allRequestParams
+    );
+    return { ...handlers, cancel, completed, serverCalls };
+  }
+
+  describe("given a request happy path", () => {
+    it.each(["DELETE", "POST", "PUT"] as const)(
+      "adds the correct Authorization header when sending a %s request",
+      async (method) => {
+        const request = callBaseAuthenticatedRequest(
+          { method, data: { foo: "bar" } },
+          (_req, res, ctx) => res(ctx.status(200))
+        );
+        await request.completed;
+        const [req] = request.serverCalls[0];
+
+        expect(req.headers.get("Authorization")).toBe(`Bearer ${ACCESS_TOKEN}`);
+        expect(req.body).toEqual({ foo: "bar" });
+        expect(request.onSuccess).toBeCalled();
+        expect(request.onError).not.toBeCalled();
+      }
+    );
+  });
+
+  describe("given an immediately cancelled request", () => {
+    it("the request is never sent to the server", async () => {
+      const request = callBaseAuthenticatedRequest(
+        { method: "POST", data: { foo: "bar" } },
+        (_req, res, ctx) => res(ctx.status(200))
+      );
+      request.cancel();
+      await request.completed;
+
+      expect(request.serverCalls).toHaveLength(0);
+      expect(request.onSuccess).not.toBeCalled();
+      expect(request.onError).not.toBeCalled();
+    });
+  });
+
+  describe("given a request cancelled after being sent to the server", () => {
+    it("the request is submitted, but neither callback is called", async () => {
+      const request = callBaseAuthenticatedRequest(
+        { method: "POST", data: { foo: "bar" } },
+        (_req, res, ctx) => {
+          request.cancel();
+          return res(ctx.status(200));
+        }
+      );
+      await request.completed;
+      const [req] = request.serverCalls[0];
+
+      expect(request.serverCalls).toHaveLength(1);
+      expect(req.body).toEqual({ foo: "bar" });
+      expect(request.onSuccess).not.toBeCalled();
+      expect(request.onError).not.toBeCalled();
+    });
+  });
+
+  describe("given an authentication error", () => {
+    it("calls onError() with an authentication error message", async () => {
+      getAccessTokenSilently.mockReturnValueOnce(
+        Promise.reject(new OAuthError("auth_error"))
+      );
+      const request = callBaseAuthenticatedRequest(
+        { method: "POST", data: { foo: "bar" } },
+        (_req, res, ctx) => res(ctx.status(200))
+      );
+      await request.completed;
+
+      expect(request.serverCalls).toHaveLength(0);
+      expect(request.onSuccess).not.toBeCalled();
+      expect(request.onError).toBeCalledTimes(1);
+
+      const [uiErrorMessage] = request.onError.mock.calls[0];
+      expect(uiErrorMessage).toMatch(
+        /error authenticating your request: "auth_error"/i
+      );
+    });
+  });
+
+  describe("given a temporary 500 server error", () => {
+    it.each(["DELETE", "PUT"] as const)(
+      "retries a %s request",
+      async (method) => {
+        let isFirstRequest = true;
+        const request = callBaseAuthenticatedRequest(
+          { method, data: { foo: "bar" } },
+          (_req, res, ctx) => {
+            const status = isFirstRequest ? 500 : 200;
+            isFirstRequest = false;
+            return res(ctx.status(status));
+          }
+        );
+        await request.completed;
+
+        expect(request.serverCalls).toHaveLength(2);
+        expect(request.onSuccess).toBeCalled();
+        expect(request.onError).not.toBeCalled();
+      }
+    );
+
+    it("does not retry a POST request", async () => {
+      let isFirstRequest = true;
+      const request = callBaseAuthenticatedRequest(
+        { method: "POST", data: { foo: "bar" } },
+        (_req, res, ctx) => {
+          const status = isFirstRequest ? 500 : 200;
+          isFirstRequest = false;
+          return res(ctx.status(status));
+        }
+      );
+      await request.completed;
+
+      expect(request.serverCalls).toHaveLength(1);
+      expect(request.onSuccess).not.toBeCalled();
+      expect(request.onError).toBeCalled();
+    });
+  });
+});
+
+// Most of the tests from here on down are technically integration tests, since
+// they rely on the behavior of the mock server
+
 const apiFunctions: [string, (handlers: APIHandlers<unknown>) => APIUtils][] = [
   ["getCategories", (handlers) => getCategories(handlers)],
   ["getCategoryBySlug", (handlers) => getCategoryBySlug("strings", handlers)],
@@ -228,7 +338,6 @@ const apiFunctions: [string, (handlers: APIHandlers<unknown>) => APIUtils][] = [
     (handlers) => getInstrumentsByCategoryId(2, handlers),
   ],
   ["getInstrumentById", (handlers) => getInstrumentById(4, handlers)],
-  ["getUsers", (handlers) => getUsers(handlers)],
 ];
 
 describe("API functions", () => {
@@ -455,16 +564,146 @@ describe("getInstrumentById()", () => {
   });
 });
 
-describe("getUsers()", () => {
-  describe("given a successful API response", () => {
-    it("calls onSuccess() with the expected data", async () => {
-      const handlers = { onSuccess: jest.fn(), onError: jest.fn() };
-      const { completed } = getUsers(handlers);
-      await completed;
+// Tests for error responses in this block only entail checking that onError()
+// was called. *What* it's called with is up to baseAuthenticatedRequest().
+(function authenticatedRequests() {
+  const instrument = MOCK_DATA.instruments[1];
+  const { id: instrumentId, userId } = instrument;
+  const ownerAccessTokenPromise = Promise.resolve(
+    jws.sign({
+      header: { alg: "HS256", typ: "JWT" },
+      payload: { sub: userId },
+      secret: "doesn't matter for this test",
+    })
+  );
+  const nonOwnerAccessTokenPromise = Promise.resolve(
+    jws.sign({
+      header: { alg: "HS256", typ: "JWT" },
+      payload: { sub: "not|theOwner" },
+      secret: "doesn't matter for this test",
+    })
+  );
+  const adminAccessTokenPromise = Promise.resolve(
+    jws.sign({
+      header: { alg: "HS256", typ: "JWT" },
+      payload: { sub: "not|theOwner", "http:auth/roles": ["admin"] },
+      secret: "doesn't matter for this test",
+    })
+  );
 
-      const { users } = MOCK_DATA;
-      expect(handlers.onSuccess).toBeCalledWith({ users });
-      expect(handlers.onError).not.toBeCalled();
+  describe("updateInstrument()", () => {
+    type UpdateInstrumentData = Parameters<typeof updateInstrument>[1];
+    const mockUpdatedInstrument: UpdateInstrumentData = {
+      name: "Foo",
+      categoryId: 2,
+      summary: "Foo is a fake instrument",
+      description: "I just made it up",
+      imageUrl: "",
+    };
+
+    describe("given an authenticated user", () => {
+      it.each([
+        ["the owning user", ownerAccessTokenPromise],
+        ["an admin user", adminAccessTokenPromise],
+      ])("calls onSuccess() for %s", async (user, accessTokenPromise) => {
+        const getAccessTokenSilently = () => accessTokenPromise;
+        const updatedInstrumentData: UpdateInstrumentData = {
+          ...mockUpdatedInstrument,
+          description: `Created by ${user}`, // Unique for both tests
+        };
+        const expectedResult = {
+          ...updatedInstrumentData,
+          id: instrumentId,
+          userId,
+        };
+
+        {
+          const handlers = { onSuccess: jest.fn(), onError: jest.fn() };
+          const { completed } = updateInstrument(
+            instrumentId,
+            updatedInstrumentData,
+            getAccessTokenSilently,
+            handlers
+          );
+          await completed;
+
+          expect(handlers.onSuccess).toBeCalledWith(expectedResult);
+          expect(handlers.onError).not.toBeCalled();
+        }
+
+        // Verify that the change persists (really a test for the mock server)
+        {
+          const handlers = { onSuccess: jest.fn(), onError: jest.fn() };
+          const { completed } = getInstrumentById(instrumentId, handlers);
+          await completed;
+          expect(handlers.onSuccess).toBeCalledWith(expectedResult);
+        }
+      });
+
+      it("calls onError() for a user who isn't the owner", async () => {
+        const getAccessTokenSilently = () => nonOwnerAccessTokenPromise;
+        const handlers = { onSuccess: jest.fn(), onError: jest.fn() };
+        const { completed } = updateInstrument(
+          instrumentId,
+          mockUpdatedInstrument,
+          getAccessTokenSilently,
+          handlers
+        );
+        await completed;
+
+        expect(handlers.onSuccess).not.toBeCalled();
+        expect(handlers.onError).toBeCalled();
+      });
+    });
+
+    describe("given an invalid access token", () => {
+      const invalidJWS = "not-a-valid-jws";
+      const jwsWithoutPayloadSub = jws.sign({
+        header: { alg: "HS256", typ: "JWT" },
+        payload: {}, // No .sub (subject/userId)
+        secret: "doesn't matter for this test",
+      });
+      it.each([
+        ["invalid JSON Web Signature", invalidJWS],
+        ["JSON Web Signature without payload.sub", jwsWithoutPayloadSub],
+      ])("calls onError() for %s", async (_description, accessToken) => {
+        const getAccessTokenSilently = () => Promise.resolve(accessToken);
+        const handlers = { onSuccess: jest.fn(), onError: jest.fn() };
+        const { completed } = updateInstrument(
+          instrumentId,
+          mockUpdatedInstrument,
+          getAccessTokenSilently,
+          handlers
+        );
+        await completed;
+
+        expect(handlers.onSuccess).not.toBeCalled();
+        expect(handlers.onError).toBeCalled();
+      });
+    });
+
+    describe("given an invalid instrument ID", () => {
+      it.each([
+        ["a valid ID, but one not present in the DB", 1337],
+        ["a large integer represented in scientific notation", 1e99],
+        ["a fractional number", 1.1],
+        ["a negative integer", -1],
+        ["Infinity", Infinity],
+        ["NaN", NaN],
+      ])("calls onError() for %s", async (_description, id) => {
+        const getAccessTokenSilently = () => nonOwnerAccessTokenPromise;
+        const handlers = { onSuccess: jest.fn(), onError: jest.fn() };
+        const { completed } = updateInstrument(
+          id,
+          mockUpdatedInstrument,
+          getAccessTokenSilently,
+          handlers
+        );
+        await completed;
+
+        expect(handlers.onSuccess).not.toBeCalled();
+        expect(handlers.onError).toBeCalled();
+      });
     });
   });
-});
+})();

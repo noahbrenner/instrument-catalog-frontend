@@ -1,3 +1,4 @@
+import type { Auth0ContextInterface, OAuthError } from "@auth0/auth0-react";
 import axios from "axios";
 import type {
   AxiosError,
@@ -16,7 +17,6 @@ import type {
   ICategory,
   IInstrument,
   IInstruments,
-  IUsers,
 } from "#src/types";
 
 axiosRetry(axios, {
@@ -47,6 +47,13 @@ export type RequestParams = AxiosRequestConfig &
 export interface APIHandlers<T> {
   onSuccess: (data: T) => unknown;
   onError: (uiErrorMessage: string, error: AxiosError) => unknown;
+}
+
+export interface AuthenticatedAPIHandlers<T> extends APIHandlers<T> {
+  onError: (
+    uiErrorMessage: string,
+    error: AxiosError<{ error?: string } | undefined> | OAuthError
+  ) => unknown;
 }
 
 export interface APIUtils {
@@ -80,8 +87,51 @@ export function baseRequest<T>(
   return { cancel, completed };
 }
 
+export function baseAuthenticatedRequest<T>(
+  getAccessTokenSilently: Auth0ContextInterface["getAccessTokenSilently"],
+  handlers: AuthenticatedAPIHandlers<T>,
+  axiosParams: RequestParams
+): APIUtils {
+  let isCancelled = false;
+  let baseRequestCancel: () => void;
+  const cancel = (): void => {
+    baseRequestCancel?.();
+    isCancelled = true;
+  };
+
+  const completed = new Promise<void>((resolve) => {
+    getAccessTokenSilently().then(
+      (accessToken) => {
+        if (isCancelled) {
+          resolve();
+        } else {
+          const request = baseRequest(handlers, {
+            ...axiosParams,
+            headers: { Authorization: `Bearer ${accessToken}` },
+          });
+          baseRequestCancel = request.cancel;
+          request.completed.then(resolve, resolve);
+        }
+      },
+      (err: OAuthError) => {
+        resolve();
+        if (!isCancelled) {
+          let message = `Error authenticating your request: "${err.error}". `;
+          message += "Try logging out and back in again.";
+          handlers.onError(message, err);
+        }
+      }
+    );
+  });
+
+  return { cancel, completed };
+}
+
+export const { isAxiosError } = axios;
+
 /* CATEGORIES */
 
+/** You probably want "#hooks/useCategories" instead of this function */
 export function getCategories(handlers: APIHandlers<ICategories>): APIUtils {
   return baseRequest(handlers, {
     method: "GET",
@@ -129,11 +179,15 @@ export function getInstrumentById(
   });
 }
 
-/* USERS */
-
-export function getUsers(handlers: APIHandlers<IUsers>): APIUtils {
-  return baseRequest(handlers, {
-    method: "GET",
-    url: `${ENDPOINTS.users}/all`,
+export function updateInstrument(
+  id: number,
+  newData: Omit<IInstrument, "id" | "userId">,
+  getAccessTokenSilently: Auth0ContextInterface["getAccessTokenSilently"],
+  handlers: AuthenticatedAPIHandlers<IInstrument>
+): APIUtils {
+  return baseAuthenticatedRequest(getAccessTokenSilently, handlers, {
+    method: "PUT",
+    url: `${ENDPOINTS.instruments}/${id}`,
+    data: newData,
   });
 }

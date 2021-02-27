@@ -1,9 +1,10 @@
 import { useAuth0 } from "@auth0/auth0-react";
 import type { AppState, Auth0ContextInterface } from "@auth0/auth0-react";
 
+import type { IUser } from "#src/types";
+
 type Login = (options?: { appState: AppState }) => Promise<void>;
 type Logout = (options?: { returnTo: string }) => void;
-type User = Auth0ContextInterface["user"];
 
 export type Auth =
   | {
@@ -21,13 +22,15 @@ export type Auth =
     }
   | {
       state: "AUTHENTICATED";
-      user: User;
+      user: IUser;
       logout: Logout;
+      getAccessTokenSilently: Auth0ContextInterface["getAccessTokenSilently"];
     };
 
 export function useAuth(): Auth {
   const {
     error,
+    getAccessTokenSilently,
     isAuthenticated,
     isLoading,
     loginWithRedirect,
@@ -58,6 +61,6 @@ export function useAuth(): Auth {
   }
 
   return isAuthenticated
-    ? { state: "AUTHENTICATED", user, logout }
+    ? { state: "AUTHENTICATED", user, logout, getAccessTokenSilently }
     : { state: "UNAUTHENTICATED", login };
 }

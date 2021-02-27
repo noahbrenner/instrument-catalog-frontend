@@ -14,7 +14,7 @@ interface CategoryPageProps {
 export default function CategoryPage(_: RouteComponentProps): JSX.Element {
   const { categorySlug } = useParams() as CategoryPageProps;
   const [loadingMessage, setLoadingMessage] = useState("...Loading");
-  const [category, setCategory] = useState<ICategory>();
+  const [category, setCategory] = useState<ICategory | undefined>();
   const [categoryExists, setCategoryExists] = useState(true);
 
   useEffect(() => {

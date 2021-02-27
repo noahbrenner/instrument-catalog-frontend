@@ -78,6 +78,8 @@ export function App(): JSX.Element {
         clientId={process.env.AUTH0_CLIENT_ID || ""}
         redirectUri={isBrowser ? window.location.origin : ""}
         onRedirectCallback={handleAuthRedirect}
+        audience={process.env.AUTH0_BACKEND_API_IDENTIFIER || ""}
+        useRefreshTokens
       >
         <ThemeProvider theme={defaultTheme}>
           <GlobalStyle />

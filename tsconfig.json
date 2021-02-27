@@ -19,6 +19,7 @@
       "#layouts/*": ["src/layouts/*"],
       "#mocks/*": ["tests/mocks/*"],
       "#test_helpers/*": ["tests/helpers/*"],
+      "#utils/*": ["src/utils/*"],
       "#api": ["src/api.ts"],
       "#api_endpoints": ["src/api_endpoints.ts"],
       "#server_routes.mock": ["src/server_routes.mock.ts"]

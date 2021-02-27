@@ -4,14 +4,22 @@
  * build if it's outside the `src/` directory
  */
 
-// eslint-disable-next-line import/no-extraneous-dependencies
+import jws from "jws";
 import { context as ctx, response, rest } from "msw";
-import type { MockedResponse, RequestHandler, ResponseTransformer } from "msw";
+import type {
+  MockedRequest,
+  MockedResponse,
+  RequestHandler,
+  ResponseTransformer,
+} from "msw";
 
 import { ENDPOINTS } from "./api_endpoints";
 import type { ICategory, IInstrument, IUser } from "./types";
 
 export { ENDPOINTS };
+
+const userId0: IUser["sub"] = "google-oauth2|1337";
+const userId1: IUser["sub"] = "google-oauth2|12345";
 
 export const MOCK_DATA: {
   categories: ICategory[];
@@ -48,6 +56,7 @@ export const MOCK_DATA: {
     {
       id: 0,
       categoryId: 0,
+      userId: userId0,
       name: "Flute",
       summary: "Flute summary",
       description: "Long description of flutes.",
@@ -57,6 +66,7 @@ export const MOCK_DATA: {
     {
       id: 1,
       categoryId: 0,
+      userId: userId1,
       name: "Clarinet",
       summary: "Clarinet summary",
       description: "Long description of clarinets.",
@@ -66,6 +76,7 @@ export const MOCK_DATA: {
     {
       id: 2,
       categoryId: 1,
+      userId: userId0,
       name: "Timpani",
       summary: "Timpani summary",
       description: "Long description of timpani.",
@@ -75,6 +86,7 @@ export const MOCK_DATA: {
     {
       id: 3,
       categoryId: 1,
+      userId: userId1,
       name: "Marimba",
       summary: "Marimba summary",
       description: "Long description of marimbas.",
@@ -84,6 +96,7 @@ export const MOCK_DATA: {
     {
       id: 4,
       categoryId: 2,
+      userId: userId0,
       name: "Double Bass",
       summary: "Double bass summary",
       description: "Long description of double basses.",
@@ -93,6 +106,7 @@ export const MOCK_DATA: {
     {
       id: 5,
       categoryId: 2,
+      userId: userId1,
       name: "Guitar",
       summary: "Guitar summary",
       description: "Long description of guitars.",
@@ -102,6 +116,7 @@ export const MOCK_DATA: {
     {
       id: 6,
       categoryId: 2,
+      userId: userId0,
       name: "Harp",
       summary: "Harp summary",
       description: "Long description of harps.",
@@ -110,11 +125,18 @@ export const MOCK_DATA: {
     },
   ],
   users: [
-    { name: "Frida Permissions", id: 777 },
-    { name: "Nonny Mouse", id: 1337 },
-    { name: "No Body", id: 12345 },
+    { name: "Nonny Mouse", sub: userId0 },
+    { name: "No Body", sub: userId1 },
   ],
 };
+
+const MOCK_DATA_JSON = JSON.stringify(MOCK_DATA);
+const DB: typeof MOCK_DATA = JSON.parse(MOCK_DATA_JSON);
+
+export function resetDB(): void {
+  Object.keys(DB).forEach((key) => delete DB[key as keyof typeof DB]);
+  Object.assign(DB, JSON.parse(MOCK_DATA_JSON));
+}
 
 export function apiResponse(
   ...transformers: ResponseTransformer[]
@@ -126,6 +148,28 @@ export function apiResponse(
     : response(...transformers, ctx.set("Access-Control-Allow-Origin", "*"));
 }
 
+function getUserCredentials(
+  req: MockedRequest
+):
+  | { userId: string; isAdmin: boolean; errResponse: undefined }
+  | { userId: undefined; isAdmin: false; errResponse: MockedResponse } {
+  const authorizationHeader = req.headers.get("Authorization") || "";
+  const jwt = jws.decode(authorizationHeader.slice("Bearer ".length));
+
+  // jwt can be null for invalid data, though the types don't reflect that
+  if (jwt?.payload?.sub === undefined) {
+    const errResponse = apiResponse(
+      ctx.status(403, "Forbidden"),
+      ctx.json({ error: "You need to log in before you can do that" })
+    );
+    return { userId: undefined, isAdmin: false, errResponse };
+  }
+  const userId = jwt.payload.sub as string;
+  const roles = jwt.payload["http:auth/roles"];
+  const isAdmin = Array.isArray(roles) && roles.includes("admin");
+  return { userId, isAdmin, errResponse: undefined };
+}
+
 /*
  * The RequestHandler type needs `any` so handlers can have different responses:
  * https://github.com/mswjs/msw/issues/377#issuecomment-690536532
@@ -134,13 +178,13 @@ export function apiResponse(
 export const handlers: RequestHandler<any, any, any, any>[] = [
   // GET all Categories: /categories/all
   rest.get(`${ENDPOINTS.categories}/all`, () => {
-    const { categories } = MOCK_DATA;
+    const { categories } = DB;
     return apiResponse(ctx.json({ categories }));
   }),
 
   // GET Category: /categories/<category-slug>
   rest.get(`${ENDPOINTS.categories}/:categorySlug`, (req) => {
-    const category = MOCK_DATA.categories.find(
+    const category = DB.categories.find(
       ({ slug }) => slug === req.params.categorySlug
     );
     return category
@@ -150,13 +194,13 @@ export const handlers: RequestHandler<any, any, any, any>[] = [
 
   // GET all Instruments: /instruments/all
   rest.get(`${ENDPOINTS.instruments}/all`, () => {
-    const { instruments } = MOCK_DATA;
+    const { instruments } = DB;
     return apiResponse(ctx.json({ instruments }));
   }),
 
   // GET Instrument: /instruments/<instrumentId>
   rest.get(`${ENDPOINTS.instruments}/:id`, (req) => {
-    const instrument = MOCK_DATA.instruments.find(
+    const instrument = DB.instruments.find(
       ({ id }) => id === Number(req.params.id)
     );
     return instrument
@@ -179,16 +223,41 @@ export const handlers: RequestHandler<any, any, any, any>[] = [
     }
 
     // TODO Handle IDs having a valid format but no corresponding category
-    const instruments = MOCK_DATA.instruments.filter(
+    const instruments = DB.instruments.filter(
       ({ categoryId }) => categoryId === Number(reqCategoryId)
     );
     return apiResponse(ctx.json({ instruments }));
   }),
 
-  // GET Users: /users/all
-  rest.get(`${ENDPOINTS.users}/all`, () => {
-    const { users } = MOCK_DATA;
-    return apiResponse(ctx.json({ users }));
+  // PUT (update) Instrument: /instruments/<instrumentId>
+  rest.put(`${ENDPOINTS.instruments}/:id`, (req) => {
+    // Validate user
+    const { userId, isAdmin, errResponse } = getUserCredentials(req);
+    if (errResponse) {
+      return errResponse;
+    }
+
+    // Validate instrument ID
+    if (!/^[0-9]+$/.test(req.params.id)) {
+      const error = `Invalid instrument ID: "${req.params.id}"`;
+      return apiResponse(ctx.status(400, "Bad Request"), ctx.json({ error }));
+    }
+    const instrumentId = Number(req.params.id);
+    const instrument = DB.instruments.find(({ id }) => id === instrumentId);
+    if (!instrument) {
+      const error = `There is no existing instrument with ID "${instrumentId}"`;
+      return apiResponse(ctx.status(404, "Not Found"), ctx.json({ error }));
+    }
+
+    // Validate permissions
+    if (userId !== instrument.userId && !isAdmin) {
+      const error = "You don't have permission to edit this instrument";
+      return apiResponse(ctx.status(403, "Forbidden"), ctx.json({ error }));
+    }
+
+    // Update instrument
+    Object.assign(instrument, req.body); // Real server should verify the data
+    return apiResponse(ctx.status(200), ctx.json(instrument));
   }),
 
   // Default: 404

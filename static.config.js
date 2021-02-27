@@ -5,7 +5,11 @@ import "dotenv/config"; // Load environment variables from .env
 
 (function checkForRequiredEnvironmentVariables() {
   const alwaysRequiredEnvVars = ["API_ROOT"];
-  const oauthEnvVars = ["AUTH0_DOMAIN", "AUTH0_CLIENT_ID"];
+  const oauthEnvVars = [
+    "AUTH0_DOMAIN",
+    "AUTH0_CLIENT_ID",
+    "AUTH0_BACKEND_API_IDENTIFIER",
+  ];
 
   const requiredEnvVars =
     process.env.NODE_ENV === "production"
@@ -23,16 +27,22 @@ import "dotenv/config"; // Load environment variables from .env
   const missingOptionalEnvVars = optionalEnvVars.filter(isUnsetEnvVar);
 
   if (missingEnvVars.length > 0) {
-    const lines = ["The following environment variables are required:"];
-    lines.push(...missingEnvVars.map((str) => `- ${str}`));
+    const lines = [
+      "The following environment variables are required:",
+      ...missingEnvVars.map((str) => `- ${str}`),
+      "",
+    ];
     console.error(lines.join("\n"));
     process.exit(1);
   }
 
   if (missingOptionalEnvVars.length > 0) {
-    const message = ["Optional environment variables that you can set:"];
-    message.push(...missingOptionalEnvVars.map((str) => `- ${str}`));
-    console.warn(message.join("\n"));
+    const lines = [
+      "Optional environment variables that you can set:",
+      ...missingOptionalEnvVars.map((str) => `- ${str}`),
+      "",
+    ];
+    console.warn(lines.join("\n"));
   }
 })();
 

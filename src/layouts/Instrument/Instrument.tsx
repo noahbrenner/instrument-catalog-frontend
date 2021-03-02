@@ -2,7 +2,11 @@ import type { RouteComponentProps } from "@reach/router";
 import React from "react";
 import styled from "styled-components";
 
+import { DeleteInstrumentButton } from "#components/DeleteInstrumentButton";
+import { EditInstrumentButton } from "#components/EditInstrumentButton";
+import { useAuth } from "#hooks/useAuth";
 import type { IInstrument } from "#src/types";
+import { canEditOrDelete } from "#utils/access_control";
 
 const imgMaxWidth = "400px";
 const imgMaxHeight = "600px";
@@ -18,6 +22,12 @@ const InstrumentContainer = styled.div`
     width: 50vw;
     max-width: ${imgMaxWidth};
     max-height: ${imgMaxHeight};
+  }
+
+  .button-container {
+    display: flex;
+    justify-content: space-around;
+    margin: 1em 0 0.5em;
   }
 
   h2 {
@@ -46,29 +56,51 @@ const InstrumentContainer = styled.div`
       max-width: none;
       max-height: none;
     }
+
+    .button-container {
+      flex-flow: row wrap;
+      justify-content: center;
+      margin: 0;
+
+      & > button {
+        margin: 0 0.5em 1em;
+      }
+    }
   }
 `;
 
 export type InstrumentProps = Pick<
   IInstrument,
-  "name" | "summary" | "description" | "imageUrl"
+  "id" | "userId" | "name" | "summary" | "description" | "imageUrl"
 > & {
   categoryName: string;
 };
 
 export function Instrument({
+  id,
+  userId,
   name,
   categoryName,
   summary,
   description,
   imageUrl,
 }: InstrumentProps & RouteComponentProps): JSX.Element {
+  const auth = useAuth();
+  const userCanModify =
+    auth.state === "AUTHENTICATED" && canEditOrDelete(auth.user, { userId });
+
   return (
     <InstrumentContainer>
       <h2>{name}</h2>
       <div className="img-container">
         <img src={imageUrl} alt={name} />
       </div>
+      {userCanModify && (
+        <div className="button-container">
+          <EditInstrumentButton id={id} name={name} />
+          <DeleteInstrumentButton id={id} name={name} />
+        </div>
+      )}
       <p>{summary}</p>
       <p>
         <strong>Category:</strong> {categoryName}

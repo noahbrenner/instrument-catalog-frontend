@@ -142,6 +142,8 @@ export default function InstrumentPage(_: RouteComponentProps): JSX.Element {
     <Suspense fallback={<p>{loadingMessage}</p>}>
       <Instrument
         path="/"
+        id={instrument.id}
+        userId={instrument.userId}
         name={instrument.name}
         categoryName={categoryName}
         summary={instrument.summary}

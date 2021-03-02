@@ -52,10 +52,13 @@ const InstrumentContainer = styled.div`
 export type InstrumentProps = Pick<
   IInstrument,
   "name" | "summary" | "description" | "imageUrl"
->;
+> & {
+  categoryName: string;
+};
 
 export function Instrument({
   name,
+  categoryName,
   summary,
   description,
   imageUrl,
@@ -67,6 +70,9 @@ export function Instrument({
         <img src={imageUrl} alt={name} />
       </div>
       <p>{summary}</p>
+      <p>
+        <strong>Category:</strong> {categoryName}
+      </p>
       <hr />
       <p>{description}</p>
     </InstrumentContainer>

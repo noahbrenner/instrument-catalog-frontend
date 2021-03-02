@@ -9,6 +9,7 @@ describe("<Instrument />", () => {
       render(
         <Instrument
           name="Foo"
+          categoryName="Bar category"
           summary="My Foo summary"
           description="My description of Foo"
           imageUrl="http://foo.com/"
@@ -22,6 +23,7 @@ describe("<Instrument />", () => {
       const heading2 = screen.getByRole("heading", { level: 2 });
       expect(heading2).toHaveTextContent("Foo");
 
+      expect(screen.getByText(/bar category/i)).toBeInTheDocument();
       expect(screen.getByText("My Foo summary")).toBeInTheDocument();
       expect(screen.getByText("My description of Foo")).toBeInTheDocument();
     });

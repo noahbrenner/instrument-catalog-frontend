@@ -1,5 +1,6 @@
 /* eslint-disable no-console */
 import "dotenv/config"; // Load environment variables from .env
+import React from "react";
 
 // Typescript support in static.config.js is not yet supported, but is coming in a future update!
 
@@ -47,6 +48,17 @@ import "dotenv/config"; // Load environment variables from .env
 })();
 
 export default {
+  // eslint-disable-next-line react/prop-types
+  Document: ({ Html, Head, Body, children }) => (
+    <Html lang="en-US">
+      <Head>
+        <meta charSet="utf-8" />
+        <title>Instrument Catalog</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+      </Head>
+      <Body>{children}</Body>
+    </Html>
+  ),
   entry: "index.tsx", // Relative to paths.src
   plugins: [
     ["react-static-plugin-typescript", { typeCheck: false }], // Lint separately

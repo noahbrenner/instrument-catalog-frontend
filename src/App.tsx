@@ -3,7 +3,7 @@ import type { AppState } from "@auth0/auth0-react";
 import { Router, navigate } from "@reach/router";
 import React, { useState } from "react";
 import { Root, addPrefetchExcludes } from "react-static";
-import { ThemeProvider, createGlobalStyle } from "styled-components";
+import styled, { ThemeProvider } from "styled-components";
 
 import { BurgerButton } from "#components/BurgerButton";
 import { Nav } from "#components/Nav";
@@ -32,16 +32,7 @@ if (
   setupWorker(...handlers).start();
 }
 
-const GlobalStyle = createGlobalStyle`
-  *, ::before, ::after {
-    box-sizing: border-box;
-  }
-
-  body {
-    width: 100%;
-  }
-
- header {
+const StyledHeader = styled.header`
   display: flex;
   height: ${({ theme }) => theme.headerHeight};
   background: ${({ theme }) => theme.headerBg};
@@ -57,7 +48,6 @@ const GlobalStyle = createGlobalStyle`
       display: none;
     }
   }
- }
 `;
 
 const isBrowser = typeof window !== "undefined";
@@ -84,15 +74,14 @@ export function App(): JSX.Element {
         useRefreshTokens
       >
         <ThemeProvider theme={defaultTheme}>
-          <GlobalStyle />
-          <header>
+          <StyledHeader>
             <h1>Instrument Catalog</h1>
             <BurgerButton
               className="burger"
               onClick={toggleNav}
               navIsVisible={navIsVisible}
             />
-          </header>
+          </StyledHeader>
           <Nav
             links={[
               ["Home", "/"],

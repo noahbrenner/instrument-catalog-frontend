@@ -1,15 +1,12 @@
 import { Auth0Provider } from "@auth0/auth0-react";
 import type { AppState } from "@auth0/auth0-react";
 import { Router, navigate } from "@reach/router";
-// eslint-disable-next-line import/no-extraneous-dependencies
-import { setupWorker } from "msw"; // Dev usage only
 import React, { useState } from "react";
 import { Root, addPrefetchExcludes } from "react-static";
 import { ThemeProvider, createGlobalStyle } from "styled-components";
 
 import { BurgerButton } from "#components/BurgerButton";
 import { Nav } from "#components/Nav";
-import { handlers } from "#server_routes.mock"; // Dev usage only
 import HomePage from "./pages";
 import NotFound from "./pages/404";
 import CategoriesPage from "./pages/categories";
@@ -27,6 +24,11 @@ if (
   process.env.NODE_ENV !== "production" &&
   typeof document !== undefined
 ) {
+  // Use conditional require() instead of import to prevent bundling these files
+  // eslint-disable-next-line @typescript-eslint/no-var-requires, import/no-extraneous-dependencies
+  const { setupWorker } = require("msw");
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const { handlers } = require("#server_routes.mock");
   setupWorker(...handlers).start();
 }
 

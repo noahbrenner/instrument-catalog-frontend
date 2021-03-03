@@ -14,7 +14,7 @@ export function InstrumentList({
     <>
       {instruments.map(({ id, name, summary }, index) => (
         <Fragment key={id}>
-          {index > 0 ? <hr /> : undefined}
+          {index > 0 && <hr />}
           <InstrumentListItem id={id} name={name} summary={summary} />
         </Fragment>
       ))}

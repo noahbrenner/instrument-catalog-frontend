@@ -21,7 +21,7 @@ export function Categories({
       ) : (
         categories.map((category, index) => (
           <Fragment key={category.name}>
-            {index > 0 ? <hr /> : undefined}
+            {index > 0 && <hr />}
             <CategoryListItem
               name={category.name}
               itemCount={category.itemCount}

@@ -1,17 +1,14 @@
 import React from "react";
 
+import { BaseButton } from "#components/BaseButton";
 import { useAuth } from "#hooks/useAuth";
 
 export function LoginButton(): JSX.Element {
   const auth = useAuth();
 
   return auth.state === "AUTHENTICATED" ? (
-    <button type="button" onClick={() => auth.logout()}>
-      Log out
-    </button>
+    <BaseButton onClick={() => auth.logout()}>Log out</BaseButton>
   ) : (
-    <button type="button" onClick={() => auth.login()}>
-      Log in
-    </button>
+    <BaseButton onClick={() => auth.login()}>Log in</BaseButton>
   );
 }

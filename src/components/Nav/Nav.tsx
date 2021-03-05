@@ -20,32 +20,51 @@ const GlobalStyle = createGlobalStyle`
 
 const StyledNav = styled.nav`
   position: absolute;
+  width: 100%;
   height: calc(100vh - ${({ theme }) => theme.headerHeight});
   overflow-y: auto;
   left: 100%;
   transition: left 0.2s ease-in-out;
+  background: #108db8;
 
   body.nav-visible & {
     left: 0;
   }
 
-  & button {
-    font-size: 0.9em;
+  button {
+    margin: 1rem;
   }
 
-  & ul {
+  ul {
     margin: 0;
     padding: 0;
     list-style: none;
+  }
+
+  a {
+    display: inline-block;
+    color: white;
+    padding: 1rem;
+
+    &:hover,
+    &:focus,
+    &:active {
+      background: rgba(0, 0, 0, 0.1);
+    }
   }
 
   @media (min-width: ${({ theme }) => theme.mobileBreakpoint}) {
     position: static;
     display: flex;
     justify-content: space-between;
+    padding: 0;
     height: auto;
 
-    & ul {
+    button {
+      margin: 0;
+    }
+
+    ul {
       order: -1;
       display: flex;
     }

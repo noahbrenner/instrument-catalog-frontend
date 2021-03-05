@@ -5,6 +5,7 @@ import React, { Suspense, useEffect, useState } from "react";
 import { getInstrumentById } from "#api";
 import { LoginButton } from "#components/LoginButton";
 import { useAuth } from "#hooks/useAuth";
+import { useCategories } from "#hooks/useCategories";
 import NotFound from "#src/pages/404";
 import type { IInstrument } from "#src/types";
 import { canEditOrDelete } from "#utils/access_control";
@@ -37,6 +38,7 @@ export default function InstrumentPage(_: RouteComponentProps): JSX.Element {
   const [instrument, setInstrument] = useState<IInstrument | undefined>();
   const [instrumentExists, setInstrumentExists] = useState(true);
   const auth = useAuth();
+  const { categories, categoriesHaveLoaded } = useCategories();
   const location = useLocation();
   const navigate = useNavigate();
   const isEditPage = /\/edit\/?$/.test(location.pathname);
@@ -131,11 +133,19 @@ export default function InstrumentPage(_: RouteComponentProps): JSX.Element {
     }
   }
 
+  const category = categories.find(({ id }) => id === instrument.categoryId);
+  const categoryName = categoriesHaveLoaded
+    ? category?.name || "Not defined"
+    : "";
+
   return (
     <Suspense fallback={<p>{loadingMessage}</p>}>
       <Instrument
         path="/"
+        id={instrument.id}
+        userId={instrument.userId}
         name={instrument.name}
+        categoryName={categoryName}
         summary={instrument.summary}
         description={instrument.description}
         imageUrl={instrument.imageUrl}

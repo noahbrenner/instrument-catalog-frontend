@@ -44,10 +44,10 @@ export function CategoryListItem({
         <h3>
           <Link to={url}>{name}</Link>
         </h3>
-        <div title="Instruments in this category">{itemCount}</div>
+        <div title="Number of instruments in this category">{itemCount}</div>
       </HeadingContainer>
       <p>{summary}</p>
-      {description ? <p>{description}</p> : undefined}
+      {description && <p>{description}</p>}
     </section>
   );
 }

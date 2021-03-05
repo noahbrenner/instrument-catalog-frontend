@@ -35,6 +35,9 @@ module.exports = {
     // Let TypeScript handle validating return values
     "consistent-return": "off",
 
+    // @typescript/eslint/no-var-requires already disallows require() entirely
+    "global-require": "off",
+
     // Be explicit when an import is only used as a type
     "@typescript-eslint/consistent-type-imports": ["error"],
 

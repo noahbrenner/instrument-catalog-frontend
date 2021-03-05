@@ -1,15 +1,12 @@
 import { Auth0Provider } from "@auth0/auth0-react";
 import type { AppState } from "@auth0/auth0-react";
 import { Router, navigate } from "@reach/router";
-// eslint-disable-next-line import/no-extraneous-dependencies
-import { setupWorker } from "msw"; // Dev usage only
 import React, { useState } from "react";
 import { Root, addPrefetchExcludes } from "react-static";
-import { ThemeProvider, createGlobalStyle } from "styled-components";
+import styled, { ThemeProvider } from "styled-components";
 
 import { BurgerButton } from "#components/BurgerButton";
 import { Nav } from "#components/Nav";
-import { handlers } from "#server_routes.mock"; // Dev usage only
 import HomePage from "./pages";
 import NotFound from "./pages/404";
 import CategoriesPage from "./pages/categories";
@@ -27,19 +24,15 @@ if (
   process.env.NODE_ENV !== "production" &&
   typeof document !== undefined
 ) {
+  // Use conditional require() instead of import to prevent bundling these files
+  // eslint-disable-next-line @typescript-eslint/no-var-requires, import/no-extraneous-dependencies
+  const { setupWorker } = require("msw");
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const { handlers } = require("#server_routes.mock");
   setupWorker(...handlers).start();
 }
 
-const GlobalStyle = createGlobalStyle`
-  *, ::before, ::after {
-    box-sizing: border-box;
-  }
-
-  body {
-    width: 100%;
-  }
-
- header {
+const StyledHeader = styled.header`
   display: flex;
   height: ${({ theme }) => theme.headerHeight};
   background: ${({ theme }) => theme.headerBg};
@@ -55,7 +48,6 @@ const GlobalStyle = createGlobalStyle`
       display: none;
     }
   }
- }
 `;
 
 const isBrowser = typeof window !== "undefined";
@@ -82,15 +74,14 @@ export function App(): JSX.Element {
         useRefreshTokens
       >
         <ThemeProvider theme={defaultTheme}>
-          <GlobalStyle />
-          <header>
+          <StyledHeader>
             <h1>Instrument Catalog</h1>
             <BurgerButton
               className="burger"
               onClick={toggleNav}
               navIsVisible={navIsVisible}
             />
-          </header>
+          </StyledHeader>
           <Nav
             links={[
               ["Home", "/"],

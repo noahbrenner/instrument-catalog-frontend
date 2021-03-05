@@ -31,6 +31,7 @@ export const MOCK_DATA: {
       id: 0,
       name: "Winds",
       slug: "winds",
+      // itemCount is hard coded to see how different numbers of digits render
       itemCount: 3,
       summary: "Move air, make noise",
       description: "This is a longer description of wind instruments.",

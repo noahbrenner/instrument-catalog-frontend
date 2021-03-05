@@ -5,6 +5,8 @@ import { BurgerButton } from "./BurgerButton";
 
 const noop = (): void => undefined;
 
+// NOTE: We're not testing className or onClick props, since they're just
+// applied directly to the component's root element.
 describe("<BurgerButton />", () => {
   describe("given navIsVisible=true", () => {
     it("renders 'close menu' interface", () => {
@@ -19,7 +21,4 @@ describe("<BurgerButton />", () => {
       expect(screen.getByLabelText(/open menu/i)).toBeInTheDocument();
     });
   });
-
-  // NOTE: We're not testing className or onClick, since they're just passed
-  // to the component's root element. We don't test implementation details.
 });

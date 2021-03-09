@@ -39,12 +39,14 @@ function renderInstrumentForm(props: InstrumentFormProps = {}) {
       return input;
     },
     summaryInput: utils.getByLabelText(/summary/i) as HTMLInputElement,
-    descriptionTextarea: utils.getByLabelText(
-      /description/i
-    ) as HTMLTextAreaElement,
+    descriptionTextarea: utils.getByRole("textbox", { name: /description/i }),
     imageUrlInput: utils.getByLabelText(/image url/i) as HTMLInputElement,
     submitButton: utils.getByText(/submit/i) as HTMLButtonElement,
     resetButton: utils.getByText(/reset/i) as HTMLButtonElement,
+    clickConfirmResetButton: () =>
+      userEvent.click(utils.getByRole("button", { name: /yes/i })),
+    clickCancelResetButton: () =>
+      userEvent.click(utils.getByRole("button", { name: /no/i })),
     waitForInitialLoad: () =>
       waitFor(() => expect(getCategoryInputs().length).toBeGreaterThan(0)),
   };
@@ -58,14 +60,45 @@ describe("<InstrumentForm />", () => {
       await utils.waitForInitialLoad();
 
       const categoryInputs = utils.getCategoryInputs();
+      const windsRadioButton = utils.getByRole("radio", { name: "Winds" });
 
-      expect(utils.heading).toHaveTextContent(/new instrument/i);
-      expect(utils.nameInput).toHaveValue("");
-      expect(categoryInputs.length).toBeGreaterThan(0);
-      categoryInputs.forEach((input) => expect(input).not.toBeChecked());
-      expect(utils.summaryInput).toHaveValue("");
-      expect(utils.descriptionTextarea).toHaveValue("");
-      expect(utils.imageUrlInput).toHaveValue("");
+      const assertFormFieldsHaveInitialBlankValues = () => {
+        expect(utils.heading).toHaveTextContent(/new instrument/i);
+        expect(utils.nameInput).toHaveValue("");
+        categoryInputs.forEach((input) => expect(input).not.toBeChecked());
+        expect(utils.summaryInput).toHaveValue("");
+        expect(utils.descriptionTextarea).toHaveValue("");
+        expect(utils.imageUrlInput).toHaveValue("");
+      };
+
+      assertFormFieldsHaveInitialBlankValues();
+
+      // Enter values
+      userEvent.type(utils.nameInput, "Foo");
+      userEvent.click(windsRadioButton);
+      userEvent.type(utils.summaryInput, "Foo summary");
+      userEvent.type(utils.descriptionTextarea, "Foo description");
+      userEvent.type(utils.imageUrlInput, "https://example.com/foo.jpg");
+
+      // Begin reset flow, but cancel it
+      expect(utils.queryByText(/are you sure/i)).not.toBeInTheDocument();
+      userEvent.click(utils.resetButton);
+      expect(utils.getByText(/are you sure/i)).toBeInTheDocument();
+      utils.clickCancelResetButton();
+      expect(utils.queryByText(/are you sure/i)).not.toBeInTheDocument();
+      // Form fields still have inserted values
+      expect(utils.nameInput).toHaveValue("Foo");
+      expect(windsRadioButton).toBeChecked();
+      expect(utils.summaryInput).toHaveValue("Foo summary");
+      expect(utils.descriptionTextarea).toHaveValue("Foo description");
+      expect(utils.imageUrlInput).toHaveValue("https://example.com/foo.jpg");
+
+      // Begin and complete reset flow
+      userEvent.click(utils.resetButton);
+      expect(utils.getByText(/are you sure/i)).toBeInTheDocument();
+      utils.clickConfirmResetButton();
+      expect(utils.queryByText(/are you sure/i)).not.toBeInTheDocument();
+      assertFormFieldsHaveInitialBlankValues();
     });
   });
 
@@ -83,12 +116,46 @@ describe("<InstrumentForm />", () => {
       const utils = renderInstrumentForm(props);
       await utils.waitForInitialLoad();
 
-      expect(utils.heading).toHaveTextContent(/edit instrument: foo/i);
-      expect(utils.nameInput).toHaveValue(props.name);
-      expect(utils.getCategoryInputByValue(props.categoryId)).toBeChecked();
-      expect(utils.summaryInput).toHaveValue(props.summary);
-      expect(utils.descriptionTextarea).toHaveValue(props.description);
-      expect(utils.imageUrlInput).toHaveValue(props.imageUrl);
+      const initialCategoryRadioButton = utils.getCategoryInputByValue(2);
+      const newCategoryRadioButton = utils.getCategoryInputByValue(0);
+
+      const assertFormFieldsHaveInitialValues = () => {
+        expect(utils.heading).toHaveTextContent(/edit instrument: foo/i);
+        expect(utils.nameInput).toHaveValue(props.name);
+        expect(initialCategoryRadioButton).toBeChecked();
+        expect(utils.summaryInput).toHaveValue(props.summary);
+        expect(utils.descriptionTextarea).toHaveValue(props.description);
+        expect(utils.imageUrlInput).toHaveValue(props.imageUrl);
+      };
+
+      assertFormFieldsHaveInitialValues();
+
+      // Enter values; Text values will be *appended*
+      userEvent.type(utils.nameInput, "AAA");
+      userEvent.click(newCategoryRadioButton);
+      userEvent.type(utils.summaryInput, "BBB");
+      userEvent.type(utils.descriptionTextarea, "CCC");
+      userEvent.type(utils.imageUrlInput, "DDD");
+
+      // Begin reset flow, but cancel it
+      expect(utils.queryByText(/are you sure/i)).not.toBeInTheDocument();
+      userEvent.click(utils.resetButton);
+      expect(utils.getByText(/are you sure/i)).toBeInTheDocument();
+      utils.clickCancelResetButton();
+      expect(utils.queryByText(/are you sure/i)).not.toBeInTheDocument();
+      // Form fields still have inserted values
+      expect(utils.nameInput).toHaveValue("FooAAA");
+      expect(newCategoryRadioButton).toBeChecked();
+      expect(utils.summaryInput).toHaveValue("Foo summaryBBB");
+      expect(utils.descriptionTextarea).toHaveValue("Foo descriptionCCC");
+      expect(utils.imageUrlInput).toHaveValue("https://example.com/foo.jpgDDD");
+
+      // Begin and complete reset flow
+      userEvent.click(utils.resetButton);
+      expect(utils.getByText(/are you sure/i)).toBeInTheDocument();
+      utils.clickConfirmResetButton();
+      expect(utils.queryByText(/are you sure/i)).not.toBeInTheDocument();
+      assertFormFieldsHaveInitialValues();
     });
   });
 

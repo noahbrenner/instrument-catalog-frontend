@@ -12,5 +12,9 @@ export function EditInstrumentButton(
 ): JSX.Element {
   const navigate = useNavigate();
   const url = getInstrumentPath(idAndName, /* isEditPage */ true);
-  return <BaseButton onClick={() => navigate(url)}>Edit instrument</BaseButton>;
+  return (
+    <BaseButton type="button" onClick={() => navigate(url)}>
+      Edit instrument
+    </BaseButton>
+  );
 }

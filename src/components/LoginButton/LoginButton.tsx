@@ -7,8 +7,12 @@ export function LoginButton(): JSX.Element {
   const auth = useAuth();
 
   return auth.state === "AUTHENTICATED" ? (
-    <BaseButton onClick={() => auth.logout()}>Log out</BaseButton>
+    <BaseButton type="button" onClick={() => auth.logout()}>
+      Log out
+    </BaseButton>
   ) : (
-    <BaseButton onClick={() => auth.login()}>Log in</BaseButton>
+    <BaseButton type="button" onClick={() => auth.login()}>
+      Log in
+    </BaseButton>
   );
 }

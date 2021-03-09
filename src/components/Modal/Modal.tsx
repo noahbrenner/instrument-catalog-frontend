@@ -23,7 +23,9 @@ const StyledModal = styled.div`
   align-items: center;
 
   > div {
+    border 2px solid #aaa;
     padding: 1em;
+    max-width: 18em;
     background: white;
   }
 `;

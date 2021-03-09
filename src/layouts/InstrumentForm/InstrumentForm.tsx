@@ -6,6 +6,7 @@ import styled from "styled-components";
 
 import { isAxiosError, updateInstrument } from "#api";
 import type { AuthenticatedAPIHandlers } from "#api";
+import { ModalConfirm } from "#components/ModalConfirm";
 import { useAuth } from "#hooks/useAuth";
 import { useCategories } from "#hooks/useCategories";
 import type { IInstrument } from "#src/types";
@@ -119,6 +120,8 @@ const FORM_IDS: {
   imageUrl: "instrumentForm:imageUrl",
 } as const;
 
+const noop = (): void => undefined;
+
 export type InstrumentFormProps = Partial<Omit<IInstrument, "userId">> & {
   setInstrument?: (value: IInstrument) => void;
 };
@@ -137,6 +140,14 @@ export function InstrumentForm({
   const form = useRef<InstrumentFormElement>(null);
   const [isFormSubmitting, setIsFormSubmitting] = useState(false);
   const [errorMessage, setErrorMessageValueOnly] = useState("");
+  const [modalState, setModalState] = useState({
+    showModal: false,
+    question: "Are you sure you want to reset the form?",
+    handleYes: noop,
+    handleNo: () =>
+      setModalState({ ...modalState, showModal: false, handleYes: noop }),
+  });
+  const hideModal = modalState.handleNo;
   const { categories } = useCategories();
   const canSubmitForm = categories.length > 0 && !isFormSubmitting;
 
@@ -216,13 +227,23 @@ export function InstrumentForm({
   };
 
   const handleReset = () => {
-    if (form.current && window.confirm("Are you sure you want to reset?")) {
-      form.current.reset();
-    }
+    setModalState({
+      ...modalState,
+      showModal: true,
+      handleYes: () => {
+        form.current?.reset();
+        hideModal();
+      },
+    });
   };
 
   return (
     <>
+      {modalState.showModal && (
+        <ModalConfirm onYes={modalState.handleYes} onNo={modalState.handleNo}>
+          {modalState.question}
+        </ModalConfirm>
+      )}
       {id === undefined ? (
         <h2 id={FORM_IDS.heading}>New instrument</h2>
       ) : (

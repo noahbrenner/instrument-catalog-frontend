@@ -171,6 +171,32 @@ function getUserCredentials(
   return { userId, isAdmin, errResponse: undefined };
 }
 
+/** Includes all IInstrument fields except "id" and "userId" */
+type InstrumentDescriptiveData = Pick<
+  IInstrument,
+  "categoryId" | "name" | "summary" | "description" | "imageUrl"
+>;
+
+/** Type guard for IInstrument without "id" and "userId" */
+function isInstrumentDescriptiveData(
+  obj: unknown
+): obj is InstrumentDescriptiveData {
+  const categoryIds = DB.categories.map(({ id }) => id);
+  const isObject = (o: unknown): o is Record<string, unknown> =>
+    typeof o === "object" && obj !== null;
+
+  return (
+    isObject(obj) &&
+    categoryIds.includes(obj.categoryId as number) &&
+    typeof obj.name === "string" &&
+    typeof obj.summary === "string" &&
+    typeof obj.description === "string" &&
+    typeof obj.imageUrl === "string" &&
+    !("id" in obj) &&
+    !("userId" in obj)
+  );
+}
+
 /*
  * The RequestHandler type needs `any` so handlers can have different responses:
  * https://github.com/mswjs/msw/issues/377#issuecomment-690536532
@@ -230,6 +256,38 @@ export const handlers: RequestHandler<any, any, any, any>[] = [
     return apiResponse(ctx.json({ instruments }));
   }),
 
+  // POST (create) Instrument: /instruments
+  rest.post(ENDPOINTS.instruments, (req) => {
+    // Validate user
+    const auth = getUserCredentials(req);
+    if (auth.errResponse) {
+      return auth.errResponse;
+    }
+
+    // Validate submitted data
+    if (!isInstrumentDescriptiveData(req.body)) {
+      const error = "Invalid instrument object";
+      return apiResponse(ctx.status(400, "Bad Request"), ctx.json({ error }));
+    }
+
+    const { name, categoryId, summary, description, imageUrl } = req.body;
+    const { userId } = auth;
+    const id = 1 + Math.max(...DB.instruments.map((inst) => inst.id));
+    const newInstrument: IInstrument = {
+      id,
+      userId,
+      name,
+      categoryId,
+      summary,
+      description,
+      imageUrl,
+    };
+
+    // Insert and return the new instrument
+    DB.instruments.push(newInstrument);
+    return apiResponse(ctx.status(200), ctx.json(newInstrument));
+  }),
+
   // PUT (update) Instrument: /instruments/<instrumentId>
   rest.put(`${ENDPOINTS.instruments}/:id`, (req) => {
     // Validate user
@@ -256,8 +314,14 @@ export const handlers: RequestHandler<any, any, any, any>[] = [
       return apiResponse(ctx.status(403, "Forbidden"), ctx.json({ error }));
     }
 
+    // Validate submitted data
+    if (!isInstrumentDescriptiveData(req.body)) {
+      const error = "Invalid instrument object";
+      return apiResponse(ctx.status(400, "Bad Request"), ctx.json({ error }));
+    }
+
     // Update instrument
-    Object.assign(instrument, req.body); // Real server should verify the data
+    Object.assign(instrument, req.body);
     return apiResponse(ctx.status(200), ctx.json(instrument));
   }),
 

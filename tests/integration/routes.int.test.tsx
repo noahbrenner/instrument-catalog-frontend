@@ -4,6 +4,7 @@ import React from "react";
 import {
   mockAuthenticatedUser,
   useAuth,
+  LOADING,
   UNAUTHENTICATED,
 } from "#mocks/useAuth";
 import { App } from "#src/App";
@@ -83,6 +84,40 @@ describe("<App />", () => {
 
         unmount();
       });
+    });
+  });
+
+  describe("given the route '/instruments/new/'", () => {
+    it("displays the New Instrument form when logged in", async () => {
+      mockAuthenticatedUser("foo|123");
+      const { unmount } = renderWithRouter(<App />, "/instruments/new/");
+
+      const heading2 = await screen.findByRole("heading", { level: 2 });
+      expect(heading2).toHaveTextContent(/new instrument/i);
+      expect(screen.getByLabelText(/instrument name/i)).toHaveValue("");
+
+      unmount();
+    });
+
+    it("displays a 'login reqired' message when logged out", async () => {
+      useAuth.mockReturnValue(UNAUTHENTICATED);
+      const { unmount } = renderWithRouter(<App />, "/instruments/new/");
+
+      expect(screen.getByText(/need to log ?in/i)).toBeInTheDocument();
+      expect(
+        screen.queryByLabelText(/instrument name/i)
+      ).not.toBeInTheDocument();
+
+      unmount();
+    });
+
+    it("displays loading text when auth state is LOADING", () => {
+      useAuth.mockReturnValue(LOADING);
+      const { unmount } = renderWithRouter(<App />, "/instruments/new/");
+
+      expect(screen.queryByText(/loading/i)).toBeInTheDocument();
+
+      unmount();
     });
   });
 });

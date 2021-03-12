@@ -179,6 +179,18 @@ export function getInstrumentById(
   });
 }
 
+export function createInstrument(
+  newInstrument: Omit<IInstrument, "id" | "userId">,
+  getAccessTokenSilently: Auth0ContextInterface["getAccessTokenSilently"],
+  handlers: AuthenticatedAPIHandlers<IInstrument>
+): APIUtils {
+  return baseAuthenticatedRequest(getAccessTokenSilently, handlers, {
+    method: "POST",
+    url: ENDPOINTS.instruments,
+    data: newInstrument,
+  });
+}
+
 export function updateInstrument(
   id: number,
   newData: Omit<IInstrument, "id" | "userId">,

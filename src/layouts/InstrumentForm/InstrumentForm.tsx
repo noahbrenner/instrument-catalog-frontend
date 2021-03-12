@@ -4,7 +4,7 @@ import React, { useRef, useState } from "react";
 import type { FormEvent } from "react";
 import styled from "styled-components";
 
-import { isAxiosError, updateInstrument } from "#api";
+import { createInstrument, updateInstrument, isAxiosError } from "#api";
 import type { AuthenticatedAPIHandlers } from "#api";
 import { ModalConfirm } from "#components/ModalConfirm";
 import { useAuth } from "#hooks/useAuth";
@@ -220,7 +220,7 @@ export function InstrumentForm({
     setErrorMessage("");
 
     if (id === undefined) {
-      console.dir({ newInstrument: formValues });
+      createInstrument(formValues, auth.getAccessTokenSilently, handlers);
     } else {
       updateInstrument(id, formValues, auth.getAccessTokenSilently, handlers);
     }

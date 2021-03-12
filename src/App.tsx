@@ -12,6 +12,7 @@ import NotFound from "./pages/404";
 import CategoriesPage from "./pages/categories";
 import CategoryPage from "./pages/category";
 import InstrumentPage from "./pages/instrument";
+import NewInstrumentPage from "./pages/instruments/new";
 import { defaultTheme } from "./theme";
 import "./app.css";
 
@@ -96,6 +97,7 @@ export function App(): JSX.Element {
               <CategoriesPage path="categories/" />
               <CategoryPage path="categories/:categorySlug/" />
               <InstrumentPage path="instruments/:instrumentId/**" />
+              <NewInstrumentPage path="instruments/new/" />
               <NotFound default />
             </Router>
           </main>

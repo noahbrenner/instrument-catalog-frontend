@@ -203,3 +203,14 @@ export function updateInstrument(
     data: newData,
   });
 }
+
+export function deleteInstrument(
+  id: number,
+  getAccessTokenSilently: Auth0ContextInterface["getAccessTokenSilently"],
+  handlers: AuthenticatedAPIHandlers<void>
+): APIUtils {
+  return baseAuthenticatedRequest(getAccessTokenSilently, handlers, {
+    method: "DELETE",
+    url: `${ENDPOINTS.instruments}/${id}`,
+  });
+}

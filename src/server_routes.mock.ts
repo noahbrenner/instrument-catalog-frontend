@@ -325,6 +325,39 @@ export const handlers: RequestHandler<any, any, any, any>[] = [
     return apiResponse(ctx.status(200), ctx.json(instrument));
   }),
 
+  // DELETE Instrument: /instruments/<instrumentId>
+  rest.delete(`${ENDPOINTS.instruments}/:id`, (req) => {
+    // Validate user
+    const { userId, isAdmin, errResponse } = getUserCredentials(req);
+    if (errResponse) {
+      return errResponse;
+    }
+
+    // Validate instrument ID
+    if (!/^[0-9]+$/.test(req.params.id)) {
+      const error = `Invalid instrument ID: "${req.params.id}"`;
+      return apiResponse(ctx.status(400, "Bad Request"), ctx.json({ error }));
+    }
+    const instrumentIndex = DB.instruments.findIndex(
+      ({ id }) => id === Number(req.params.id)
+    );
+    if (instrumentIndex === -1) {
+      // DELETE is idempotent
+      return apiResponse(ctx.status(204, "No Content"));
+    }
+
+    // Validate permissions
+    const instrument = DB.instruments[instrumentIndex];
+    if (userId !== instrument.userId && !isAdmin) {
+      const error = "You don't have permission to edit this instrument";
+      return apiResponse(ctx.status(403, "Forbidden"), ctx.json({ error }));
+    }
+
+    // Delete the instrument
+    DB.instruments.splice(instrumentIndex, 1);
+    return apiResponse(ctx.status(204, "No Content"));
+  }),
+
   // Default: 404
   rest.get(`${process.env.API_ROOT}/*`, () => {
     return apiResponse(ctx.status(404, "Not Found"));

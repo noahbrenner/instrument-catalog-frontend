@@ -160,6 +160,44 @@ describe("<InstrumentForm />", () => {
   });
 
   describe("given a form submission", () => {
+    test("New Instrument happy path works", async () => {
+      mockAuthenticatedUser("foo|123");
+      const utils = renderInstrumentForm();
+      const formElements = [
+        utils.nameInput,
+        utils.categoryFieldset,
+        utils.summaryInput,
+        utils.descriptionTextarea,
+        utils.imageUrlInput,
+        utils.submitButton,
+        utils.resetButton,
+      ];
+      await utils.waitForInitialLoad();
+
+      // Enter values; Text includes whitespace which should be trimmed
+      userEvent.type(utils.nameInput, "  Foo  ");
+      userEvent.click(utils.getCategoryInputByValue(1));
+      userEvent.type(utils.summaryInput, "  Foo summary  ");
+      userEvent.type(utils.descriptionTextarea, "  Foo description  ");
+      userEvent.type(utils.imageUrlInput, "  https://example.com/foo.jpg  ");
+      userEvent.click(utils.submitButton);
+
+      // Inputs are disabled when the form is submitted
+      formElements.forEach((element) => expect(element).toBeDisabled());
+
+      // Inputs are enabled when the form submission completes
+      await waitFor(() => expect(utils.nameInput).toBeEnabled());
+      formElements.forEach((element) => expect(element).toBeEnabled());
+
+      // App is navigated to the view page using the new instrument name
+      const initiallyHighestInstrumentId = Math.max(
+        ...MOCK_DATA.instruments.map(({ id }) => id)
+      );
+      expect(utils.history.location.pathname).toBe(
+        `/instruments/${initiallyHighestInstrumentId + 1}/Foo/`
+      );
+    });
+
     test("Edit Instrument happy path works", async () => {
       const clearAndType: typeof userEvent.type = (element, text, opts) => {
         userEvent.clear(element);
@@ -186,7 +224,7 @@ describe("<InstrumentForm />", () => {
       userEvent.click(utils.getCategoryInputByValue(1));
       clearAndType(utils.summaryInput, "  Bar summary  ");
       clearAndType(utils.descriptionTextarea, "  Bar description  ");
-      clearAndType(utils.imageUrlInput, "  https://example.com/foo.jpg  ");
+      clearAndType(utils.imageUrlInput, "  https://example.com/bar.jpg  ");
       userEvent.click(utils.submitButton);
 
       // Inputs are disabled when the form is submitted
@@ -203,7 +241,7 @@ describe("<InstrumentForm />", () => {
         name: "Bar",
         summary: "Bar summary",
         description: "Bar description",
-        imageUrl: "https://example.com/foo.jpg",
+        imageUrl: "https://example.com/bar.jpg",
         userId: instrument.userId,
       });
 
@@ -213,7 +251,47 @@ describe("<InstrumentForm />", () => {
       );
     });
 
-    test("Edit form error path works", async () => {
+    test("New Instrument error path works", async () => {
+      const error = "You can't do that";
+      server.use(
+        rest.post(ENDPOINTS.instruments, (_req, res, ctx) =>
+          // `res.once` so that request #2 gets the default implementation
+          res.once(ctx.status(403, "Forbidden"), ctx.json({ error }))
+        )
+      );
+      mockAuthenticatedUser("foo|123");
+      const utils = renderInstrumentForm();
+      const initialPathname = utils.history.location.pathname;
+      await utils.waitForInitialLoad();
+
+      // Form submission 1: Error response from API
+      userEvent.type(utils.nameInput, "Buzz");
+      userEvent.click(utils.getCategoryInputByValue(0)); // Required field
+      userEvent.type(utils.summaryInput, "Buzz summary"); // Required field
+      userEvent.click(utils.submitButton);
+
+      expect(utils.nameInput).toBeDisabled(); // Until form submission response
+      await waitFor(() => expect(utils.nameInput).toBeEnabled());
+
+      expect(utils.getByText(error)).toBeInTheDocument();
+      expect(utils.history.location.pathname).toBe(initialPathname);
+
+      // Form submission 2: Successful response from API
+      userEvent.click(utils.submitButton);
+
+      expect(utils.queryByText(error)).not.toBeInTheDocument();
+      expect(utils.nameInput).toBeDisabled(); // Until form submission response
+      await waitFor(() => expect(utils.nameInput).toBeEnabled());
+
+      const initiallyHighestInstrumentId = Math.max(
+        ...MOCK_DATA.instruments.map(({ id }) => id)
+      );
+      expect(utils.history.location.pathname).toBe(
+        `/instruments/${initiallyHighestInstrumentId + 1}/Buzz/`
+      );
+    });
+
+    test("Edit Instrument error path works", async () => {
       const error = "You can't do that";
       server.use(
         rest.put(`${ENDPOINTS.instruments}/*`, (_req, res, ctx) =>

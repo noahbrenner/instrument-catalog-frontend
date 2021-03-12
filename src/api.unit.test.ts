@@ -17,6 +17,8 @@ import {
 } from "#api";
 import type { APIHandlers, APIUtils, RequestParams } from "#api";
 
+type OnErrorParams = Parameters<APIHandlers<unknown>["onError"]>;
+
 const { API_ROOT } = process.env;
 
 describe("baseRequest()", () => {
@@ -428,7 +430,7 @@ describe("getCategoryBySlug()", () => {
       expect(handlers.onError).toBeCalledTimes(1);
 
       const [uiErrorMessage, error] = handlers.onError.mock
-        .calls[0] as Parameters<APIHandlers<unknown>["onError"]>;
+        .calls[0] as OnErrorParams;
       expect(uiErrorMessage).toMatch(/Error from server: "404/);
       expect(error.response?.status).toStrictEqual(404);
     });
@@ -443,9 +445,7 @@ describe("getCategoryBySlug()", () => {
       expect(handlers.onSuccess).not.toBeCalled();
       expect(handlers.onError).toBeCalledTimes(1);
 
-      const [uiErrorMessage] = handlers.onError.mock.calls[0] as Parameters<
-        APIHandlers<unknown>["onError"]
-      >;
+      const [uiErrorMessage] = handlers.onError.mock.calls[0] as OnErrorParams;
       expect(uiErrorMessage).toMatch(/Error from server/);
     });
   });
@@ -541,7 +541,7 @@ describe("getInstrumentById()", () => {
       expect(handlers.onError).toBeCalledTimes(1);
 
       const [uiErrorMessage, error] = handlers.onError.mock
-        .calls[0] as Parameters<APIHandlers<unknown>["onError"]>;
+        .calls[0] as OnErrorParams;
       expect(uiErrorMessage).toMatch(/Error from server: "404/);
       expect(error.response?.status).toStrictEqual(404);
     });

@@ -46,4 +46,25 @@ describe("<ModalConfirm />", () => {
     userEvent.click(getByRole("button", { name: "Absolutely Not!" }));
     expect(handleNo).toBeCalled();
   });
+
+  it("allows disabling 'yes' and 'no' buttons", () => {
+    const handleYes = jest.fn();
+    const handleNo = jest.fn();
+    const { getByRole } = render(
+      <ModalConfirm onYes={handleYes} onNo={handleNo} disableButtons>
+        Are you sure?
+      </ModalConfirm>
+    );
+    const yesButton = getByRole("button", { name: /yes/i });
+    const noButton = getByRole("button", { name: /no/i });
+
+    expect(yesButton).toBeDisabled();
+    expect(noButton).toBeDisabled();
+
+    userEvent.click(yesButton);
+    expect(handleYes).not.toBeCalled();
+
+    userEvent.click(noButton);
+    expect(handleNo).not.toBeCalled();
+  });
 });

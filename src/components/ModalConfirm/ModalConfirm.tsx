@@ -28,6 +28,7 @@ export interface ModalConfirmProps {
   onNo: () => unknown;
   yesText?: string;
   noText?: string;
+  disableButtons?: boolean;
 }
 
 export function ModalConfirm({
@@ -36,16 +37,17 @@ export function ModalConfirm({
   onNo,
   yesText = "Yes",
   noText = "No",
+  disableButtons = false,
 }: ModalConfirmProps): JSX.Element {
   return (
     <Modal>
       <ConfirmContainer>
         <p>{children}</p>
         <div>
-          <BaseButton type="button" onClick={onYes}>
+          <BaseButton type="button" onClick={onYes} disabled={disableButtons}>
             {yesText}
           </BaseButton>
-          <BaseButton type="button" onClick={onNo}>
+          <BaseButton type="button" onClick={onNo} disabled={disableButtons}>
             {noText}
           </BaseButton>
         </div>

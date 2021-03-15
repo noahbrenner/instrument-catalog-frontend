@@ -14,8 +14,11 @@ import {
   getInstrumentById,
   createInstrument,
   updateInstrument,
+  deleteInstrument,
 } from "#api";
 import type { APIHandlers, APIUtils, RequestParams } from "#api";
+
+type OnErrorParams = Parameters<APIHandlers<unknown>["onError"]>;
 
 const { API_ROOT } = process.env;
 
@@ -428,7 +431,7 @@ describe("getCategoryBySlug()", () => {
       expect(handlers.onError).toBeCalledTimes(1);
 
       const [uiErrorMessage, error] = handlers.onError.mock
-        .calls[0] as Parameters<APIHandlers<unknown>["onError"]>;
+        .calls[0] as OnErrorParams;
       expect(uiErrorMessage).toMatch(/Error from server: "404/);
       expect(error.response?.status).toStrictEqual(404);
     });
@@ -443,9 +446,7 @@ describe("getCategoryBySlug()", () => {
       expect(handlers.onSuccess).not.toBeCalled();
       expect(handlers.onError).toBeCalledTimes(1);
 
-      const [uiErrorMessage] = handlers.onError.mock.calls[0] as Parameters<
-        APIHandlers<unknown>["onError"]
-      >;
+      const [uiErrorMessage] = handlers.onError.mock.calls[0] as OnErrorParams;
       expect(uiErrorMessage).toMatch(/Error from server/);
     });
   });
@@ -541,7 +542,7 @@ describe("getInstrumentById()", () => {
       expect(handlers.onError).toBeCalledTimes(1);
 
       const [uiErrorMessage, error] = handlers.onError.mock
-        .calls[0] as Parameters<APIHandlers<unknown>["onError"]>;
+        .calls[0] as OnErrorParams;
       expect(uiErrorMessage).toMatch(/Error from server: "404/);
       expect(error.response?.status).toStrictEqual(404);
     });
@@ -775,6 +776,115 @@ describe("getInstrumentById()", () => {
         const { completed } = updateInstrument(
           id,
           updatedInstrumentBase,
+          getAccessTokenSilently,
+          handlers
+        );
+        await completed;
+
+        expect(handlers.onSuccess).not.toBeCalled();
+        expect(handlers.onError).toBeCalled();
+      });
+    });
+  });
+
+  describe("deleteInstrument()", () => {
+    describe("given an authenticated user", () => {
+      it.each([
+        ["the owning user", ownerAccessTokenPromise],
+        ["an admin user", adminAccessTokenPromise],
+      ])("calls onSuccess() for %s", async (_user, accessTokenPromise) => {
+        const getAccessTokenSilently = () => accessTokenPromise;
+
+        {
+          const handlers = { onSuccess: jest.fn(), onError: jest.fn() };
+          const { completed } = deleteInstrument(
+            testInstrument.id,
+            getAccessTokenSilently,
+            handlers
+          );
+          await completed;
+
+          expect(handlers.onSuccess).toBeCalled(); // No content
+          expect(handlers.onError).not.toBeCalled();
+        }
+
+        // Verify that the change persists (really a test for the mock server)
+        {
+          const handlers = { onSuccess: jest.fn(), onError: jest.fn() };
+          const { completed } = getInstrumentById(testInstrument.id, handlers);
+          await completed;
+          expect(handlers.onError).toBeCalled();
+          const [, error] = handlers.onError.mock.calls[0] as OnErrorParams;
+          expect(error.response?.status).toStrictEqual(404);
+        }
+      });
+
+      it("calls onSuccess() for a non-existant instrument ID", async () => {
+        const getAccessTokenSilently = () => nonOwnerAccessTokenPromise;
+        const handlers = { onSuccess: jest.fn(), onError: jest.fn() };
+        const { completed } = deleteInstrument(
+          3333, // Valid ID, but not in our mock DB
+          getAccessTokenSilently,
+          handlers
+        );
+        await completed;
+
+        expect(handlers.onSuccess).toBeCalled(); // Idempotent request
+        expect(handlers.onError).not.toBeCalled();
+      });
+
+      it("calls onError() for a user who isn't the owner", async () => {
+        const getAccessTokenSilently = () => nonOwnerAccessTokenPromise;
+        const handlers = { onSuccess: jest.fn(), onError: jest.fn() };
+        const { completed } = deleteInstrument(
+          testInstrument.id,
+          getAccessTokenSilently,
+          handlers
+        );
+        await completed;
+
+        expect(handlers.onSuccess).not.toBeCalled();
+        expect(handlers.onError).toBeCalled();
+      });
+    });
+
+    describe("given an invalid access token", () => {
+      const invalidJSONWebSignature = "not-a-valid-jws";
+      const jwsWithoutPayloadSub = jws.sign({
+        header: { alg: "HS256", typ: "JWT" },
+        payload: {}, // No .sub (subject/userId)
+        secret: "doesn't matter for this test",
+      });
+      it.each([
+        ["invalid JSON Web Signature", invalidJSONWebSignature],
+        ["JSON Web Signature without payload.sub", jwsWithoutPayloadSub],
+      ])("calls onError() for %s", async (_description, accessToken) => {
+        const getAccessTokenSilently = () => Promise.resolve(accessToken);
+        const handlers = { onSuccess: jest.fn(), onError: jest.fn() };
+        const { completed } = deleteInstrument(
+          testInstrument.id,
+          getAccessTokenSilently,
+          handlers
+        );
+        await completed;
+
+        expect(handlers.onSuccess).not.toBeCalled();
+        expect(handlers.onError).toBeCalled();
+      });
+    });
+
+    describe("given an invalid instrument ID", () => {
+      it.each([
+        ["a large integer represented in scientific notation", 1e99],
+        ["a fractional number", 1.1],
+        ["a negative integer", -1],
+        ["Infinity", Infinity],
+        ["NaN", NaN],
+      ])("calls onError() for %s", async (_description, id) => {
+        const getAccessTokenSilently = () => nonOwnerAccessTokenPromise;
+        const handlers = { onSuccess: jest.fn(), onError: jest.fn() };
+        const { completed } = deleteInstrument(
+          id,
           getAccessTokenSilently,
           handlers
         );

@@ -10,13 +10,11 @@ export default function HomePage(_: RouteComponentProps): JSX.Element {
       <CategoryListItem
         name="Winds"
         url="/categories/winds/"
-        itemCount={1}
         summary="Move air, make noise"
       />
       <CategoryListItem
         name="Percussion"
         url="/categories/percussion/"
-        itemCount={300}
         summary="Hit stuff"
       />
     </div>

@@ -10,7 +10,6 @@ describe("<Category />", () => {
       const props: Required<CategoryListItemProps> = {
         name: "Foo",
         url: "/foo",
-        itemCount: 3,
         summary: "Short description",
         description: "Longer description",
       };
@@ -20,9 +19,6 @@ describe("<Category />", () => {
 
       expect(screen.getByRole("heading")).toHaveTextContent(props.name);
       expect(screen.getByRole("link")).toHaveAttribute("href", props.url);
-      expect(
-        screen.getByTitle(/instruments in this category/i)
-      ).toHaveTextContent(String(props.itemCount));
       expect(screen.getByText(props.summary)).toBeInTheDocument();
       expect(screen.getByText(props.description)).toBeInTheDocument();
     });
@@ -31,7 +27,7 @@ describe("<Category />", () => {
   describe("given no `description` prop", () => {
     it("does not render an empty <p /> for the missing description", () => {
       const { container } = render(
-        <CategoryListItem name="Foo" url="/" itemCount={1} summary="Bar" />
+        <CategoryListItem name="Foo" url="/" summary="Bar" />
       );
       const paragraphs = container.querySelectorAll("p");
       paragraphs.forEach((p) => expect(p).not.toBeEmptyDOMElement());

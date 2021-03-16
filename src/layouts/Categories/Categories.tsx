@@ -24,7 +24,6 @@ export function Categories({
             {index > 0 && <hr />}
             <CategoryListItem
               name={category.name}
-              itemCount={category.itemCount}
               summary={category.summary}
               description={category.description}
               url={`/categories/${category.slug}/`}

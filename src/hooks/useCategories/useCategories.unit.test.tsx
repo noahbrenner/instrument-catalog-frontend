@@ -45,7 +45,6 @@ function renderTestComponent() {
 const mockCategoryFiller: Omit<ICategory, "name"> = {
   id: 0,
   slug: "",
-  itemCount: 0,
   summary: "",
   description: "",
 };

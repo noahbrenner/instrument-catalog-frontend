@@ -3,6 +3,7 @@ import React, { useEffect } from "react";
 import styled, { createGlobalStyle } from "styled-components";
 
 import { LoginButton } from "#components/LoginButton";
+import { useAuth } from "#hooks/useAuth";
 
 const GlobalStyle = createGlobalStyle`
   body {
@@ -72,12 +73,22 @@ const StyledNav = styled.nav`
 `;
 
 export interface NavProps {
-  links: [linkText: string, url: string][];
   onLinkClick: () => void;
   visible: boolean;
 }
 
-export function Nav({ links, onLinkClick, visible }: NavProps): JSX.Element {
+export function Nav({ onLinkClick, visible }: NavProps): JSX.Element {
+  const auth = useAuth();
+  const isAuthenticated = auth.state === "AUTHENTICATED";
+
+  const links: Array<{ text: string; path: string }> = [
+    { text: "Home", path: "/" },
+    ...(isAuthenticated
+      ? [{ text: "Post New Instrument", path: "/instruments/new/" }]
+      : []),
+    { text: "Categories", path: "/categories/" },
+  ];
+
   useEffect(() => {
     const navVisibleClass = "nav-visible";
     const { classList } = document.body;
@@ -94,10 +105,10 @@ export function Nav({ links, onLinkClick, visible }: NavProps): JSX.Element {
       <GlobalStyle />
       <LoginButton />
       <ul>
-        {links.map(([linkText, url]) => (
-          <li key={linkText}>
-            <Link to={url} onClick={onLinkClick}>
-              {linkText}
+        {links.map(({ text, path }) => (
+          <li key={text}>
+            <Link to={path} onClick={onLinkClick}>
+              {text}
             </Link>
           </li>
         ))}

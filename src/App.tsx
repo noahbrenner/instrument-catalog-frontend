@@ -83,14 +83,7 @@ export function App(): JSX.Element {
               navIsVisible={navIsVisible}
             />
           </StyledHeader>
-          <Nav
-            links={[
-              ["Home", "/"],
-              ["Categories", "/categories/"],
-            ]}
-            onLinkClick={hideNav}
-            visible={navIsVisible}
-          />
+          <Nav onLinkClick={hideNav} visible={navIsVisible} />
           <main>
             <Router>
               <HomePage path="/" />

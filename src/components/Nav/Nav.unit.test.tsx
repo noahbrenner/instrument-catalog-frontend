@@ -1,4 +1,3 @@
-import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import React from "react";
 
@@ -63,36 +62,49 @@ describe("<Nav />", () => {
   // https://github.com/jsdom/jsdom/blob/9b15aee0074870bf18ef3374d5bded9911066125/lib/jsdom/level2/style.js#L18
   describe("given a particular value for visible=...", () => {
     it("is visible when visible=true", () => {
+      mockAuthenticatedUser("foo|123");
       renderWithDefaultTheme(<Nav visible onLinkClick={noop} />);
       expect(document.body).toHaveClass("nav-visible");
 
       // This would be better
-      // expect(screen.getByRole("navigation")).toBeVisible();
+      // expect(getByRole("navigation")).toBeVisible();
     });
 
     it("is hidden when visible=false", () => {
+      mockAuthenticatedUser("foo|123");
       renderWithDefaultTheme(<Nav visible={false} onLinkClick={noop} />);
       expect(document.body).not.toHaveClass("nav-visible");
 
       // This would be better
       // window.innerWidth = 300
-      // expect(screen.getByRole("navigation")).not.toBeVisible();
+      // expect(getByRole("navigation")).not.toBeVisible();
     });
   });
 
   describe("given an onLinkClick handler", () => {
     it("calls the click handler for clicks on links", () => {
+      mockAuthenticatedUser("foo|123");
       const handler = jest.fn();
-      renderWithDefaultTheme(<Nav visible onLinkClick={handler} />);
-      userEvent.click(screen.getAllByRole("link")[0]);
-      expect(handler).toHaveBeenCalledTimes(1);
+      const { getAllByRole } = renderWithDefaultTheme(
+        <Nav visible onLinkClick={handler} />
+      );
+
+      const links = getAllByRole("link");
+      expect(links.length).toBeGreaterThan(0);
+
+      links.forEach((link) => userEvent.click(link));
+      expect(handler).toHaveBeenCalledTimes(links.length);
     });
 
     it("does NOT call the click handler for clicks outside of links", () => {
+      mockAuthenticatedUser("foo|123");
       const handler = jest.fn();
-      renderWithDefaultTheme(<Nav visible onLinkClick={handler} />);
-      userEvent.click(screen.getByRole("navigation"));
-      userEvent.click(screen.getByRole("list"));
+      const { getByRole } = renderWithDefaultTheme(
+        <Nav visible onLinkClick={handler} />
+      );
+
+      userEvent.click(getByRole("navigation"));
+      userEvent.click(getByRole("list"));
       expect(handler).not.toHaveBeenCalled();
     });
   });

@@ -24,8 +24,10 @@ describe("<App />", () => {
         const heading1 = await screen.findByRole("heading", { level: 1 });
         expect(heading1).toHaveTextContent(/instrument catalog/i);
 
-        const heading2 = await screen.findByRole("heading", { level: 2 });
-        expect(heading2).toHaveTextContent(/browse by category/i);
+        const [heading2] = await screen.findAllByRole("heading", { level: 2 });
+        expect(heading2).toHaveTextContent(
+          /welcome to the instrument catalog/i
+        );
 
         unmount();
       });

@@ -51,12 +51,14 @@ const mockCategoryFiller: Omit<ICategory, "name"> = {
 const foo: ICategory = { ...mockCategoryFiller, name: "Foo" };
 const bar: ICategory = { ...mockCategoryFiller, name: "Bar" };
 const baz: ICategory = { ...mockCategoryFiller, name: "Baz" };
-const mockCategoryNames = MOCK_DATA.categories.map(({ name }) => name);
 const categoriesEndpoint = `${ENDPOINTS.categories}/all`;
 
 describe("useCategories()", () => {
   describe("given a successful API response", () => {
     it("returns category objects and caches the result", async () => {
+      const mockCategoryNamesSorted = MOCK_DATA.categories
+        .map(({ name }) => name)
+        .sort();
       {
         const {
           categoriesList,
@@ -75,7 +77,7 @@ describe("useCategories()", () => {
           expect(categoriesHaveLoadedElement).toHaveTextContent("true")
         );
         expect(errorMessageElement).toHaveTextContent("UNDEFINED");
-        expect(getCategories()).toEqual(mockCategoryNames);
+        expect(getCategories()).toEqual(mockCategoryNamesSorted);
       }
       {
         const {
@@ -87,7 +89,7 @@ describe("useCategories()", () => {
         // Cached categories are populated on the first render
         expect(categoriesHaveLoadedElement).toHaveTextContent("true");
         expect(errorMessageElement).toHaveTextContent("UNDEFINED");
-        expect(getCategories()).toStrictEqual(mockCategoryNames);
+        expect(getCategories()).toStrictEqual(mockCategoryNamesSorted);
       }
     });
   });
@@ -115,8 +117,8 @@ describe("useCategories()", () => {
       expect(component1.errorMessageElement).toHaveTextContent("UNDEFINED");
       expect(component2.errorMessageElement).toHaveTextContent("UNDEFINED");
 
-      expect(component1.getCategories()).toStrictEqual(["Foo", "Bar"]);
-      expect(component2.getCategories()).toStrictEqual(["Foo", "Bar"]);
+      expect(component1.getCategories()).toStrictEqual(["Bar", "Foo"]);
+      expect(component2.getCategories()).toStrictEqual(["Bar", "Foo"]);
     });
   });
 
@@ -141,7 +143,7 @@ describe("useCategories()", () => {
         expect(component2.categoriesHaveLoadedElement).toHaveTextContent("true")
       );
       expect(component2.errorMessageElement).toHaveTextContent("UNDEFINED");
-      expect(component2.getCategories()).toStrictEqual(["Foo", "Bar"]);
+      expect(component2.getCategories()).toStrictEqual(["Bar", "Foo"]);
 
       // But component1 is not updated after being unmounted
       expect(component1.categoriesHaveLoadedElement).toHaveTextContent("false");
@@ -231,9 +233,9 @@ describe("useCategories()", () => {
       expect(component2.errorMessageElement).toHaveTextContent("UNDEFINED");
       expect(component3.errorMessageElement).toHaveTextContent("UNDEFINED");
 
-      expect(component1.getCategories()).toStrictEqual(["Foo", "Bar"]);
-      expect(component2.getCategories()).toStrictEqual(["Foo", "Bar"]);
-      expect(component3.getCategories()).toStrictEqual(["Foo", "Bar"]);
+      expect(component1.getCategories()).toStrictEqual(["Bar", "Foo"]);
+      expect(component2.getCategories()).toStrictEqual(["Bar", "Foo"]);
+      expect(component3.getCategories()).toStrictEqual(["Bar", "Foo"]);
     });
   });
 });

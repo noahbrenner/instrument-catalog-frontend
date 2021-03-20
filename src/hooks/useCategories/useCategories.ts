@@ -67,13 +67,19 @@ export function useCategories(): {
 
         getCategories({
           onSuccess(data) {
-            cachedCategories = data.categories;
+            const sortedCategories = [...data.categories].sort((a, b) => {
+              if (a.name === b.name) {
+                return 0;
+              }
+              return a.name < b.name ? -1 : 1;
+            });
+            cachedCategories = sortedCategories;
             cachedErrorMessage = undefined;
             categoriesHaveLoaded = true;
             resolvePromise();
 
             if (componentIsMounted) {
-              setCategories(data.categories);
+              setCategories(sortedCategories);
               setErrorMessage(undefined);
             }
           },

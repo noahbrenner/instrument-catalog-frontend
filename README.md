@@ -104,8 +104,7 @@ The backend API server is in a separate repo: <https://github.com/noahbrenner/in
 
 ## Deployment
 
-- Update your Auth0 Application's settings to reflect the domain that the site will be served from, replacing the `localhost:5000` values.
-- In the Auth0 dashboard, update your Application's settings to reflect the domain that the site will be served from (thus replacing the values set to `localhost:5000` when following the [Project setup](#project-setup) instructions).
+- In the Auth0 dashboard, update your Application's settings to reflect the domain where you'll host the site (thus replacing the values that were set to `localhost:5000` when following the [Project setup](#project-setup) instructions).
   - Or even better, create a new Auth0 Application for the deployed site so that you can keep using the original in development.
 - Set env vars: When building the site for deployment, some environment variables need to be set (**see `template.env` for reference**).
   - If you're building on your local machine, you can just set the values in `.env`.

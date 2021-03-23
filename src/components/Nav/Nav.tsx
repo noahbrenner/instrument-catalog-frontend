@@ -43,7 +43,7 @@ const StyledNav = styled.nav`
   }
 
   a {
-    display: inline-block;
+    display: block;
     color: white;
     padding: 1rem;
 

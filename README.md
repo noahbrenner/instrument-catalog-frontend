@@ -2,9 +2,20 @@
 
 ![Tests](https://github.com/noahbrenner/instrument-catalog-frontend/workflows/Tests/badge.svg)
 
+Instrument Catalog is a React web app for sharing knowledge of musical instruments. Logged-in users can create public pages for their favorite instruments, and later edit or delete any page they created.
+
+The app is written in TypeScript with React function components and hooks. It includes:
+
+- Testing with [Jest](https://jestjs.io/) & [React Testing Library](https://testing-library.com/docs/react-testing-library/intro) and linting/formatting with [ESlint](https://eslint.org/), [Prettier](https://prettier.io/), and [TypeScript](https://www.typescriptlang.org/), all run via CI.
+- Static rendering & hydration with [react-static](https://github.com/react-static/react-static).
+- User authentication with [Auth0](https://auth0.com/), including support for admin users.
+- A mock API server in dev/test using [Mock Service Worker](https://mswjs.io/), which enables frontend development independently of the backend.
+
+The backend API server is in a separate repo: <https://github.com/noahbrenner/instrument-catalog-backend>
+
 ## Dependencies
 
-- [Node.js](https://nodejs.org/) (and [`npm`](https://www.npmjs.com/get-npm), which is bundled with it)
+- [Node.js](https://nodejs.org/) (and [`npm`](https://www.npmjs.com/get-npm), which is bundled with Node)
 
 ## Project setup
 
@@ -16,8 +27,8 @@
 - Install `npm` dependencies
   ```bash
   # Use *one* of the following:
-  $ npm ci      # Either exact versions from package-lock.json
-  $ npm install # Or recalculate the dependency tree using package.json
+  $ npm ci      # Use exact versions from package-lock.json
+  $ npm install # Use newest versions of (sub)dependencies allowed by package.json
   ```
 - Create `.env` by copying `template.env`
   ```bash
@@ -56,8 +67,8 @@
          
           // Auth0 requires the namespace to start with http: or https:
           const namespace = "http:auth";
-          context.idToken[`${namespace}/roles`] = roles; // For the frontend
-          context.accessToken[`${namespace}/roles`] = roles; // For the backend
+          context.idToken[`${namespace}/roles`] = roles; // For the frontend to read
+          context.accessToken[`${namespace}/roles`] = roles; // For the backend to read
          
           return callback(null, user, context);
         }
@@ -67,13 +78,14 @@
 ## Scripts for local development
 
 - Linting/Testing
-  - **`$ npm test`** - Run all tests using [Jest](https://jestjs.io/) and [Testing Library](https://testing-library.com/).
+  - **`$ npm test`** - Run all tests using [Jest](https://jestjs.io/).
     - Run tests in watch mode with: **`$ npm test -- --watch`**
-  - **`$ npm run lint:lint`** - Lint codebase using [ESlint](https://eslint.org/).
-    - Some linting issues can be fixed automatically with: **`$ npm run lint:lint -- --fix`**
-  - **`$ npm run lint:types`** - Run static type checking for [TypeScript](https://www.typescriptlang.org/) files.
-  - **`$ npm run lint:format`** - Verify that formatting is consistent using [Prettier](https://prettier.io/).
-  - **`$ npm run lint`** - Run all of the above linters.
+    - Run and watch only test files matching a RegExp: **`$ npm test -- --watch mypattern`**
+  - **`$ npm run lint`** - Run all linters. Each can also be run individually:
+    - **`$ npm run lint:lint`** - Lint codebase using [ESlint](https://eslint.org/).
+      - Some linting issues can be fixed automatically with: **`$ npm run lint:lint -- --fix`**
+    - **`$ npm run lint:types`** - Run static type checking for [TypeScript](https://www.typescriptlang.org/) files.
+    - **`$ npm run lint:format`** - Verify that formatting is consistent using [Prettier](https://prettier.io/).
   - **`$ npm run format`** - Reformat code using Prettier.
     - _Prettier is also run (via a git hook) whenever you make a commit._
 - Building
@@ -81,18 +93,19 @@
   - **`$ npm run stage`** - Build the site, placing all files in the `dist/` directory. This is almost the same as the `build` script, but the site is functional when served on `localhost`.
   - **`$ npm run build`** - Build the site for production. Links will have absolute paths referencing the configured production host name and base path. Serving this from `localhost` will _not_ work.
   - **`$ npm run serve`** - Serve whatever is in the `dist/` directory over `localhost`.
-    - By default, the site is served on port 5000 (`localhost:5000`)
-    - You can optionally listen on a different port
-      - ...either with a command line flag: **`$ npm run serve -- -l 3000`** _(that's dash "ell" for "listen")_
-      - ...or with an environment variable: **`$ PORT=3000 npm run serve`**
     - This script doesn't build the site, it only serves existing files. To (re)build and serve the site, just run both tasks:
       ```bash
       $ npm run stage && npm run serve
       ```
+    - By default, the site is served on port 5000 (`localhost:5000`)
+    - You can optionally listen on a different port
+      - ...either with a command line flag: **`$ npm run serve -- -l 3000`** _(that's dash "ell" for "listen")_
+      - ...or with an environment variable: **`$ PORT=3000 npm run serve`** _(setting `PORT` in `.env` does **not** work)_
 
 ## Deployment
 
-- Update your Auth0 Application's settings to reflect the domain that the site will be served from, replacing the `localhost:5000` values.
+- In the Auth0 dashboard, update your Application's settings to reflect the domain where you'll host the site (thus replacing the values that were set to `localhost:5000` when following the [Project setup](#project-setup) instructions).
+  - Or even better, create a new Auth0 Application for the deployed site so that you can keep using the original in development.
 - Set env vars: When building the site for deployment, some environment variables need to be set (**see `template.env` for reference**).
   - If you're building on your local machine, you can just set the values in `.env`.
   - If building and deploying from a CI/CD server, use the CD platform's interface to set the required variables.

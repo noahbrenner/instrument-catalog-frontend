@@ -1,6 +1,4 @@
-import { Auth0Provider } from "@auth0/auth0-react";
-import type { AppState } from "@auth0/auth0-react";
-import { Router, navigate } from "@reach/router";
+import { Router } from "@reach/router";
 import React, { useState } from "react";
 import { Root, addPrefetchExcludes } from "react-static";
 import styled, { ThemeProvider } from "styled-components";
@@ -51,14 +49,6 @@ const StyledHeader = styled.header`
   }
 `;
 
-const isBrowser = typeof window !== "undefined";
-
-function handleAuthRedirect(appState?: AppState) {
-  if (isBrowser) {
-    navigate(appState?.returnTo ?? window.location.pathname, { replace: true });
-  }
-}
-
 export function App(): JSX.Element {
   const [navIsVisible, setNavIsVisible] = useState(false);
   const toggleNav = () => setNavIsVisible((isVisible) => !isVisible);
@@ -66,36 +56,27 @@ export function App(): JSX.Element {
 
   return (
     <Root>
-      <Auth0Provider
-        domain={process.env.AUTH0_DOMAIN || ""}
-        clientId={process.env.AUTH0_CLIENT_ID || ""}
-        redirectUri={isBrowser ? window.location.origin : ""}
-        onRedirectCallback={handleAuthRedirect}
-        audience={process.env.AUTH0_BACKEND_API_IDENTIFIER || ""}
-        useRefreshTokens
-      >
-        <ThemeProvider theme={defaultTheme}>
-          <StyledHeader>
-            <h1>Instrument Catalog</h1>
-            <BurgerButton
-              className="burger"
-              onClick={toggleNav}
-              navIsVisible={navIsVisible}
-            />
-          </StyledHeader>
-          <Nav onLinkClick={hideNav} visible={navIsVisible} />
-          <main>
-            <Router>
-              <HomePage path="/" />
-              <CategoriesPage path="categories/" />
-              <CategoryPage path="categories/:categorySlug/" />
-              <InstrumentPage path="instruments/:instrumentId/**" />
-              <NewInstrumentPage path="instruments/new/" />
-              <NotFound default />
-            </Router>
-          </main>
-        </ThemeProvider>
-      </Auth0Provider>
+      <ThemeProvider theme={defaultTheme}>
+        <StyledHeader>
+          <h1>Instrument Catalog</h1>
+          <BurgerButton
+            className="burger"
+            onClick={toggleNav}
+            navIsVisible={navIsVisible}
+          />
+        </StyledHeader>
+        <Nav onLinkClick={hideNav} visible={navIsVisible} />
+        <main>
+          <Router>
+            <HomePage path="/" />
+            <CategoriesPage path="categories/" />
+            <CategoryPage path="categories/:categorySlug/" />
+            <InstrumentPage path="instruments/:instrumentId/**" />
+            <NewInstrumentPage path="instruments/new/" />
+            <NotFound default />
+          </Router>
+        </main>
+      </ThemeProvider>
     </Root>
   );
 }

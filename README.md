@@ -6,7 +6,7 @@ Instrument Catalog is a React web app for sharing knowledge of musical instrumen
 
 The app is written in TypeScript with React function components and hooks. It includes:
 
-- Testing with [Jest](https://jestjs.io/) & [React Testing Library](https://testing-library.com/docs/react-testing-library/intro) and linting/formatting with [ESlint](https://eslint.org/), [Prettier](https://prettier.io/), and [Typescript](https://www.typescriptlang.org/), all run via CI on every pull request.
+- Testing with [Jest](https://jestjs.io/) & [React Testing Library](https://testing-library.com/docs/react-testing-library/intro) and linting/formatting with [ESlint](https://eslint.org/), [Prettier](https://prettier.io/), and [TypeScript](https://www.typescriptlang.org/), all run via CI.
 - Static rendering & hydration with [react-static](https://github.com/react-static/react-static).
 - User authentication with [Auth0](https://auth0.com/), including support for admin users.
 - A mock API server in dev/test using [Mock Service Worker](https://mswjs.io/), which enables frontend development independently of the backend.

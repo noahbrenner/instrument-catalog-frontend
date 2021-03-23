@@ -2,6 +2,17 @@
 
 ![Tests](https://github.com/noahbrenner/instrument-catalog-frontend/workflows/Tests/badge.svg)
 
+Instrument Catalog is a React web app for sharing knowledge of musical instruments. Logged-in users can create public pages for their favorite instruments, and later edit or delete any page they created.
+
+The app is written in TypeScript with React function components and hooks. It includes:
+
+- Testing with [Jest](https://jestjs.io/) & [React Testing Library](https://testing-library.com/docs/react-testing-library/intro) and linting/formatting with [ESlint](https://eslint.org/), [Prettier](https://prettier.io/), and [Typescript](https://www.typescriptlang.org/), all run via CI on every pull request.
+- Static rendering & hydration with [react-static](https://github.com/react-static/react-static).
+- User authentication with [Auth0](https://auth0.com/), including support for admin users.
+- A mock API server in dev/test using [Mock Service Worker](https://mswjs.io/), which enables frontend development independently of the backend.
+
+The backend API server is in a separate repo: <https://github.com/noahbrenner/instrument-catalog-backend>
+
 ## Dependencies
 
 - [Node.js](https://nodejs.org/) (and [`npm`](https://www.npmjs.com/get-npm), which is bundled with it)
